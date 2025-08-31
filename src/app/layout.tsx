@@ -10,7 +10,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'GameGear - Premium Gaming Accessories',
+  title: 'Quantum Gameware - Premium Gaming Accessories',
   description: 'High-quality gaming accessories for professional gamers',
 };
 
