@@ -1,30 +1,30 @@
-// src/app/products/[slug]/page.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 import { getProduct, getProducts } from '../../../sanity/lib/queries';
 import { Product } from '@/types';
 import AddToCartButton from '@/components/ui/AddToCartButton';
+import { Metadata } from 'next';
 
-interface ProductPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
-}
-
-export default async function ProductPage({ params }: ProductPageProps) {
-  // Await the params first
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  // Await the params promise
   const { slug } = await params;
-  const product: Product = await getProduct(slug);
+  const product: Product | null = await getProduct(slug);
 
-  // Instead of notFound(), show a friendly message
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto text-center">
           <div className="bg-gray-100 rounded-lg p-8">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Product Not Available</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Product Not Available
+            </h1>
             <p className="text-gray-600 mb-6">
-              Sorry, we couldn't find the product you're looking for. It might be out of stock or no longer available.
+              Sorry, we couldn&apos;t find the product you&apos;re looking for. It might
+              be out of stock or no longer available.
             </p>
             <Link
               href="/products"
@@ -49,15 +49,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
               alt={product.name}
               fill
               className="object-cover"
+              priority
             />
           </div>
           {product.images && product.images.length > 0 && (
             <div className="grid grid-cols-3 gap-4 mt-4">
-              {product.images.map((image, index) => (
-                <div key={index} className="relative h-24 rounded-lg overflow-hidden">
+              {product.images.map((image, idx) => (
+                <div key={idx} className="relative h-24 rounded-lg overflow-hidden">
                   <Image
                     src={image}
-                    alt={`${product.name} ${index + 1}`}
+                    alt={`${product.name} ${idx + 1}`}
                     fill
                     className="object-cover"
                   />
@@ -88,10 +89,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <div className="mb-6">
             {product.originalPrice && product.originalPrice > product.price ? (
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 <span className="text-3xl font-bold text-gray-900">${product.price}</span>
-                <span className="ml-2 text-lg text-gray-500 line-through">${product.originalPrice}</span>
-                <span className="ml-2 bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
+                <span className="text-lg text-gray-500 line-through">${product.originalPrice}</span>
+                <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
                   Save ${(product.originalPrice - product.price).toFixed(2)}
                 </span>
               </div>
@@ -100,16 +101,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
           </div>
 
-          <div className="mb-6">
-            <p className="text-gray-700 leading-relaxed">{product.description}</p>
-          </div>
+          <p className="text-gray-700 leading-relaxed mb-6">{product.description}</p>
 
           {product.features && product.features.length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Features</h3>
               <ul className="list-disc list-inside space-y-1">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="text-gray-600">{feature}</li>
+                {product.features.map((feature, idx) => (
+                  <li key={idx} className="text-gray-600">{feature}</li>
                 ))}
               </ul>
             </div>
@@ -119,8 +118,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2">Compatibility</h3>
               <div className="flex flex-wrap gap-2">
-                {product.compatibility.map((platform, index) => (
-                  <span key={index} className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded">
+                {product.compatibility.map((platform, idx) => (
+                  <span key={idx} className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded">
                     {platform}
                   </span>
                 ))}
@@ -129,19 +128,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
 
           <div className="mb-6">
-            <div className="flex items-center">
-              {product.inStock ? (
-                <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded">
-                  In Stock
-                </span>
-              ) : (
-                <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded">
-                  Out of Stock
-                </span>
-              )}
-            </div>
+            <span
+              className={`text-sm font-medium px-3 py-1 rounded ${
+                product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}
+            >
+              {product.inStock ? 'In Stock' : 'Out of Stock'}
+            </span>
           </div>
 
+          {/* Client Component */}
           <AddToCartButton product={product} />
         </div>
       </div>
@@ -149,16 +145,39 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-// Generate static params for all products
+// Server function: generate static params for SSG
 export async function generateStaticParams() {
   const products = await getProducts();
-  
-  // Return empty array if no products to avoid build errors
-  if (!products || products.length === 0) {
-    return [];
-  }
-  
+
+  if (!products || products.length === 0) return [];
+
   return products.map((product) => ({
     slug: product.slug,
   }));
+}
+
+// Updated generateMetadata function with proper typing
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found - Quantum GameWare',
+    };
+  }
+
+  return {
+    title: `${product.name} - Quantum GameWare`,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: [product.image],
+    },
+  };
 }

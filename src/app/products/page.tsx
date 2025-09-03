@@ -1,4 +1,3 @@
-// src/app/products/page.tsx
 import { getProducts } from '@/sanity/lib/queries';
 import ProductGrid from '@/components/ProductGrid';
 import Link from 'next/link';
@@ -23,7 +22,7 @@ export default async function ProductsPage() {
           <div className="bg-gray-100 rounded-lg p-8 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">No Products Available</h2>
             <p className="text-gray-600 mb-6">
-              We couldn't find any products in our catalog.
+              We couldn&apos;t find any products in our catalog.
             </p>
             <Link
               href="/"

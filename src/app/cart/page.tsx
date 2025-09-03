@@ -1,5 +1,4 @@
-// src/app/cart/page.tsx
-'use client';
+"use client";
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -146,18 +145,18 @@ export default function CartPage() {
                               <button 
                                 onClick={() => updateQuantity(item._id, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
-                                className="px-4 py-3 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-3 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
                                 </svg>
                               </button>
-                              <div className="px-6 py-3 bg-white border-x border-gray-200 font-semibold text-lg min-w-[80px] text-center">
+                              <div className="px-6 py-3 bg-white border-x border-gray-200 font-semibold text-lg min-w-[80px] text-center text-gray-900">
                                 {item.quantity}
                               </div>
                               <button 
                                 onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                                className="px-4 py-3 hover:bg-gray-200 transition-colors"
+                                className="px-4 py-3 hover:bg-gray-200 transition-colors text-gray-700"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -302,203 +301,6 @@ export default function CartPage() {
                       Add
                     </button>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-                    // src/app/cart/page.tsx
-'use client';
-
-import Link from 'next/link';
-import Image from 'next/image';
-import { useCart } from '@/context/CartContext';
-
-export default function CartPage() {
-  const { items, removeFromCart, updateQuantity, getCartTotal } = useCart();
-
-  if (items.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center py-16">
-            <div className="bg-white rounded-3xl p-12 shadow-sm max-w-lg mx-auto">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-              <p className="text-gray-600 mb-8 text-lg">
-                Looks like you haven't added any items to your cart yet.
-              </p>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                </svg>
-                Continue Shopping
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
-          <p className="text-gray-600">Review your items and proceed to checkout</p>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {items.length} {items.length === 1 ? 'Item' : 'Items'} in Cart
-                </h2>
-              </div>
-              
-              <div className="divide-y divide-gray-100">
-                {items.map((item) => (
-                  <div key={item._id} className="p-6 hover:bg-gray-50 transition-colors">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      {/* Product Image */}
-                      <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl mx-auto sm:mx-0">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="flex-1 text-center sm:text-left">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4">
-                          <div>
-                            <h3 className="font-semibold text-lg text-gray-900 mb-1">
-                              <Link 
-                                href={`/products/${item.slug}`} 
-                                className="hover:text-blue-600 transition-colors"
-                              >
-                                {item.name}
-                              </Link>
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-2">{item.brand}</p>
-                            <p className="text-gray-500 text-sm">${item.price} each</p>
-                          </div>
-                          <div className="text-center sm:text-right mt-2 sm:mt-0">
-                            <p className="text-2xl font-bold text-gray-900">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Quantity Controls and Remove */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                          <div className="flex items-center justify-center sm:justify-start">
-                            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                              <button 
-                                onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                                className="px-4 py-2 hover:bg-gray-100 transition-colors"
-                                disabled={item.quantity <= 1}
-                              >
-                                -
-                              </button>
-                              <span className="px-4 py-2 bg-gray-50 font-medium min-w-[60px] text-center">
-                                {item.quantity}
-                              </span>
-                              <button 
-                                onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                                className="px-4 py-2 hover:bg-gray-100 transition-colors"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-
-                          <button 
-                            onClick={() => removeFromCart(item._id)}
-                            className="text-red-600 hover:text-red-700 font-medium text-sm transition-colors flex items-center justify-center sm:justify-start"
-                          >
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 sticky top-32">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
-              
-              <div className="space-y-4 mb-6">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal ({items.reduce((acc, item) => acc + item.quantity, 0)} items)</span>
-                  <span>${getCartTotal().toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="text-green-600 font-medium">Free</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax</span>
-                  <span>Calculated at checkout</span>
-                </div>
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total</span>
-                    <span className="text-2xl font-bold text-gray-900">
-                      ${getCartTotal().toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-4 rounded-2xl font-semibold mb-4 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
-                Proceed to Checkout
-              </button>
-              
-              <div className="text-center">
-                <Link
-                  href="/products"
-                  className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors inline-flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                  </svg>
-                  Continue Shopping
-                </Link>
-              </div>
-
-              {/* Security Badge */}
-              <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-                <div className="flex items-center justify-center text-gray-500 text-sm">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  Secure checkout
                 </div>
               </div>
             </div>

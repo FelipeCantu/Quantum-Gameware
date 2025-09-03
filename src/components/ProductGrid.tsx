@@ -1,5 +1,4 @@
-// src/components/ProductGrid.tsx
-'use client';
+"use client";
 
 import { Product } from '@/types';
 import ProductCard from './ui/ProductCard';

@@ -1,6 +1,4 @@
-// src/components/Cart.tsx
 'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
@@ -146,18 +144,18 @@ export default function Cart() {
                               <button 
                                 onClick={() => updateQuantity(item._id, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
-                                className="p-2 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="p-2 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
                                 </svg>
                               </button>
-                              <span className="px-3 py-2 text-sm font-semibold bg-white border-x border-gray-200 min-w-[50px] text-center">
+                              <span className="px-3 py-2 text-sm font-semibold bg-white border-x border-gray-200 min-w-[50px] text-center text-gray-900">
                                 {item.quantity}
                               </span>
                               <button 
                                 onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                                className="p-2 hover:bg-gray-200 transition-colors"
+                                className="p-2 hover:bg-gray-200 transition-colors text-gray-700"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
