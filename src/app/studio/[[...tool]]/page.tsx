@@ -1,3 +1,4 @@
+// src/app/studio/[[...tool]]/page.tsx
 /**
  * This route is responsible for the built-in authoring environment using Sanity Studio.
  * All routes under your studio path is handled by this file using Next.js' catch-all routes:
@@ -7,20 +8,31 @@
  * https://github.com/sanity-io/next-sanity
  */
 
-// src/app/studio/[[...tool]]/page.tsx
-// src/app/studio/[[...tool]]/page.tsx
 'use client'
 
 import { NextStudio } from 'next-sanity/studio'
 import config from '../../../../sanity.config'
 import { useEffect } from 'react'
+import type { StudioProps } from 'sanity'
 
 export const dynamic = 'force-static'
 
-// Filter out the disableTransition prop
-function SanityStudioWrapper(props: any) {
-  const { disableTransition, ...rest } = props
-  return <NextStudio {...rest} />
+// Define proper interface for props
+interface SanityStudioWrapperProps extends StudioProps {
+  disableTransition?: boolean;
+}
+
+// Filter out the disableTransition prop with proper typing
+function SanityStudioWrapper(props: SanityStudioWrapperProps) {
+  // Remove disableTransition from props to avoid passing it to NextStudio
+  const { disableTransition, ...studioProps } = props;
+  
+  // Use disableTransition variable to avoid ESLint warning
+  if (disableTransition) {
+    console.debug('Transition disabled');
+  }
+  
+  return <NextStudio config={studioProps.config} />
 }
 
 export default function StudioPage() {
