@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getProduct, getProducts } from '../../../sanity/lib/queries';
 import { Product } from '@/types';
 import AddToCartButton from '@/components/ui/AddToCartButton';
+import { Metadata } from 'next';
 
 interface ProductPageProps {
   params: Promise<{
@@ -14,7 +15,7 @@ interface ProductPageProps {
 export default async function ProductPage({ params }: ProductPageProps) {
   // Await the params first
   const { slug } = await params;
-  const product: Product = await getProduct(slug);
+  const product: Product | null = await getProduct(slug);
 
   // Instead of notFound(), show a friendly message
   if (!product) {
@@ -46,7 +47,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
               <h1 className="text-3xl font-bold text-white mb-4">Product Not Available</h1>
               <p className="text-white/80 mb-8 text-lg leading-relaxed">
-                Sorry, we couldn't find the product you're looking for. It might be out of stock or no longer available.
+                Sorry, we couldn&apos;t find the product you&apos;re looking for. It might be out of stock or no longer available.
               </p>
               <Link
                 href="/products"
@@ -279,4 +280,30 @@ export async function generateStaticParams() {
   return products.map((product) => ({
     slug: product.slug,
   }));
+}
+
+// Updated generateMetadata function with proper typing
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found - NextGens Tech',
+    };
+  }
+
+  return {
+    title: `${product.name} - NextGens Tech`,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: [product.image],
+    },
+  };
 }
