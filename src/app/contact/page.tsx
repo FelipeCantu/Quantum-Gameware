@@ -67,8 +67,8 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="text-xl text-white/80 max-w-3xl mx-auto">
-              Have questions about our products or need support? We're here to help! 
-              Reach out to our team and we'll get back to you as soon as possible.
+              Have questions about our products or need support? We&apos;re here to help! 
+              Reach out to our team and we&apos;ll get back to you as soon as possible.
             </p>
           </div>
 
@@ -177,11 +177,11 @@ export default function ContactPage() {
                   <div className="bg-green-500/20 border border-green-400/30 rounded-2xl p-6 mb-8">
                     <div className="flex items-center">
                       <svg className="w-6 h-6 text-green-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 01118 0z" />
                       </svg>
                       <div>
                         <h3 className="font-semibold text-green-200">Message Sent Successfully!</h3>
-                        <p className="text-green-300 text-sm mt-1">We'll get back to you within 24 hours.</p>
+                        <p className="text-green-300 text-sm mt-1">We&apos;ll get back to you within 24 hours.</p>
                       </div>
                     </div>
                   </div>
@@ -267,7 +267,7 @@ export default function ContactPage() {
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/30 rounded bg-white/10"
                     />
                     <label htmlFor="newsletter" className="text-sm text-white/80">
-                      I'd like to receive updates about new products and exclusive offers via email.
+                      I&apos;d like to receive updates about new products and exclusive offers via email.
                     </label>
                   </div>
 
@@ -311,7 +311,7 @@ export default function ContactPage() {
                 Frequently Asked Questions
               </h2>
               <p className="text-xl text-white/80 max-w-3xl mx-auto">
-                Find quick answers to common questions. Can't find what you're looking for? Contact us directly.
+                Find quick answers to common questions. Can&apos;t find what you&apos;re looking for? Contact us directly.
               </p>
             </div>
 
@@ -327,7 +327,7 @@ export default function ContactPage() {
                 },
                 {
                   question: "How can I track my order?",
-                  answer: "Once your order ships, you'll receive a tracking number via email. You can also check your order status in your account dashboard."
+                  answer: "Once your order ships, you&apos;ll receive a tracking number via email. You can also check your order status in your account dashboard."
                 },
                 {
                   question: "Do you offer warranty on products?",
