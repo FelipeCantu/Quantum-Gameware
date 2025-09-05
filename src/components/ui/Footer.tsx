@@ -1,3 +1,4 @@
+// src/components/ui/Footer.tsx
 "use client";
 
 import Link from 'next/link';
@@ -43,15 +44,8 @@ export default function Footer() {
               <Link href="/" className="flex items-center space-x-3 mb-6 group">
                 <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
-                    <Image
-                      src="/nextgens-logo.png"
-                      alt="Quantum Gameware Logo"
-                      fill
-                      className="object-contain p-1"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    {/* Fallback to text logo instead of image */}
+                    <div className="text-xl font-bold text-blue-600">QG</div>
                   </div>
                 </div>
                 <div>
@@ -97,9 +91,9 @@ export default function Footer() {
                   { label: 'Home', href: '/' },
                   { label: 'All Products', href: '/products' },
                   { label: 'Categories', href: '/categories' },
-                  { label: 'Featured Products', href: '/#featured' },
-                  { label: 'New Arrivals', href: '/products?filter=new' },
-                  { label: 'Sale Items', href: '/products?filter=sale' }
+                  { label: 'About Us', href: '/about' },
+                  { label: 'Help Center', href: '/help' },
+                  { label: 'Contact', href: '/contact' }
                 ].map((link) => (
                   <li key={link.href}>
                     <Link

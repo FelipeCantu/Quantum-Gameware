@@ -53,8 +53,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo Section */}
-          <div className="flex items-center flex-shrink-0">
+          {/* Logo Section - Better Mobile Alignment */}
+          <div className="flex items-center flex-shrink-0 min-w-0">
             <Link href="/" className="group flex items-center space-x-3 transition-transform hover:scale-105">
               <div className={`relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 ${
                 isScrolled 
@@ -75,15 +75,16 @@ export default function Header() {
                   />
                 </div>
               </div>
-              <div className="hidden sm:block">
-                <span className={`text-xl sm:text-2xl font-bold ${
+              {/* Text Logo - Improved Mobile Layout */}
+              <div className="hidden xs:block sm:block">
+                <span className={`text-lg sm:text-xl md:text-2xl font-bold leading-none ${
                   isScrolled 
                     ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'
                     : 'text-white'
                 }`}>
                   Quantum
                 </span>
-                <div className={`text-xs sm:text-sm font-medium -mt-1 ${
+                <div className={`text-xs sm:text-sm font-medium leading-none ${
                   isScrolled ? 'text-gray-600' : 'text-white/80'
                 }`}>
                   Gameware
@@ -127,7 +128,7 @@ export default function Header() {
             ))}
           </nav>
           
-          {/* Action Buttons */}
+          {/* Action Buttons - Better Mobile Alignment */}
           <div className="flex items-center space-x-2 flex-shrink-0">
             {/* Cart Button */}
             <button 
@@ -174,13 +175,13 @@ export default function Header() {
               )}
             </button>
             
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Improved Alignment */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`
                 md:hidden p-2.5 sm:p-3 rounded-xl transition-all duration-300
                 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2
-                active:scale-95 flex-shrink-0
+                active:scale-95 flex-shrink-0 flex items-center justify-center
                 ${isScrolled 
                   ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
                   : 'hover:bg-white/10'
@@ -189,7 +190,7 @@ export default function Header() {
               aria-label="Toggle navigation menu"
               aria-expanded={isMenuOpen}
             >
-              <div className="relative w-5 h-5 sm:w-6 sm:h-6">
+              <div className="relative w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center">
                 <span className={`
                   absolute h-0.5 w-full transform transition-all duration-300 ease-in-out
                   ${isMenuOpen ? 'rotate-45 translate-y-0' : '-translate-y-2'}
@@ -211,7 +212,7 @@ export default function Header() {
         </div>
       </div>
       
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Improved Layout */}
       <div className={`
         md:hidden overflow-hidden transition-all duration-500 ease-out
         ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
@@ -239,7 +240,7 @@ export default function Header() {
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="text-lg transition-transform duration-300">
+                    <span className="text-lg transition-transform duration-300 w-6 flex justify-center">
                       {link.icon}
                     </span>
                     <span>{link.label}</span>
