@@ -1,9 +1,7 @@
 // src/app/categories/[category]/page.tsx
 import { getProducts } from '@/sanity/lib/queries';
-import { Product } from '@/types';
 import ProductGrid from '@/components/ProductGrid';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
 interface CategoryPageProps {
   params: Promise<{
@@ -45,7 +43,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </div>
               <h1 className="text-3xl font-bold text-white mb-4">Category Not Found</h1>
               <p className="text-white/80 mb-8 text-lg leading-relaxed">
-                We couldn't find any products in the "{decodedCategory}" category.
+                We couldn&apos;t find any products in the &quot;{decodedCategory}&quot; category.
               </p>
               <div className="space-y-4">
                 <Link

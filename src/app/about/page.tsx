@@ -1,6 +1,5 @@
 // src/app/about/page.tsx
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -49,11 +48,11 @@ export default function AboutPage() {
               </h2>
               <p className="text-lg text-white/80 mb-6 leading-relaxed">
                 At Quantum Gameware, we believe every gamer deserves equipment that matches their passion and skill. 
-                We're dedicated to creating premium gaming accessories that don't just meet expectations—they exceed them.
+                We&apos;re dedicated to creating premium gaming accessories that don&apos;t just meet expectations—they exceed them.
               </p>
               <p className="text-lg text-white/80 mb-8 leading-relaxed">
                 From professional esports athletes to weekend warriors, our gear empowers gamers to perform at their peak, 
-                pushing the boundaries of what's possible in competitive gaming.
+                pushing the boundaries of what&apos;s possible in competitive gaming.
               </p>
               <div className="flex flex-wrap gap-4">
                 <div className="bg-blue-500/20 border border-blue-400/30 text-blue-300 px-4 py-2 rounded-full font-medium backdrop-blur-sm">
@@ -134,7 +133,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Innovation</h3>
                 <p className="text-white/80 leading-relaxed">
-                  We're constantly pushing boundaries, exploring new technologies and design concepts to stay ahead of the curve.
+                  We&apos;re constantly pushing boundaries, exploring new technologies and design concepts to stay ahead of the curve.
                 </p>
               </div>
 
@@ -158,7 +157,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Passion</h3>
                 <p className="text-white/80 leading-relaxed">
-                  We're gamers ourselves. Our passion for gaming drives everything we do, from concept to final product.
+                  We&apos;re gamers ourselves. Our passion for gaming drives everything we do, from concept to final product.
                 </p>
               </div>
             </div>
