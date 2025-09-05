@@ -99,7 +99,8 @@ export default function Header() {
               { href: '/', label: 'Home' },
               { href: '/products', label: 'Products' },
               { href: '/categories', label: 'Categories' },
-              { href: '/about', label: 'About' }
+              { href: '/about', label: 'About' },
+              { href: '/contact', label: 'Contact' } // 👈 Added Contact link here
             ].map((link) => (
               <Link
                 key={link.href}
@@ -224,7 +225,8 @@ export default function Header() {
                 { href: '/', label: 'Home', icon: '🏠' },
                 { href: '/products', label: 'Products', icon: '🎮' },
                 { href: '/categories', label: 'Categories', icon: '📁' },
-                { href: '/about', label: 'About', icon: '📖' }
+                { href: '/about', label: 'About', icon: '📖' },
+                { href: '/contact', label: 'Contact', icon: '✉️' } // 👈 Added Contact link here
               ].map((link, index) => (
                 <Link 
                   key={link.href}
