@@ -22,7 +22,7 @@ function groupProductsByCategory(products: Product[]) {
     name,
     products,
     count: products.length,
-    // Use first product's image as category image
+    // Use first product&apos;s image as category image
     image: products[0]?.image || '/placeholder-category.jpg'
   }));
 }
@@ -138,7 +138,7 @@ export default function CategoriesPage() {
                 </div>
                 <h3 className="text-2xl font-semibold text-white mb-3">No Categories Found</h3>
                 <p className="text-white/80 mb-6">
-                  We're setting up our product categories. Check back soon!
+                  We&apos;re setting up our product categories. Check back soon!
                 </p>
                 <Link
                   href="/products"
@@ -165,7 +165,8 @@ export default function CategoriesPage() {
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => {
-                          e.currentTarget.src = '/placeholder-category.jpg';
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-category.jpg';
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
@@ -224,7 +225,7 @@ export default function CategoriesPage() {
           {categories.length > 0 && (
             <div className="mt-20 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 lg:p-12 text-center">
               <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-white">
-                Can't Find What You're Looking For?
+                Can&apos;t Find What You&apos;re Looking For?
               </h2>
               <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
                 Browse our complete collection of gaming accessories and find your perfect setup.
@@ -242,46 +243,6 @@ export default function CategoriesPage() {
           )}
         </div>
       </div>
-
-      {/* Add CSS animations */}
-      <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 }
