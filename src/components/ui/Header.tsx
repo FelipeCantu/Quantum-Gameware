@@ -53,8 +53,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo Section - Better Mobile Alignment */}
-          <div className="flex items-center flex-shrink-0 min-w-0">
+          {/* Logo Section - Fixed positioning issue */}
+          <div className="flex items-center flex-shrink-0">
             <Link href="/" className="group flex items-center space-x-3 transition-transform hover:scale-105">
               <div className={`relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 ${
                 isScrolled 
@@ -67,7 +67,8 @@ export default function Header() {
                   <Image
                     src="/nextgens-logo.png"
                     alt="Quantum Gameware Logo"
-                    fill
+                    width={40}
+                    height={40}
                     className="object-contain p-1 transition-transform group-hover:scale-110"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
@@ -75,8 +76,8 @@ export default function Header() {
                   />
                 </div>
               </div>
-              {/* Text Logo - Improved Mobile Layout */}
-              <div className="hidden xs:block sm:block">
+              {/* Text Logo - Fixed mobile layout */}
+              <div className="hidden sm:block">
                 <span className={`text-lg sm:text-xl md:text-2xl font-bold leading-none ${
                   isScrolled 
                     ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'
@@ -100,7 +101,7 @@ export default function Header() {
               { href: '/products', label: 'Products' },
               { href: '/categories', label: 'Categories' },
               { href: '/about', label: 'About' },
-              { href: '/contact', label: 'Contact' } // 👈 Added Contact link here
+              { href: '/contact', label: 'Contact' }
             ].map((link) => (
               <Link
                 key={link.href}
@@ -129,8 +130,8 @@ export default function Header() {
             ))}
           </nav>
           
-          {/* Action Buttons - Better Mobile Alignment */}
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          {/* Action Buttons - Fixed alignment */}
+          <div className="flex items-center space-x-2">
             {/* Cart Button */}
             <button 
               onClick={toggleCart}
@@ -176,7 +177,7 @@ export default function Header() {
               )}
             </button>
             
-            {/* Mobile Menu Button - Improved Alignment */}
+            {/* Mobile Menu Button */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`
@@ -213,7 +214,7 @@ export default function Header() {
         </div>
       </div>
       
-      {/* Mobile Navigation - Improved Layout */}
+      {/* Mobile Navigation */}
       <div className={`
         md:hidden overflow-hidden transition-all duration-500 ease-out
         ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
@@ -226,7 +227,7 @@ export default function Header() {
                 { href: '/products', label: 'Products', icon: '🎮' },
                 { href: '/categories', label: 'Categories', icon: '📁' },
                 { href: '/about', label: 'About', icon: '📖' },
-                { href: '/contact', label: 'Contact', icon: '✉️' } // 👈 Added Contact link here
+                { href: '/contact', label: 'Contact', icon: '✉️' }
               ].map((link, index) => (
                 <Link 
                   key={link.href}
