@@ -43,14 +43,17 @@ function groupProductsByCategory(products: Product[]): CategoryGroup[] {
 export default function CategoriesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         const fetchedProducts: Product[] = await getProducts();
         setProducts(fetchedProducts);
+        setError(null);
       } catch (error) {
         console.error('Error fetching products:', error);
+        setError('Failed to load categories. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -61,8 +64,22 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-        {/* … loading UI unchanged … */}
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')] bg-cover bg-center opacity-10"></div>
+        <div className="relative z-10 pt-24 pb-16 flex items-center justify-center">
+          <div className="text-white text-xl">Loading categories...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')] bg-cover bg-center opacity-10"></div>
+        <div className="relative z-10 pt-24 pb-16 flex items-center justify-center">
+          <div className="text-white text-xl">{error}</div>
+        </div>
       </div>
     );
   }
@@ -70,23 +87,50 @@ export default function CategoriesPage() {
   const categories = groupProductsByCategory(products);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* background stuff unchanged */}
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')] bg-cover bg-center opacity-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80"></div>
+      
+      {/* Animated particles */}
+      <div className="absolute inset-0">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-blue-500 rounded-full opacity-50 animate-pulse"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${i * 0.1}s`,
+              animationDuration: `${2 + Math.random() * 2}s`
+            }}
+          />
+        ))}
+      </div>
 
       <div className="relative z-10 pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* header unchanged */}
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Product Categories
+            </h1>
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+              Explore our wide range of gaming products organized by category
+            </p>
+          </div>
 
           {categories.length === 0 ? (
-            /* … empty state unchanged … */
-            <div> … </div>
+            <div className="text-center py-12">
+              <div className="text-white text-xl mb-2">No categories found</div>
+              <p className="text-white/70">Please check back later</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {categories.map((category, index) => (
                 <div
                   key={category.name}
-                  className="group bg-white/10 backdrop-blur-lg rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden border border-white/20 hover:border-white/30 animate-fade-in hover:bg-white/20"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="group bg-white/10 backdrop-blur-lg rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden border border-white/20 hover:border-white/30"
                 >
                   <Link href={`/categories/${encodeURIComponent(category.name.toLowerCase())}`}>
                     <div className="relative h-64 bg-white/10 overflow-hidden">
@@ -95,6 +139,9 @@ export default function CategoriesPage() {
                         alt={category.name}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-category.jpg';
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
@@ -103,12 +150,20 @@ export default function CategoriesPage() {
                       </div>
                     </div>
 
-                    <div className="p-8">
+                    <div className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-2xl font-bold text-white group-hover:text-blue-300 transition-colors">
                           {category.name}
                         </h3>
-                        {/* arrow svg */}
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className="h-5 w-5 text-white/70 group-hover:text-white transition-colors" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                       </div>
 
                       <p className="text-white/80 mb-6 leading-relaxed">
@@ -138,7 +193,15 @@ export default function CategoriesPage() {
             </div>
           )}
 
-          {/* CTA unchanged */}
+          {/* CTA Section */}
+          <div className="text-center mt-16">
+            <Link
+              href="/products"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+            >
+              View All Products
+            </Link>
+          </div>
         </div>
       </div>
     </div>
