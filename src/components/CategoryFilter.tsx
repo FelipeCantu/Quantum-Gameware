@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '@/types';
 
-// Import categories with error handling
+// Import categories with error handling using dynamic import
 let categories: Array<{
   slug: string;
   name: string;
@@ -13,42 +13,47 @@ let categories: Array<{
 }> = [];
 
 try {
-  const categoriesModule = require('@/data/categories');
-  categories = categoriesModule.categories || [];
-} catch (error) {
+  // Use dynamic import instead of require
+  import('@/data/categories').then((categoriesModule) => {
+    categories = categoriesModule.categories || [];
+  }).catch(() => {
+    console.warn('Categories data not found, using fallback');
+  });
+} catch {
   console.warn('Categories data not found, using fallback');
-  // Fallback categories for build safety
-  categories = [
-    {
-      slug: 'keyboards',
-      name: 'Gaming Keyboards',
-      icon: '⌨️',
-      description: 'Mechanical keyboards for gaming',
-      priceRange: { min: 49, max: 299 }
-    },
-    {
-      slug: 'mice',
-      name: 'Gaming Mice',
-      icon: '🖱️',
-      description: 'High-precision gaming mice',
-      priceRange: { min: 29, max: 199 }
-    },
-    {
-      slug: 'headsets',
-      name: 'Gaming Headsets',
-      icon: '🎧',
-      description: 'Immersive gaming headsets',
-      priceRange: { min: 39, max: 399 }
-    },
-    {
-      slug: 'monitors',
-      name: 'Gaming Monitors',
-      icon: '🖥️',
-      description: 'High-refresh gaming monitors',
-      priceRange: { min: 199, max: 1299 }
-    }
-  ];
 }
+
+// Fallback categories for build safety
+const fallbackCategories = [
+  {
+    slug: 'keyboards',
+    name: 'Gaming Keyboards',
+    icon: '⌨️',
+    description: 'Mechanical keyboards for gaming',
+    priceRange: { min: 49, max: 299 }
+  },
+  {
+    slug: 'mice',
+    name: 'Gaming Mice',
+    icon: '🖱️',
+    description: 'High-precision gaming mice',
+    priceRange: { min: 29, max: 199 }
+  },
+  {
+    slug: 'headsets',
+    name: 'Gaming Headsets',
+    icon: '🎧',
+    description: 'Immersive gaming headsets',
+    priceRange: { min: 39, max: 399 }
+  },
+  {
+    slug: 'monitors',
+    name: 'Gaming Monitors',
+    icon: '🖥️',
+    description: 'High-refresh gaming monitors',
+    priceRange: { min: 199, max: 1299 }
+  }
+];
 
 interface CategoryFilterProps {
   products: Product[];
@@ -67,6 +72,20 @@ export default function CategoryFilter({
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('newest');
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [loadedCategories, setLoadedCategories] = useState(fallbackCategories);
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesModule = await import('@/data/categories');
+        setLoadedCategories(categoriesModule.categories || fallbackCategories);
+      } catch {
+        setLoadedCategories(fallbackCategories);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Ensure component is mounted before applying filters
   useEffect(() => {
@@ -78,18 +97,17 @@ export default function CategoryFilter({
     if (!products || products.length === 0) return [];
     try {
       return [...new Set(products.map(p => p?.brand).filter(Boolean))].sort();
-    } catch (error) {
-      console.warn('Error processing brands:', error);
+    } catch {
       return [];
     }
   }, [products]);
 
   // Memoize category filtering logic
   const filterByCategory = useCallback((productList: Product[], categorySlug?: string) => {
-    if (!categorySlug || !categories.length) return productList;
+    if (!categorySlug || !loadedCategories.length) return productList;
     
     try {
-      const categoryData = categories.find(c => c?.slug === categorySlug);
+      const categoryData = loadedCategories.find(c => c?.slug === categorySlug);
       if (!categoryData) return productList;
 
       return productList.filter(product => {
@@ -102,11 +120,10 @@ export default function CategoryFilter({
         return productCategory.includes(categoryWords[1] || categoryWords[0]) ||
                categoryName.includes(productCategory);
       });
-    } catch (error) {
-      console.warn('Error filtering by category:', error);
+    } catch {
       return productList;
     }
-  }, []);
+  }, [loadedCategories]);
 
   // Filter products based on all criteria
   const filterProducts = useCallback(() => {
@@ -174,8 +191,7 @@ export default function CategoryFilter({
       }
 
       onFilterChange(filtered);
-    } catch (error) {
-      console.warn('Error filtering products:', error);
+    } catch {
       onFilterChange(products || []);
     }
   }, [

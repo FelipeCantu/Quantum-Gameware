@@ -3,52 +3,37 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-// Import categories with error handling
-let categories: Array<{
-  slug: string;
-  name: string;
-  icon: string;
-  description: string;
-  priceRange: { min: number; max: number };
-}> = [];
-
-try {
-  const categoriesModule = require('@/data/categories');
-  categories = categoriesModule.categories || [];
-} catch (error) {
-  console.warn('Categories data not found, using fallback');
-  // Fallback categories for build safety
-  categories = [
-    {
-      slug: 'keyboards',
-      name: 'Gaming Keyboards',
-      icon: '⌨️',
-      description: 'Mechanical keyboards for gaming',
-      priceRange: { min: 49, max: 299 }
-    },
-    {
-      slug: 'mice',
-      name: 'Gaming Mice',
-      icon: '🖱️',
-      description: 'High-precision gaming mice',
-      priceRange: { min: 29, max: 199 }
-    },
-    {
-      slug: 'headsets',
-      name: 'Gaming Headsets',
-      icon: '🎧',
-      description: 'Immersive gaming headsets',
-      priceRange: { min: 39, max: 399 }
-    },
-    {
-      slug: 'monitors',
-      name: 'Gaming Monitors',
-      icon: '🖥️',
-      description: 'High-refresh gaming monitors',
-      priceRange: { min: 199, max: 1299 }
-    }
-  ];
-}
+// Fallback categories for build safety
+const fallbackCategories = [
+  {
+    slug: 'keyboards',
+    name: 'Gaming Keyboards',
+    icon: '⌨️',
+    description: 'Mechanical keyboards for gaming',
+    priceRange: { min: 49, max: 299 }
+  },
+  {
+    slug: 'mice',
+    name: 'Gaming Mice',
+    icon: '🖱️',
+    description: 'High-precision gaming mice',
+    priceRange: { min: 29, max: 199 }
+  },
+  {
+    slug: 'headsets',
+    name: 'Gaming Headsets',
+    icon: '🎧',
+    description: 'Immersive gaming headsets',
+    priceRange: { min: 39, max: 399 }
+  },
+  {
+    slug: 'monitors',
+    name: 'Gaming Monitors',
+    icon: '🖥️',
+    description: 'High-refresh gaming monitors',
+    priceRange: { min: 199, max: 1299 }
+  }
+];
 
 interface MegaMenuProps {
   isScrolled: boolean;
@@ -57,8 +42,22 @@ interface MegaMenuProps {
 export default function MegaMenu({ isScrolled }: MegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [categories, setCategories] = useState(fallbackCategories);
   const menuRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesModule = await import('@/data/categories');
+        setCategories(categoriesModule.categories || fallbackCategories);
+      } catch {
+        setCategories(fallbackCategories);
+      }
+    };
+    loadCategories();
+  }, []);
 
   // Ensure component is mounted before showing interactive elements
   useEffect(() => {

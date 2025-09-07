@@ -1,7 +1,7 @@
 // src/components/ui/SearchSuggestions.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { categories } from '@/data/categories';
 
@@ -22,8 +22,8 @@ interface Suggestion {
 export default function SearchSuggestions({ query, onClose }: SearchSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
-  // Sample popular searches and brands
-  const popularSearches = [
+  // Memoize static data to prevent dependency issues
+  const popularSearches = useMemo(() => [
     'gaming keyboard',
     'wireless mouse', 
     'RGB headset',
@@ -32,12 +32,12 @@ export default function SearchSuggestions({ query, onClose }: SearchSuggestionsP
     'gaming chair',
     'streaming microphone',
     'wireless controller'
-  ];
+  ], []);
 
-  const popularBrands = [
+  const popularBrands = useMemo(() => [
     'Corsair', 'Razer', 'Logitech', 'SteelSeries', 
     'HyperX', 'ASUS', 'Acer', 'Secretlab'
-  ];
+  ], []);
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -46,7 +46,7 @@ export default function SearchSuggestions({ query, onClose }: SearchSuggestionsP
         ...categories.slice(0, 6).map(cat => ({
           type: 'category' as const,
           title: cat.name,
-          subtitle: `From $${cat.priceRange.min}`,
+          subtitle: `From ${cat.priceRange.min}`,
           icon: cat.icon,
           href: `/categories/${cat.slug}`
         })),
