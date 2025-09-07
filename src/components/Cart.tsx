@@ -43,15 +43,15 @@ export default function Cart() {
         onClick={closeCart}
       />
 
-      {/* Cart panel */}
+      {/* Cart panel - NOW WITH PROPER SCROLLING */}
       <div className="fixed right-0 top-0 h-full w-full max-w-lg flex flex-col">
         <div className={`
-          bg-white h-full shadow-2xl transform transition-transform duration-300 ease-out
+          bg-white h-full shadow-2xl transform transition-transform duration-300 ease-out flex flex-col
           ${isAnimating ? 'translate-x-0' : 'translate-x-full'}
         `}>
           
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+          {/* Header - FIXED AT TOP */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50 flex-shrink-0">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Shopping Cart</h2>
               <p className="text-sm text-gray-600">
@@ -68,10 +68,10 @@ export default function Cart() {
             </button>
           </div>
 
-          {/* Cart content */}
-          <div className="flex-1 flex flex-col">
+          {/* MAIN CONTENT AREA - THIS IS WHERE SCROLLING HAPPENS */}
+          <div className="flex-1 flex flex-col min-h-0">
             {items.length === 0 ? (
-              /* Empty cart */
+              /* Empty cart - Centered content */
               <div className="flex-1 flex items-center justify-center p-6">
                 <div className="text-center max-w-sm">
                   <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
@@ -93,8 +93,8 @@ export default function Cart() {
               </div>
             ) : (
               <>
-                {/* Cart items */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {/* SCROLLABLE CART ITEMS - THIS IS THE KEY SCROLLING AREA */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                   {items.map((item, index) => (
                     <div 
                       key={item._id} 
@@ -140,22 +140,22 @@ export default function Cart() {
 
                           <div className="flex items-center justify-between">
                             {/* Quantity controls */}
-                            <div className="flex items-center bg-gray-50 rounded-xl overflow-hidden">
+                            <div className="flex items-center bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
                               <button 
                                 onClick={() => updateQuantity(item._id, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
-                                className="p-2 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700"
+                                className="px-3 py-2 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-700"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
                                 </svg>
                               </button>
-                              <span className="px-3 py-2 text-sm font-semibold bg-white border-x border-gray-200 min-w-[50px] text-center text-gray-900">
+                              <div className="px-4 py-2 bg-white border-x border-gray-200 font-semibold text-sm min-w-[60px] text-center text-gray-900">
                                 {item.quantity}
-                              </span>
+                              </div>
                               <button 
                                 onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                                className="p-2 hover:bg-gray-200 transition-colors text-gray-700"
+                                className="px-3 py-2 hover:bg-gray-200 transition-colors text-gray-700"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -179,8 +179,8 @@ export default function Cart() {
                   ))}
                 </div>
 
-                {/* Cart footer */}
-                <div className="border-t border-gray-100 bg-gray-50 p-6 space-y-4">
+                {/* FOOTER - FIXED AT BOTTOM */}
+                <div className="border-t border-gray-100 bg-gray-50 p-6 space-y-4 flex-shrink-0">
                   {/* Subtotal */}
                   <div className="flex justify-between items-center text-lg">
                     <span className="font-medium text-gray-900">Subtotal</span>
@@ -228,6 +228,32 @@ export default function Cart() {
           </div>
         </div>
       </div>
+
+      {/* CUSTOM SCROLLBAR STYLES - THIS MAKES THE SCROLLBAR LOOK GOOD */}
+      <style jsx global>{`
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+          border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #2563eb, #7c3aed);
+        }
+      `}</style>
     </div>
   );
 }

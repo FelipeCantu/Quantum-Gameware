@@ -1,7 +1,7 @@
-// src/components/ui/Footer.tsx
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function Footer() {
@@ -43,8 +43,21 @@ export default function Footer() {
               <Link href="/" className="flex items-center space-x-3 mb-6 group">
                 <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
-                    {/* Fallback to text logo instead of image */}
-                    <div className="text-xl font-bold text-blue-600">QG</div>
+                    <Image
+                      src="/nextgens-logo.png"
+                      alt="Quantum Gameware Logo"
+                      width={40}
+                      height={40}
+                      className="object-contain p-1 transition-transform group-hover:scale-110"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        // Show fallback text
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          parent.innerHTML = '<div class="text-xl font-bold text-blue-600">QG</div>';
+                        }
+                      }}
+                    />
                   </div>
                 </div>
                 <div>
