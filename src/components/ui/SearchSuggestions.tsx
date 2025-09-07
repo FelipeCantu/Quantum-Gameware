@@ -19,7 +19,7 @@ interface Suggestion {
   href: string;
 }
 
-export default function SearchSuggestions({ query, onSelect, onClose }: SearchSuggestionsProps) {
+export default function SearchSuggestions({ query, onClose }: SearchSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   // Sample popular searches and brands
@@ -107,7 +107,7 @@ export default function SearchSuggestions({ query, onSelect, onClose }: SearchSu
       });
 
     setSuggestions(filteredSuggestions.slice(0, 8));
-  }, [query]);
+  }, [query, popularSearches, popularBrands]);
 
   if (suggestions.length === 0) {
     return (
@@ -118,7 +118,7 @@ export default function SearchSuggestions({ query, onSelect, onClose }: SearchSu
           onClick={onClose}
           className="text-blue-600 hover:text-blue-700 font-medium"
         >
-          Search for "{query}"
+          Search for &quot;{query}&quot;
         </Link>
       </div>
     );
@@ -139,7 +139,7 @@ export default function SearchSuggestions({ query, onSelect, onClose }: SearchSu
               </svg>
             </div>
             <div>
-              <div className="font-medium text-gray-900">Search for "{query}"</div>
+              <div className="font-medium text-gray-900">Search for &quot;{query}&quot;</div>
               <div className="text-xs text-gray-500">Press Enter or click to search</div>
             </div>
           </Link>
@@ -195,7 +195,7 @@ export default function SearchSuggestions({ query, onSelect, onClose }: SearchSu
       {query.length < 2 && (
         <div className="p-3 border-t border-gray-100 bg-gray-50">
           <div className="text-xs text-gray-500 text-center">
-            💡 Tip: Try searching for "RGB keyboard" or "wireless mouse"
+            💡 Tip: Try searching for &quot;RGB keyboard&quot; or &quot;wireless mouse&quot;
           </div>
         </div>
       )}

@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 // Import categories with error handling
-let categories: any[] = [];
+let categories: Array<{
+  slug: string;
+  name: string;
+  icon: string;
+  description: string;
+  priceRange: { min: number; max: number };
+}> = [];
+
 try {
   const categoriesModule = require('@/data/categories');
   categories = categoriesModule.categories || [];

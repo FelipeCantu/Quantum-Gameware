@@ -2,7 +2,6 @@
 import { getProducts } from '@/sanity/lib/queries';
 import ProductGrid from '@/components/ProductGrid';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getCategoryBySlug, getAllCategorySlugs } from '@/data/categories';
 
 interface CategoryPageProps {

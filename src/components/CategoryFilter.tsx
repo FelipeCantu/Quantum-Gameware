@@ -4,7 +4,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '@/types';
 
 // Import categories with error handling
-let categories: any[] = [];
+let categories: Array<{
+  slug: string;
+  name: string;
+  icon: string;
+  description: string;
+  priceRange: { min: number; max: number };
+}> = [];
+
 try {
   const categoriesModule = require('@/data/categories');
   categories = categoriesModule.categories || [];
@@ -210,7 +217,7 @@ export default function CategoryFilter({
   }, []);
 
   const handlePriceRangeChange = useCallback((index: 0 | 1, value: string) => {
-    const numValue = parseInt(value);
+    const numValue = parseInt(value, 10);
     if (isNaN(numValue)) return;
 
     setPriceRange(prev => {
