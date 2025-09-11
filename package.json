@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:categories": "tsx scripts/migrate-categories.ts",
+    "migrate:brands": "tsx scripts/migrate-brands.ts",
+    "migrate:products": "tsx scripts/migrate-products.ts",
+    "migrate:all": "npm run migrate:categories && npm run migrate:brands"
   },
   "dependencies": {
     "@portabletext/react": "^4.0.2",
@@ -25,9 +29,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "tailwindcss": "^4",
+    "tsx": "^4.20.5",
     "typescript": "^5"
   }
 }
