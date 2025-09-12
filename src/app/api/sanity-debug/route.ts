@@ -82,7 +82,12 @@ export async function GET() {
   } catch (error) {
     console.error('Sanity diagnostic failed:', error)
     
-    let errorDetails: any = {
+    let errorDetails: {
+      name?: string;
+      message: string;
+      stack?: string;
+      suggestion?: string;
+    } = {
       message: 'Unknown error'
     }
     

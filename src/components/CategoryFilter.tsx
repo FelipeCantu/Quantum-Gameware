@@ -4,24 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Product } from '@/types';
 
 // Import categories with error handling using dynamic import
-let categories: Array<{
-  slug: string;
-  name: string;
-  icon: string;
-  description: string;
-  priceRange: { min: number; max: number };
-}> = [];
-
-try {
-  // Use dynamic import instead of require
-  import('@/data/categories').then((categoriesModule) => {
-    categories = categoriesModule.categories || [];
-  }).catch(() => {
-    console.warn('Categories data not found, using fallback');
-  });
-} catch {
-  console.warn('Categories data not found, using fallback');
-}
+// Note: Removed unused variable declaration
 
 // Fallback categories for build safety
 const fallbackCategories = [
