@@ -1,4 +1,3 @@
-// src/components/ui/Header.tsx
 "use client";
 
 import Link from 'next/link';
@@ -14,9 +13,11 @@ export default function Header() {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   
   const categoriesRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -36,13 +37,16 @@ export default function Header() {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
       }
+      if (mobileMenuRef.current && isMenuOpen && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [isMenuOpen]);
 
   // Close mobile menu when clicking outside or on escape
   useEffect(() => {
@@ -51,21 +55,27 @@ export default function Header() {
         setIsMenuOpen(false);
         setIsCategoriesOpen(false);
         setIsSearchOpen(false);
-      }
-    };
-    
-    const handleClickOutside = (e: MouseEvent) => {
-      if (isMenuOpen && !(e.target as Element).closest('header')) {
-        setIsMenuOpen(false);
+        setActiveSubmenu(null);
       }
     };
 
     document.addEventListener('keydown', handleEscape);
-    document.addEventListener('click', handleClickOutside);
     
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
     };
   }, [isMenuOpen]);
 
@@ -76,6 +86,10 @@ export default function Header() {
     if (searchQuery.trim()) {
       window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
     }
+  };
+
+  const toggleSubmenu = (menu: string) => {
+    setActiveSubmenu(activeSubmenu === menu ? null : menu);
   };
 
   return (
@@ -436,21 +450,46 @@ export default function Header() {
       </div>
       
       {/* Mobile Navigation */}
-      <div className={`
-        lg:hidden overflow-hidden transition-all duration-500 ease-out
-        ${isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}
-      `}>
-        <div className="bg-white/95 backdrop-blur-xl border-t border-gray-200/50 shadow-lg">
-          <nav className="px-4 py-4 max-w-7xl mx-auto">
+      <div 
+        ref={mobileMenuRef}
+        className={`
+          lg:hidden fixed inset-0 z-40 transition-all duration-500 ease-in-out
+          ${isMenuOpen 
+            ? 'opacity-100 visible translate-x-0' 
+            : 'opacity-0 invisible translate-x-full'
+          }
+        `}
+        style={{ top: isScrolled ? '64px' : '72px' }}
+      >
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+          onClick={() => setIsMenuOpen(false)}
+        />
+        
+        {/* Menu Content */}
+        <div className="absolute right-0 top-0 h-full w-80 bg-white/95 backdrop-blur-xl shadow-2xl overflow-y-auto">
+          <div className="p-6">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Close menu"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
             {/* Mobile Search */}
-            <div className="mb-4">
+            <div className="mb-6">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for gaming gear..."
-                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pl-10 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                 />
                 <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -458,66 +497,149 @@ export default function Header() {
               </form>
             </div>
 
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-1">
               {[
                 { href: '/', label: 'Home', icon: '🏠' },
                 { href: '/products', label: 'Products', icon: '🎮' },
-                { href: '/categories', label: 'Categories', icon: '📁' },
+                { 
+                  href: '/categories', 
+                  label: 'Categories', 
+                  icon: '📁',
+                  hasSubmenu: true,
+                  submenu: categories.slice(0, 6)
+                },
                 { href: '/about', label: 'About', icon: '📖' },
                 { href: '/contact', label: 'Contact', icon: '✉️' }
               ].map((link, index) => (
-                <Link 
-                  key={link.href}
-                  href={link.href} 
-                  className="
-                    flex items-center justify-between w-full px-4 py-3
-                    text-gray-700 hover:text-blue-600 
-                    transition-all duration-300 font-medium rounded-xl
-                    hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50
-                    hover:shadow-sm active:scale-95
-                  "
-                  onClick={() => setIsMenuOpen(false)}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg transition-transform duration-300 w-6 flex justify-center">
-                      {link.icon}
-                    </span>
-                    <span>{link.label}</span>
-                  </div>
-                  <svg 
-                    className="w-4 h-4 text-gray-400 transition-all duration-300" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              ))}
-              
-              {/* Mobile Categories */}
-              <div className="pt-4 border-t border-gray-200">
-                <div className="text-sm font-medium text-gray-500 px-4 py-2">Quick Categories</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {categories.slice(0, 6).map((category, index) => (
-                    <Link
-                      key={category.slug}
-                      href={`/categories/${category.slug}`}
+                <div key={link.href}>
+                  {link.hasSubmenu ? (
+                    <div>
+                      <button
+                        onClick={() => toggleSubmenu(link.label)}
+                        className="
+                          flex items-center justify-between w-full px-4 py-3
+                          text-gray-700 hover:text-blue-600 
+                          transition-all duration-300 font-medium rounded-xl
+                          hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50
+                          active:scale-95
+                        "
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span className="text-lg transition-transform duration-300 w-6 flex justify-center">
+                            {link.icon}
+                          </span>
+                          <span>{link.label}</span>
+                        </div>
+                        <svg 
+                          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${activeSubmenu === link.label ? 'rotate-180' : ''}`} 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      
+                      {/* Submenu */}
+                      <div className={`
+                        overflow-hidden transition-all duration-300 ease-in-out
+                        ${activeSubmenu === link.label ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+                      `}>
+                        <div className="pl-10 pr-4 py-1 space-y-1">
+                          {link.submenu.map((category, subIndex) => (
+                            <Link
+                              key={category.slug}
+                              href={`/categories/${category.slug}`}
+                              onClick={() => setIsMenuOpen(false)}
+                              className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                              style={{ animationDelay: `${(index + subIndex) * 50}ms` }}
+                            >
+                              <span className="text-lg mr-3">{category.icon}</span>
+                              <span className="text-gray-700">{category.name.split(' ')[1] || category.name}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link 
+                      href={link.href} 
+                      className="
+                        flex items-center justify-between w-full px-4 py-3
+                        text-gray-700 hover:text-blue-600 
+                        transition-all duration-300 font-medium rounded-xl
+                        hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50
+                        active:scale-95
+                      "
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex flex-col items-center p-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-colors"
-                      style={{ animationDelay: `${(5 + index) * 50}ms` }}
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <span className="text-2xl mb-1">{category.icon}</span>
-                      <span className="text-xs font-medium text-gray-700 text-center">
-                        {category.name.split(' ')[1] || category.name}
-                      </span>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg transition-transform duration-300 w-6 flex justify-center">
+                          {link.icon}
+                        </span>
+                        <span>{link.label}</span>
+                      </div>
+                      <svg 
+                        className="w-4 h-4 text-gray-400 transition-all duration-300" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </Link>
-                  ))}
+                  )}
                 </div>
+              ))}
+            </div>
+
+            {/* Quick Categories */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 px-2 mb-3">Popular Categories</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {categories.slice(0, 4).map((category, index) => (
+                  <Link
+                    key={category.slug}
+                    href={`/categories/${category.slug}`}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex flex-col items-center p-3 rounded-xl bg-gray-50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 hover:shadow-sm"
+                    style={{ animationDelay: `${(6 + index) * 50}ms` }}
+                  >
+                    <span className="text-2xl mb-1 transition-transform duration-300 hover:scale-110">
+                      {category.icon}
+                    </span>
+                    <span className="text-xs font-medium text-gray-700 text-center">
+                      {category.name.split(' ')[1] || category.name}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
-          </nav>
+
+            {/* Cart Summary */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  toggleCart();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center justify-between w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl hover:from-blue-100 hover:to-purple-100 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg">🛒</span>
+                  <span className="font-medium text-gray-700">Your Cart</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-blue-600">{cartCount} items</span>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
