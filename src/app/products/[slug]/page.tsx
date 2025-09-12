@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 Product Not Found
               </h1>
               <p className="text-white/80 mb-8">
-                Sorry, we couldn't find the product you're looking for.
+                Sorry, we couldn&apos;t find the product you&apos;re looking for.
               </p>
               <div className="space-y-3">
                 <Link
