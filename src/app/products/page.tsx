@@ -66,7 +66,7 @@ export default async function ProductsPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">No Products Available</h2>
                 <p className="text-gray-500 mb-6">
-                  We couldn't find any products in our catalog. Check back soon for new gaming gear!
+                  We couldn&apos;t find any products in our catalog. Check back soon for new gaming gear!
                 </p>
                 <Link
                   href="/"

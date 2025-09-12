@@ -49,7 +49,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">Category Not Found</h1>
                 <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-                  We couldn't find the category you're looking for.
+                  We couldn&apos;t find the category you&apos;re looking for.
                 </p>
                 <div className="space-y-4">
                   <Link
@@ -237,7 +237,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 <div className="text-6xl mb-6">{categoryData.icon}</div>
                 <h3 className="text-2xl font-semibold text-gray-900 mb-3">No Products Yet</h3>
                 <p className="text-gray-600 mb-6">
-                  We're working on adding {categoryData.name.toLowerCase()} to our catalog. Check back soon!
+                  We&apos;re working on adding {categoryData.name.toLowerCase()} to our catalog. Check back soon!
                 </p>
                 <Link
                   href="/categories"

@@ -6,7 +6,6 @@ import { getProducts } from '@/sanity/lib/queries';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { categories } from '@/data/categories';
-import ProductGrid from '@/components/ProductGrid';
 
 // Group products by category
 function groupProductsByCategory(products: Product[]) {
@@ -306,7 +305,7 @@ export default function CategoriesPage() {
           {/* Featured Categories CTA */}
           <div className="bg-white rounded-3xl border border-gray-100 p-8 lg:p-12 text-center shadow-sm">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-gray-900">
-              Can't Find What You're Looking For?
+              Can&apos;t Find What You&apos;re Looking For?
             </h2>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               Browse our complete collection of gaming accessories and find your perfect setup.
