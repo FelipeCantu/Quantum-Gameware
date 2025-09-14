@@ -18,6 +18,7 @@ export default function Header() {
   const categoriesRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -70,12 +71,16 @@ export default function Header() {
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
     }
     
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
     };
   }, [isMenuOpen]);
 
@@ -90,6 +95,10 @@ export default function Header() {
 
   const toggleSubmenu = (menu: string) => {
     setActiveSubmenu(activeSubmenu === menu ? null : menu);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
   };
 
   return (
@@ -459,21 +468,22 @@ export default function Header() {
             : 'opacity-0 invisible translate-x-full'
           }
         `}
-        style={{ top: isScrolled ? '64px' : '72px' }}
+        style={{ top: 0 }}
       >
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-          onClick={() => setIsMenuOpen(false)}
+          onClick={closeMenu}
         />
         
         {/* Menu Content */}
         <div className="absolute right-0 top-0 h-full w-80 bg-white/95 backdrop-blur-xl shadow-2xl overflow-y-auto">
-          <div className="p-6">
-            {/* Close Button */}
+          <div className="p-6 relative">
+            {/* Close Button - Fixed positioning */}
             <button
-              onClick={() => setIsMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              ref={closeButtonRef}
+              onClick={closeMenu}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
               aria-label="Close menu"
             >
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,8 +491,8 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Mobile Search */}
-            <div className="mb-6">
+            {/* Mobile Search - Added margin top to make space for close button */}
+            <div className="mb-6 mt-10">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
@@ -551,7 +561,7 @@ export default function Header() {
                             <Link
                               key={category.slug}
                               href={`/categories/${category.slug}`}
-                              onClick={() => setIsMenuOpen(false)}
+                              onClick={closeMenu}
                               className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                               style={{ animationDelay: `${(index + subIndex) * 50}ms` }}
                             >
@@ -572,7 +582,7 @@ export default function Header() {
                         hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50
                         active:scale-95
                       "
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={closeMenu}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <div className="flex items-center space-x-3">
@@ -603,7 +613,7 @@ export default function Header() {
                   <Link
                     key={category.slug}
                     href={`/categories/${category.slug}`}
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={closeMenu}
                     className="flex flex-col items-center p-3 rounded-xl bg-gray-50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300 hover:shadow-sm"
                     style={{ animationDelay: `${(6 + index) * 50}ms` }}
                   >
@@ -623,7 +633,7 @@ export default function Header() {
               <button
                 onClick={() => {
                   toggleCart();
-                  setIsMenuOpen(false);
+                  closeMenu();
                 }}
                 className="flex items-center justify-between w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl hover:from-blue-100 hover:to-purple-100 transition-colors"
               >
@@ -634,7 +644,7 @@ export default function Header() {
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium text-blue-600">{cartCount} items</span>
                   <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7-7" />
                   </svg>
                 </div>
               </button>
