@@ -110,7 +110,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="absolute bottom-1/4 left-1/3 w-32 h-32 md:w-64 md:h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-[blob_7s_infinite] [animation-delay:4s]"></div>
         </div>
 
-        <div className="relative z-10 pt-16 pb-8 md:pt-20 md:pb-12 lg:pt-24 lg:pb-16">
+        <div className="relative z-10 pt-24 pb-8 md:pt-28 md:pb-12 lg:pt-32 lg:pb-16">
           {/* Enhanced Responsive Breadcrumb */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 md:mb-6 lg:mb-8">
             <Breadcrumb product={product} />
