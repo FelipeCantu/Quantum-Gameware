@@ -17,11 +17,11 @@ export function useDynamicTheme(isScrolled: boolean) {
     
     if (isScrolled) {
       // White when header is scrolled/white
-      themeColorMeta.content = '#ffffff';
+      themeColorMeta.content = '#f6f4f9';
     } else {
       // Gradient color when header is transparent over hero
       // Using a representative color from your blue-purple gradient
-      themeColorMeta.content = '#6366f1'; // Indigo-500 from your gradient
+      themeColorMeta.content = '#23378e'; // Indigo-500 from your gradient
     }
   }, [isScrolled]);
 }

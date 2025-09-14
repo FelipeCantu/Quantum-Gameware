@@ -33,7 +33,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   // Start with gradient color, will be dynamically updated
-  themeColor: '#6366f1', // Indigo from your gradient as default
+  themeColor: '#23378e', // Indigo from your gradient as default
 };
 
 export default function RootLayout({
