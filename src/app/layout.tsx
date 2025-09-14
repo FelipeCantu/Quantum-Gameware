@@ -11,12 +11,13 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Quantum Gameware - Premium Gaming Accessories',
   description: 'High-quality gaming accessories for professional gamers',
-  manifest: '/site.webmanifest', // Use the generated manifest
+  manifest: '/site.webmanifest',
   icons: {
     icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' }, // SVG first for modern browsers
       { url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
     ],
     apple: [
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
@@ -31,7 +32,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#3b82f6',
+  // Start with gradient color, will be dynamically updated
+  themeColor: '#6366f1', // Indigo from your gradient as default
 };
 
 export default function RootLayout({
@@ -42,13 +44,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        {/* Complete favicon setup with all generated files */}
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        {/* SVG favicon for scalable, larger display */}
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-        <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${inter.className} antialiased`}>

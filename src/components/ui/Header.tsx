@@ -7,10 +7,37 @@ import DesktopNavigation from './DesktopNavigation';
 import ActionButtons from './ActionButtons';
 import MobileMenu from './MobileMenu';
 
+// Dynamic theme color hook
+function useDynamicTheme(isScrolled: boolean) {
+  useEffect(() => {
+    // Update theme color based on scroll state
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+    
+    if (!themeColorMeta) {
+      // Create meta tag if it doesn't exist
+      themeColorMeta = document.createElement('meta');
+      themeColorMeta.name = 'theme-color';
+      document.getElementsByTagName('head')[0].appendChild(themeColorMeta);
+    }
+    
+    if (isScrolled) {
+      // White when header is scrolled/white
+      themeColorMeta.content = '#ffffff';
+    } else {
+      // Gradient color when header is transparent over hero
+      // Using a representative color from your blue-purple gradient
+      themeColorMeta.content = '#6366f1'; // Indigo-500 from your gradient
+    }
+  }, [isScrolled]);
+}
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scrollPositionRef = useRef(0);
+
+  // Enable dynamic theme color that matches header state
+  useDynamicTheme(isScrolled);
 
   // Handle scroll effect for navbar
   useEffect(() => {
