@@ -1,5 +1,7 @@
 // src/app/about/page.tsx
 import Link from 'next/link';
+import Image from 'next/image';
+import qgMascot from '../../../public/qg-axolotl.png'
 
 export default function AboutPage() {
   return (
@@ -47,11 +49,11 @@ export default function AboutPage() {
                 Our Mission
               </h2>
               <p className="text-lg text-white/80 mb-6 leading-relaxed">
-                At Quantum Gameware, we believe every gamer deserves equipment that matches their passion and skill. 
+                At Quantum Gameware, we believe every gamer deserves equipment that matches their passion and skill.
                 We&apos;re dedicated to creating premium gaming accessories that don&apos;t just meet expectations—they exceed them.
               </p>
               <p className="text-lg text-white/80 mb-8 leading-relaxed">
-                From professional esports athletes to weekend warriors, our gear empowers gamers to perform at their peak, 
+                From professional esports athletes to weekend warriors, our gear empowers gamers to perform at their peak,
                 pushing the boundaries of what&apos;s possible in competitive gaming.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -66,14 +68,50 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 h-96 flex items-center justify-center">
-                <div className="w-full h-full bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <svg className="w-32 h-32 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
+            <div className="relative group">
+              {/* Enhanced mascot display with multiple visual layers */}
+              <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 h-96 flex items-center justify-center overflow-hidden hover:border-white/30 transition-all duration-500">
+                {/* Animated background elements */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-indigo-500/10"></div>
+                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-purple-400/20 rounded-full blur-xl animate-pulse animation-delay-1000"></div>
+                
+                {/* Mascot container with enhanced styling */}
+                <div className="relative z-10 w-full h-full flex items-center justify-center">
+                  <div className="relative group-hover:scale-105 transition-transform duration-500 ease-out">
+                    {/* Glow effect behind the mascot */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-purple-400/30 rounded-full blur-3xl scale-110 opacity-60 animate-pulse"></div>
+                    
+                    {/* Main mascot image */}
+                    <div className="relative bg-white/20 backdrop-blur-sm rounded-3xl p-6 border border-white/30">
+                      <Image
+                        src={qgMascot}
+                        alt="Quantum Gameware Mascot - Your Gaming Companion"
+                        width={240}
+                        height={240}
+                        className="w-60 h-60 object-contain drop-shadow-2xl"
+                        priority
+                        placeholder="blur"
+                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2Lm4dCBvvaTVPPqwu2EhJYd6VeCN5CRlc1vMkqy2hMz3Jj3uOfUNLKBANdGJNGbadqD/q6WZ4HWjnhVCCk9C"
+                      />
+                      
+                      {/* Subtle decorative elements */}
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-80 animate-ping"></div>
+                      <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-gradient-to-br from-green-400 to-blue-500 rounded-full opacity-60 animate-pulse animation-delay-2000"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating particles effect */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute top-1/4 left-1/3 w-2 h-2 bg-blue-300/60 rounded-full animate-float"></div>
+                  <div className="absolute top-3/4 right-1/3 w-1 h-1 bg-purple-300/60 rounded-full animate-float animation-delay-3000"></div>
+                  <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-indigo-300/60 rounded-full animate-float animation-delay-1500"></div>
                 </div>
               </div>
+              
+              {/* Additional glow effect outside the container */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-3xl blur-xl scale-105 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
             </div>
           </div>
 
@@ -205,14 +243,14 @@ export default function AboutPage() {
                   avatar: "AC"
                 },
                 {
-                  name: "Sarah Johnson", 
+                  name: "Sarah Johnson",
                   role: "Head of Design",
                   bio: "Award-winning product designer with a passion for ergonomics",
                   avatar: "SJ"
                 },
                 {
                   name: "Marcus Rodriguez",
-                  role: "Lead Engineer", 
+                  role: "Lead Engineer",
                   bio: "Hardware specialist focused on cutting-edge gaming technology",
                   avatar: "MR"
                 }
@@ -235,7 +273,7 @@ export default function AboutPage() {
               Ready to Level Up Your Game?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of gamers who trust Quantum Gameware for their competitive edge. 
+              Join thousands of gamers who trust Quantum Gameware for their competitive edge.
               Explore our premium collection today.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
