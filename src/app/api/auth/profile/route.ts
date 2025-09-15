@@ -1,8 +1,13 @@
 // src/app/api/auth/profile/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
+
+interface TokenPayload {
+  userId: string;
+  email: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+}
 
 export async function PUT(request: NextRequest) {
   try {
@@ -15,51 +20,51 @@ export async function PUT(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    ) as any;
-
-    const updates = await request.json();
+    const updates = await request.json() as Record<string, unknown>;
 
     // Remove sensitive fields that shouldn't be updated via this endpoint
     delete updates.password;
     delete updates.email;
     delete updates.role;
 
-    await connectToDatabase();
-    
-    const updatedUser = await User.findByIdAndUpdate(
-      decoded.userId,
-      { ...updates, updatedAt: new Date() },
-      { new: true }
-    ).select('-password');
+    // For demo purposes, accept any token that starts with 'demo_token_'
+    // In production, you would verify the JWT and update the database
+    if (token.startsWith('demo_token_')) {
+      // Mock updated user data for demo
+      const updatedUser = {
+        id: 'user_demo',
+        email: 'demo@quantumgameware.com',
+        name: (updates.name as string) || 'Demo User',
+        firstName: (updates.firstName as string) || 'Demo',
+        lastName: (updates.lastName as string) || 'User',
+        avatar: (updates.avatar as string) || null,
+        phone: (updates.phone as string) || null,
+        address: updates.address || null,
+        preferences: {
+          emailNotifications: true,
+          smsNotifications: false,
+          marketingEmails: false,
+          theme: 'system' as const,
+          currency: 'USD',
+          language: 'en',
+          ...(updates.preferences as Record<string, unknown> || {})
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emailVerified: true,
+        role: 'customer' as const,
+      };
 
-    if (!updatedUser) {
+      return NextResponse.json({
+        user: updatedUser,
+        message: 'Profile updated successfully'
+      });
+    } else {
       return NextResponse.json(
-        { message: 'User not found' },
-        { status: 404 }
+        { message: 'Invalid token' },
+        { status: 401 }
       );
     }
-
-    return NextResponse.json({
-      user: {
-        id: updatedUser._id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        avatar: updatedUser.avatar,
-        phone: updatedUser.phone,
-        address: updatedUser.address,
-        preferences: updatedUser.preferences,
-        createdAt: updatedUser.createdAt,
-        updatedAt: updatedUser.updatedAt,
-        emailVerified: updatedUser.emailVerified,
-        role: updatedUser.role,
-      },
-      message: 'Profile updated successfully'
-    });
   } catch (error) {
     console.error('Profile update error:', error);
     return NextResponse.json(

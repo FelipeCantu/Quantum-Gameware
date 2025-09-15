@@ -104,7 +104,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const parsedUser = JSON.parse(userData);
             setUser(parsedUser);
             setIsAuthenticated(true);
-          } catch (parseError) {
+          } catch {
             // Invalid JSON data, clear storage
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
