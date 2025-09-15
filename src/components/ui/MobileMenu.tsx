@@ -19,17 +19,17 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const cartCount = getCartCount();
 
-  // Improved close menu handler with better event handling
-  const handleCloseMenu = (e?: React.MouseEvent) => {
+  // Improved close menu handler
+  const handleCloseMenu = (e?: React.MouseEvent | React.KeyboardEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    closeMenu(); // Use the prop function instead of setIsMenuOpen
-    setActiveSubmenu(null); // Reset submenu state
+    closeMenu();
+    setActiveSubmenu(null);
   };
 
-  // Handle escape key and prevent event bubbling issues
+  // Handle escape key and click outside
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isMenuOpen) {
@@ -39,11 +39,15 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     };
 
     const handleClickOutside = (e: MouseEvent) => {
-      // Only close if clicking outside the menu content
+      const target = e.target as Node;
+      
+      // Only close if clicking on the backdrop, not the menu content
       if (
         isMenuOpen && 
         mobileMenuRef.current && 
-        !mobileMenuRef.current.contains(e.target as Node)
+        !mobileMenuRef.current.contains(target) &&
+        // Make sure we're clicking on the backdrop div specifically
+        (target as Element)?.classList?.contains('mobile-menu-backdrop')
       ) {
         handleCloseMenu();
       }
@@ -51,23 +55,26 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
 
     if (isMenuOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      // Add a small delay to prevent immediate closing from the same click that opened it
+      // Add small delay to prevent immediate closing
       const timeoutId = setTimeout(() => {
         document.addEventListener('click', handleClickOutside);
       }, 100);
 
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
         document.removeEventListener('click', handleClickOutside);
+        document.body.style.overflow = 'unset';
         clearTimeout(timeoutId);
       };
     }
   }, [isMenuOpen]);
 
-  // Focus management for better accessibility
+  // Focus management
   useEffect(() => {
     if (isMenuOpen && closeButtonRef.current) {
-      // Focus the close button when menu opens
       closeButtonRef.current.focus();
     }
   }, [isMenuOpen]);
@@ -80,50 +87,57 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     }
   };
 
-  const toggleSubmenu = (menu: string) => {
+  const toggleSubmenu = (menu: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setActiveSubmenu(activeSubmenu === menu ? null : menu);
   };
 
-  const mobileMenuButtonClasses = 'flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 backdrop-blur-sm active:scale-95 group';
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // Don't prevent default - let Next.js handle the navigation
+    // Just close the menu after a small delay to allow navigation
+    setTimeout(() => {
+      handleCloseMenu();
+    }, 50);
+  };
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleCart();
+    handleCloseMenu();
+  };
+
+  if (!isMenuOpen) {
+    return null; // Don't render anything when closed
+  }
 
   return (
-    <div className={`lg:hidden fixed inset-0 z-[60] transition-all duration-300 ease-out ${
-      isMenuOpen 
-        ? 'opacity-100 visible' 
-        : 'opacity-0 invisible pointer-events-none'
-    }`}>
-      {/* Backdrop - clicking this will close the menu */}
+    <div className="lg:hidden fixed inset-0 z-[60] transition-all duration-300 ease-out">
+      {/* Backdrop */}
       <div 
-        className={`absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 transition-all duration-500 ease-out ${
-          isMenuOpen ? 'scale-100 opacity-100' : 'scale-110 opacity-0'
-        }`}
+        className="mobile-menu-backdrop absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900"
         onClick={handleCloseMenu}
         aria-label="Close menu"
       >
         {/* Animated pattern overlay */}
         <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-        <div className={`absolute inset-0 opacity-10 transition-all duration-1000 pointer-events-none ${
-          isMenuOpen ? 'animate-pulse' : ''
-        }`}>
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/5 rounded-full blur-3xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }} />
           <div className="absolute top-40 right-20 w-24 h-24 bg-blue-300/10 rounded-full blur-2xl animate-bounce" style={{ animationDelay: '1s', animationDuration: '4s' }} />
           <div className="absolute bottom-40 left-20 w-40 h-40 bg-purple-300/5 rounded-full blur-3xl animate-bounce" style={{ animationDelay: '2s', animationDuration: '5s' }} />
         </div>
       </div>
       
-      {/* Menu Content - prevent click events from bubbling to backdrop */}
+      {/* Menu Content */}
       <div 
         ref={mobileMenuRef}
-        className={`relative h-full w-full overflow-y-auto transition-all duration-400 ease-out ${
-          isMenuOpen 
-            ? 'translate-y-0 opacity-100' 
-            : '-translate-y-8 opacity-0'
-        }`}
-        onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to backdrop
+        className="relative h-full w-full overflow-y-auto bg-transparent"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with Logo and Improved Close Button */}
+        {/* Header with Logo and Close Button */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <Link href="/" onClick={handleCloseMenu} className="flex items-center space-x-3 group">
+          <Link href="/" onClick={handleLinkClick} className="flex items-center space-x-3 group">
             <div className="relative w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <div className="w-full h-full bg-white rounded-lg flex items-center justify-center overflow-hidden">
                 {!logoError ? (
@@ -147,47 +161,23 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
             </div>
           </Link>
           
-          {/* Improved Close Button */}
+          {/* Close Button */}
           <button
             ref={closeButtonRef}
             type="button"
             onClick={handleCloseMenu}
-            className="
-              relative p-4 rounded-2xl bg-white/10 hover:bg-white/20 
-              transition-all duration-300 active:scale-90 focus:outline-none 
-              focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent
-              border border-white/20 hover:border-white/30
-              group min-w-[48px] min-h-[48px] flex items-center justify-center
-            "
+            className="relative p-4 rounded-2xl bg-white/10 hover:bg-white/20 transition-all duration-300 active:scale-90 focus:outline-none focus:ring-2 focus:ring-white/30 border border-white/20 hover:border-white/30 group min-w-[48px] min-h-[48px] flex items-center justify-center"
             aria-label="Close navigation menu"
-            tabIndex={0}
           >
-            {/* Enhanced X icon with better visual feedback */}
             <div className="relative w-6 h-6 flex items-center justify-center">
-              <span className="
-                absolute w-5 h-0.5 bg-white rounded-full transform rotate-45 
-                transition-all duration-300 group-hover:w-6 group-hover:bg-red-200
-                group-active:scale-90
-              " />
-              <span className="
-                absolute w-5 h-0.5 bg-white rounded-full transform -rotate-45 
-                transition-all duration-300 group-hover:w-6 group-hover:bg-red-200
-                group-active:scale-90
-              " />
+              <span className="absolute w-5 h-0.5 bg-white rounded-full transform rotate-45 transition-all duration-300 group-hover:w-6 group-hover:bg-red-200" />
+              <span className="absolute w-5 h-0.5 bg-white rounded-full transform -rotate-45 transition-all duration-300 group-hover:w-6 group-hover:bg-red-200" />
             </div>
-            
-            {/* Ripple effect on click */}
-            <span className="
-              absolute inset-0 rounded-2xl bg-white/20 scale-0 
-              group-active:scale-100 transition-transform duration-150 ease-out
-            " />
           </button>
         </div>
 
         {/* Search Section */}
-        <div className={`p-6 transition-all duration-500 ease-out ${
-          isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
-        }`} style={{ transitionDelay: '100ms' }}>
+        <div className="p-6">
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
@@ -214,31 +204,24 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
         <div className="px-6 pb-6">
           <nav className="space-y-2">
             {[
-              { href: '/', label: 'Home', icon: '🏠', delay: '200ms' },
-              { href: '/products', label: 'Products', icon: '🎮', delay: '250ms' },
+              { href: '/', label: 'Home', icon: '🏠' },
+              { href: '/products', label: 'Products', icon: '🎮' },
               { 
                 href: '/categories', 
                 label: 'Categories', 
                 icon: '📁',
-                delay: '300ms',
                 hasSubmenu: true,
                 submenu: categories.slice(0, 8)
               },
-              { href: '/about', label: 'About', icon: '📖', delay: '350ms' },
-              { href: '/contact', label: 'Contact', icon: '✉️', delay: '400ms' }
+              { href: '/about', label: 'About', icon: '📖' },
+              { href: '/contact', label: 'Contact', icon: '✉️' }
             ].map((link) => (
-              <div 
-                key={link.href}
-                className={`transition-all duration-500 ease-out ${
-                  isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0'
-                }`}
-                style={{ transitionDelay: link.delay }}
-              >
+              <div key={link.href}>
                 {link.hasSubmenu ? (
                   <div>
                     <button
-                      onClick={() => toggleSubmenu(link.label)}
-                      className={mobileMenuButtonClasses}
+                      onClick={(e) => toggleSubmenu(link.label, e)}
+                      className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 backdrop-blur-sm active:scale-95 group"
                     >
                       <div className="flex items-center space-x-4">
                         <span className="text-2xl transition-transform duration-300 group-hover:scale-110">
@@ -262,15 +245,12 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                     }`}>
                       <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 ml-4 border border-white/10">
                         <div className="grid grid-cols-2 gap-3">
-                          {link.submenu?.map((category, subIndex) => (
+                          {link.submenu?.map((category) => (
                             <Link
                               key={category.slug}
                               href={`/categories/${category.slug}`}
-                              onClick={handleCloseMenu}
-                              className={`flex flex-col items-center p-4 rounded-xl hover:bg-white/10 transition-all duration-300 group border border-white/5 hover:border-white/20 ${
-                                isMenuOpen ? 'animate-fade-in' : ''
-                              }`}
-                              style={{ animationDelay: `${subIndex * 100}ms` }}
+                              onClick={handleLinkClick}
+                              className="flex flex-col items-center p-4 rounded-xl hover:bg-white/10 transition-all duration-300 group border border-white/5 hover:border-white/20"
                             >
                               <span className="text-2xl mb-2 transition-transform duration-300 group-hover:scale-110">
                                 {category.icon}
@@ -286,7 +266,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                         </div>
                         <Link
                           href="/categories"
-                          onClick={handleCloseMenu}
+                          onClick={handleLinkClick}
                           className="flex items-center justify-center w-full mt-4 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-300 font-medium group"
                         >
                           View All Categories
@@ -300,8 +280,8 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                 ) : (
                   <Link 
                     href={link.href} 
-                    className={mobileMenuButtonClasses}
-                    onClick={handleCloseMenu}
+                    onClick={handleLinkClick}
+                    className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 backdrop-blur-sm active:scale-95 group"
                   >
                     <div className="flex items-center space-x-4">
                       <span className="text-2xl transition-transform duration-300 group-hover:scale-110">
@@ -324,16 +304,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
           </nav>
 
           {/* Quick Actions */}
-          <div className={`mt-8 pt-6 border-t border-white/20 transition-all duration-500 ease-out ${
-            isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-          }`} style={{ transitionDelay: '500ms' }}>
+          <div className="mt-8 pt-6 border-t border-white/20">
             <h3 className="text-white/80 text-sm font-semibold mb-4 px-2">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => {
-                  toggleCart();
-                  handleCloseMenu();
-                }}
+                onClick={handleCartClick}
                 className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20"
               >
                 <div className="relative">
@@ -352,7 +327,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               
               <Link
                 href="/account"
-                onClick={handleCloseMenu}
+                onClick={handleLinkClick}
                 className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20"
               >
                 <svg className="w-6 h-6 text-white mb-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,20 +340,15 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
           </div>
 
           {/* Featured Categories */}
-          <div className={`mt-8 pt-6 border-t border-white/20 transition-all duration-500 ease-out ${
-            isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-          }`} style={{ transitionDelay: '600ms' }}>
+          <div className="mt-8 pt-6 border-t border-white/20">
             <h3 className="text-white/80 text-sm font-semibold mb-4 px-2">Featured Categories</h3>
             <div className="grid grid-cols-2 gap-3">
-              {categories.slice(0, 4).map((category, index) => (
+              {categories.slice(0, 4).map((category) => (
                 <Link
                   key={category.slug}
                   href={`/categories/${category.slug}`}
-                  onClick={handleCloseMenu}
-                  className={`flex flex-col items-center p-4 bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 hover:shadow-xl ${
-                    isMenuOpen ? 'animate-fade-in' : ''
-                  }`}
-                  style={{ animationDelay: `${(index + 10) * 100}ms` }}
+                  onClick={handleLinkClick}
+                  className="flex flex-col items-center p-4 bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 hover:shadow-xl"
                 >
                   <span className="text-3xl mb-2 transition-transform duration-300 group-hover:scale-110">
                     {category.icon}
@@ -395,9 +365,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
           </div>
 
           {/* Social Links */}
-          <div className={`mt-8 pt-6 border-t border-white/20 transition-all duration-500 ease-out ${
-            isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-          }`} style={{ transitionDelay: '700ms' }}>
+          <div className="mt-8 pt-6 border-t border-white/20">
             <h3 className="text-white/80 text-sm font-semibold mb-4 px-2">Connect With Us</h3>
             <div className="flex justify-center space-x-4">
               {[
@@ -405,14 +373,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                 { icon: '📸', label: 'Instagram', href: '#' },
                 { icon: '🐦', label: 'Twitter', href: '#' },
                 { icon: '💼', label: 'LinkedIn', href: '#' }
-              ].map((social, index) => (
+              ].map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
-                  className={`flex items-center justify-center w-12 h-12 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 group border border-white/10 hover:border-white/20 ${
-                    isMenuOpen ? 'animate-bounce' : ''
-                  }`}
-                  style={{ animationDelay: `${index * 100}ms`, animationDuration: '1s' }}
+                  className="flex items-center justify-center w-12 h-12 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 group border border-white/10 hover:border-white/20"
                   aria-label={social.label}
                 >
                   <span className="text-xl group-hover:scale-110 transition-transform duration-300">
@@ -424,9 +389,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
           </div>
 
           {/* Footer */}
-          <div className={`mt-8 pt-6 border-t border-white/20 text-center transition-all duration-500 ease-out ${
-            isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-          }`} style={{ transitionDelay: '800ms' }}>
+          <div className="mt-8 pt-6 border-t border-white/20 text-center">
             <p className="text-white/60 text-sm">
               © 2024 Quantum Gameware. All rights reserved.
             </p>
