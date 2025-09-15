@@ -1,5 +1,5 @@
 // components/ui/Header/MobileMenu.tsx
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
@@ -19,11 +19,64 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const cartCount = getCartCount();
 
+  // Improved close menu handler with better event handling
+  const handleCloseMenu = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setIsMenuOpen(false);
+    setActiveSubmenu(null); // Reset submenu state
+  };
+
+  // Handle escape key and prevent event bubbling issues
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMenuOpen) {
+        e.preventDefault();
+        handleCloseMenu();
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      // Only close if clicking outside the menu content
+      if (
+        isMenuOpen && 
+        mobileMenuRef.current && 
+        !mobileMenuRef.current.contains(e.target as Node)
+      ) {
+        handleCloseMenu();
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Add a small delay to prevent immediate closing from the same click that opened it
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
+
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('click', handleClickOutside);
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [isMenuOpen]);
+
+  // Focus management for better accessibility
+  useEffect(() => {
+    if (isMenuOpen && closeButtonRef.current) {
+      // Focus the close button when menu opens
+      closeButtonRef.current.focus();
+    }
+  }, [isMenuOpen]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-      closeMenu();
+      handleCloseMenu();
     }
   };
 
@@ -39,13 +92,17 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
         ? 'opacity-100 visible' 
         : 'opacity-0 invisible pointer-events-none'
     }`}>
-      {/* Animated Background */}
-      <div className={`absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 transition-all duration-500 ease-out ${
-        isMenuOpen ? 'scale-100 opacity-100' : 'scale-110 opacity-0'
-      }`}>
+      {/* Backdrop - clicking this will close the menu */}
+      <div 
+        className={`absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 transition-all duration-500 ease-out ${
+          isMenuOpen ? 'scale-100 opacity-100' : 'scale-110 opacity-0'
+        }`}
+        onClick={handleCloseMenu}
+        aria-label="Close menu"
+      >
         {/* Animated pattern overlay */}
-        <div className="absolute inset-0 bg-black/20" />
-        <div className={`absolute inset-0 opacity-10 transition-all duration-1000 ${
+        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+        <div className={`absolute inset-0 opacity-10 transition-all duration-1000 pointer-events-none ${
           isMenuOpen ? 'animate-pulse' : ''
         }`}>
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/5 rounded-full blur-3xl animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }} />
@@ -54,7 +111,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
         </div>
       </div>
       
-      {/* Menu Content */}
+      {/* Menu Content - prevent click events from bubbling to backdrop */}
       <div 
         ref={mobileMenuRef}
         className={`relative h-full w-full overflow-y-auto transition-all duration-400 ease-out ${
@@ -62,10 +119,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
             ? 'translate-y-0 opacity-100' 
             : '-translate-y-8 opacity-0'
         }`}
+        onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to backdrop
       >
-        {/* Header with Logo */}
+        {/* Header with Logo and Improved Close Button */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <Link href="/" onClick={closeMenu} className="flex items-center space-x-3 group">
+          <Link href="/" onClick={handleCloseMenu} className="flex items-center space-x-3 group">
             <div className="relative w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <div className="w-full h-full bg-white rounded-lg flex items-center justify-center overflow-hidden">
                 {!logoError ? (
@@ -88,15 +146,41 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               <div className="text-white/70 text-sm leading-none">Gameware</div>
             </div>
           </Link>
+          
+          {/* Improved Close Button */}
           <button
             ref={closeButtonRef}
-            onClick={closeMenu}
-            className="p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 active:scale-95"
-            aria-label="Close menu"
+            type="button"
+            onClick={handleCloseMenu}
+            className="
+              relative p-4 rounded-2xl bg-white/10 hover:bg-white/20 
+              transition-all duration-300 active:scale-90 focus:outline-none 
+              focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-transparent
+              border border-white/20 hover:border-white/30
+              group min-w-[48px] min-h-[48px] flex items-center justify-center
+            "
+            aria-label="Close navigation menu"
+            tabIndex={0}
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            {/* Enhanced X icon with better visual feedback */}
+            <div className="relative w-6 h-6 flex items-center justify-center">
+              <span className="
+                absolute w-5 h-0.5 bg-white rounded-full transform rotate-45 
+                transition-all duration-300 group-hover:w-6 group-hover:bg-red-200
+                group-active:scale-90
+              " />
+              <span className="
+                absolute w-5 h-0.5 bg-white rounded-full transform -rotate-45 
+                transition-all duration-300 group-hover:w-6 group-hover:bg-red-200
+                group-active:scale-90
+              " />
+            </div>
+            
+            {/* Ripple effect on click */}
+            <span className="
+              absolute inset-0 rounded-2xl bg-white/20 scale-0 
+              group-active:scale-100 transition-transform duration-150 ease-out
+            " />
           </button>
         </div>
 
@@ -182,7 +266,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                             <Link
                               key={category.slug}
                               href={`/categories/${category.slug}`}
-                              onClick={closeMenu}
+                              onClick={handleCloseMenu}
                               className={`flex flex-col items-center p-4 rounded-xl hover:bg-white/10 transition-all duration-300 group border border-white/5 hover:border-white/20 ${
                                 isMenuOpen ? 'animate-fade-in' : ''
                               }`}
@@ -202,7 +286,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                         </div>
                         <Link
                           href="/categories"
-                          onClick={closeMenu}
+                          onClick={handleCloseMenu}
                           className="flex items-center justify-center w-full mt-4 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-300 font-medium group"
                         >
                           View All Categories
@@ -217,7 +301,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                   <Link 
                     href={link.href} 
                     className={mobileMenuButtonClasses}
-                    onClick={closeMenu}
+                    onClick={handleCloseMenu}
                   >
                     <div className="flex items-center space-x-4">
                       <span className="text-2xl transition-transform duration-300 group-hover:scale-110">
@@ -248,7 +332,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               <button
                 onClick={() => {
                   toggleCart();
-                  closeMenu();
+                  handleCloseMenu();
                 }}
                 className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20"
               >
@@ -268,7 +352,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               
               <Link
                 href="/account"
-                onClick={closeMenu}
+                onClick={handleCloseMenu}
                 className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20"
               >
                 <svg className="w-6 h-6 text-white mb-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,7 +374,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                 <Link
                   key={category.slug}
                   href={`/categories/${category.slug}`}
-                  onClick={closeMenu}
+                  onClick={handleCloseMenu}
                   className={`flex flex-col items-center p-4 bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 hover:shadow-xl ${
                     isMenuOpen ? 'animate-fade-in' : ''
                   }`}
