@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/orders/[id] - Fetch a specific order by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -16,7 +16,7 @@ export async function GET(
     }
 
     const token = authHeader.substring(7);
-    const orderId = params.id;
+    const { id: orderId } = await context.params;
 
     if (!orderId) {
       return NextResponse.json(
@@ -116,7 +116,7 @@ export async function GET(
 // PATCH /api/orders/[id] - Update order status (admin only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -128,7 +128,7 @@ export async function PATCH(
     }
 
     const token = authHeader.substring(7);
-    const orderId = params.id;
+    const { id: orderId } = await context.params;
     const updateData = await request.json();
 
     if (!orderId) {
