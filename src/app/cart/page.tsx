@@ -1,3 +1,4 @@
+// File: src/app/cart/page.tsx (REPLACE YOUR EXISTING FILE)
 "use client";
 
 import Link from 'next/link';
@@ -238,9 +239,12 @@ export default function CartPage() {
 
                   {/* Action buttons */}
                   <div className="space-y-4">
-                    <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg">
+                    <Link 
+                      href="/cart/checkout"
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-lg text-center block"
+                    >
                       Proceed to Checkout
-                    </button>
+                    </Link>
                     
                     <Link
                       href="/products"

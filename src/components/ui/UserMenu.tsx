@@ -1,23 +1,15 @@
-// components/ui/Header/UserMenu.tsx
+// src/components/ui/UserMenu.tsx
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 interface UserMenuProps {
   isScrolled: boolean;
 }
 
-// This would typically come from your auth context/provider
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
-
 export default function UserMenu({ isScrolled }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false); // Replace with actual auth state
-  const [user, setUser] = useState<User | null>(null); // Replace with actual user data
+  const { user, isAuthenticated, signOut, loading } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,28 +23,11 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Simulate auth state - replace with your actual auth logic
-  useEffect(() => {
-    // Example: check for auth token, user session, etc.
-    const checkAuthState = () => {
-      // This is where you'd check your auth provider
-      // setIsSignedIn(!!authToken);
-      // setUser(userData);
-    };
-    
-    checkAuthState();
-  }, []);
-
   const handleSignOut = async () => {
     try {
-      // Add your sign out logic here
-      // await signOut();
-      setIsSignedIn(false);
-      setUser(null);
+      await signOut();
       setIsOpen(false);
-      
-      // Optional: redirect to home page
-      // window.location.href = '/';
+      // Optional: show success message
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -64,8 +39,17 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
       : 'hover:bg-white/10'
   }`;
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className={buttonClasses}>
+        <div className="w-6 h-6 animate-pulse bg-white/20 rounded-full"></div>
+      </div>
+    );
+  }
+
   // Show sign in button when not authenticated
-  if (!isSignedIn) {
+  if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center space-x-2">
         <Link
@@ -101,8 +85,9 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
         onClick={() => setIsOpen(!isOpen)}
         className={`${buttonClasses} flex items-center space-x-2`}
         aria-label="User menu"
+        aria-expanded={isOpen}
       >
-        {user?.avatar ? (
+        {user.avatar ? (
           <img 
             src={user.avatar} 
             alt={user.name}
@@ -112,7 +97,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
           <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
             isScrolled ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'
           }`}>
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {user.name?.charAt(0).toUpperCase() || 'U'}
           </div>
         )}
         
@@ -131,29 +116,32 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-fade-in">
           {/* User Info Header */}
-          {user && (
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
-              <div className="flex items-center space-x-3">
-                {user.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+            <div className="flex items-center space-x-3">
+              {user.avatar ? (
+                <img 
+                  src={user.avatar} 
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold text-gray-900 truncate">{user.name}</div>
+                <div className="text-sm text-gray-600 truncate">{user.email}</div>
+                {user.role === 'admin' && (
+                  <div className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full inline-block mt-1">
+                    Admin
                   </div>
                 )}
-                <div>
-                  <div className="font-semibold text-gray-900">{user.name || 'User'}</div>
-                  <div className="text-sm text-gray-600">{user.email}</div>
-                </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Menu Items */}
           <div className="p-2">
@@ -202,6 +190,19 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
               Settings
             </Link>
 
+            {user.role === 'admin' && (
+              <Link
+                href="/admin"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center px-4 py-3 text-sm text-purple-700 hover:bg-purple-50 rounded-xl transition-colors group"
+              >
+                <svg className="w-4 h-4 mr-3 text-purple-400 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Admin Dashboard
+              </Link>
+            )}
+
             <div className="border-t border-gray-100 my-2"></div>
 
             <button
@@ -216,6 +217,23 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
           </div>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

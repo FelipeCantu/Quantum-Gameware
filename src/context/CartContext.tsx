@@ -1,3 +1,4 @@
+// File: src/context/CartContext.tsx (REPLACE YOUR EXISTING FILE)
 // src/context/CartContext.tsx
 'use client';
 
@@ -13,6 +14,7 @@ type CartAction =
   | { type: 'ADD_ITEM'; item: Product }
   | { type: 'REMOVE_ITEM'; id: string }
   | { type: 'UPDATE_QUANTITY'; id: string; quantity: number }
+  | { type: 'CLEAR_CART' }
   | { type: 'TOGGLE_CART' }
   | { type: 'CLOSE_CART' }
   | { type: 'LOAD_CART'; items: CartItem[] };
@@ -21,6 +23,7 @@ interface CartContextType extends CartState {
   addToCart: (product: Product) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
   toggleCart: () => void;
   closeCart: () => void;
   getCartCount: () => number;
@@ -64,6 +67,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
             ? { ...item, quantity: Math.max(0, action.quantity) }
             : item
         ).filter(item => item.quantity > 0)
+      };
+    
+    case 'CLEAR_CART':
+      return {
+        ...state,
+        items: [],
+        isOpen: false
       };
     
     case 'TOGGLE_CART':
@@ -127,6 +137,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_QUANTITY', id, quantity });
   };
 
+  const clearCart = () => {
+    dispatch({ type: 'CLEAR_CART' });
+  };
+
   const toggleCart = () => {
     dispatch({ type: 'TOGGLE_CART' });
   };
@@ -150,6 +164,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addToCart,
       removeFromCart,
       updateQuantity,
+      clearCart,
       toggleCart,
       closeCart,
       getCartCount,

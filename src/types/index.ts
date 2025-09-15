@@ -1,40 +1,64 @@
-// src/types/index.ts
+// File: src/types/index.ts (ADD TO YOUR EXISTING TYPES OR CREATE NEW)
+
 export interface Product {
   _id: string;
   name: string;
-  description: string;
   price: number;
   originalPrice?: number;
   image: string;
   images?: string[];
-  category: string;
   brand: string;
+  category: string;
+  slug: string;
+  description: string;
   features?: string[];
   compatibility?: string[];
   inStock: boolean;
-  isFeatured: boolean;
-  isNew: boolean;
+  isNew?: boolean;
   rating?: number;
-  slug: string;
 }
 
 export interface CartItem extends Product {
   quantity: number;
 }
 
-export interface Category {
-  _id: string;
-  name: string;
-  description: string;
-  image: string;
-  slug: string;
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  address: string;
+  apartment?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
-export interface Brand {
-  _id: string;
-  name: string;
-  description: string;
-  logo: string;
-  website: string;
-  slug: string;
+export interface PaymentInfo {
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+  nameOnCard: string;
+  billingAddress?: ShippingAddress;
+}
+
+export interface Order {
+  id: string;
+  items: CartItem[];
+  shipping: ShippingAddress;
+  payment: {
+    last4: string;
+    cardType: string;
+    transactionId: string;
+  };
+  totals: {
+    subtotal: number;
+    tax: number;
+    shipping: number;
+    total: number;
+  };
+  status: 'processing' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: Date;
+  estimatedDelivery: Date;
 }

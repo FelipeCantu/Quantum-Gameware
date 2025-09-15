@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
@@ -53,16 +54,18 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <CartProvider>
-          <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <Cart />
-          </div>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <div className="min-h-screen flex flex-col bg-gray-50">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+              <Cart />
+            </div>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
