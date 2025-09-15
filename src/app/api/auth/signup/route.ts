@@ -1,9 +1,5 @@
 // src/app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { connectToDatabase } from '@/lib/mongodb';
-import { User } from '@/models/User';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,27 +30,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Connect to database
-    await connectToDatabase();
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return NextResponse.json(
-        { message: 'User with this email already exists' },
-        { status: 409 }
-      );
-    }
-
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create new user
-    const newUser = new User({
-      name: name.trim(),
+    // For demo purposes, create a mock user
+    // In production, you would save to your database
+    const userData = {
+      id: 'user_' + Date.now(),
       email: email.toLowerCase(),
-      password: hashedPassword,
+      name: name.trim(),
+      firstName: name.trim().split(' ')[0],
+      lastName: name.trim().split(' ').slice(1).join(' ') || '',
+      avatar: null,
+      phone: null,
+      address: null,
       preferences: {
         emailNotifications: true,
         smsNotifications: false,
@@ -63,41 +49,14 @@ export async function POST(request: NextRequest) {
         currency: 'USD',
         language: 'en'
       },
-      role: 'customer',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       emailVerified: false,
-    });
-
-    await newUser.save();
-
-    // Generate JWT token
-    const tokenPayload = {
-      userId: newUser._id,
-      email: newUser.email,
-      role: newUser.role,
+      role: 'customer' as const,
     };
 
-    const token = jwt.sign(
-      tokenPayload,
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key',
-      { expiresIn: '7d' }
-    );
-
-    // Create response with user data (excluding password)
-    const userData = {
-      id: newUser._id,
-      email: newUser.email,
-      name: newUser.name,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      avatar: newUser.avatar,
-      phone: newUser.phone,
-      address: newUser.address,
-      preferences: newUser.preferences,
-      createdAt: newUser.createdAt,
-      updatedAt: newUser.updatedAt,
-      emailVerified: newUser.emailVerified,
-      role: newUser.role,
-    };
+    // Generate mock token
+    const token = 'demo_token_' + Date.now();
 
     const response = NextResponse.json({
       user: userData,

@@ -1,9 +1,40 @@
 // src/models/User.ts
 import mongoose, { Document, Schema } from 'mongoose';
-import { User as UserType, UserAddress, UserPreferences } from '@/types/auth';
 
-interface UserDocument extends UserType, Document {
+interface UserAddress {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+interface UserPreferences {
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  marketingEmails: boolean;
+  theme: 'light' | 'dark' | 'system';
+  currency: string;
+  language: string;
+}
+
+interface UserDocument extends Document {
+  email: string;
   password: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+  phone?: string;
+  address?: UserAddress;
+  preferences?: UserPreferences;
+  emailVerified: boolean;
+  emailVerificationToken?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  role: 'customer' | 'admin';
+  lastLogin?: Date;
+  isActive: boolean;
 }
 
 const AddressSchema = new Schema<UserAddress>({
@@ -160,61 +191,3 @@ UserSchema.statics.countByRole = function(role: string) {
 };
 
 export const User = mongoose.models.User || mongoose.model<UserDocument>('User', UserSchema);
-
-// Database connection utility
-// src/lib/mongodb.ts
-import mongoose from 'mongoose';
-
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-}
-
-interface MongooseConnection {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
-}
-
-// In production environments, it's best to not use a global variable.
-declare global {
-  var mongoose: MongooseConnection | undefined;
-}
-
-let cached: MongooseConnection = global.mongoose || { conn: null, promise: null };
-
-if (!global.mongoose) {
-  global.mongoose = cached;
-}
-
-export async function connectToDatabase(): Promise<typeof mongoose> {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      console.log('✅ Connected to MongoDB');
-      return mongoose;
-    }).catch((error) => {
-      console.error('❌ MongoDB connection error:', error);
-      throw error;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-
-  return cached.conn;
-}
