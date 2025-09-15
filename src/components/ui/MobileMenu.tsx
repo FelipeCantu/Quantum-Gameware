@@ -25,7 +25,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setIsMenuOpen(false);
+    closeMenu(); // Use the prop function instead of setIsMenuOpen
     setActiveSubmenu(null); // Reset submenu state
   };
 
