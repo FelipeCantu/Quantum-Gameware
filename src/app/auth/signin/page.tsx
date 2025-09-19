@@ -1,4 +1,4 @@
-// src/app/auth/signin/page.tsx - Enhanced for Real Users
+// src/app/auth/signin/page.tsx - Fixed Redirect Version
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -25,13 +25,14 @@ function SignInForm() {
   // Get redirect URL from query params
   const redirectTo = searchParams?.get('redirect') || '/account';
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - FIXED VERSION
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      console.log('Already authenticated, redirecting to:', redirectTo);
-      router.push(redirectTo);
+      console.log('Already authenticated, forcing redirect to:', redirectTo);
+      // Use window.location.href for immediate redirect
+      window.location.href = redirectTo;
     }
-  }, [isAuthenticated, loading, router, redirectTo]);
+  }, [isAuthenticated, loading, redirectTo]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -82,11 +83,19 @@ function SignInForm() {
       console.log('Sign in result:', result);
       
       if (result.success) {
-        console.log('Sign in successful, redirecting to:', redirectTo);
-        // Small delay to ensure auth state is updated
+        console.log('Sign in successful, forcing navigation to:', redirectTo);
+        
+        // FIXED: Use window.location.href for immediate redirect
+        // This bypasses Next.js router issues and forces a page change
+        window.location.href = redirectTo;
+        
+        // Alternative: Also try router methods as backup
         setTimeout(() => {
-          router.push(redirectTo);
-        }, 100);
+          if (window.location.pathname === '/auth/signin') {
+            router.replace(redirectTo);
+          }
+        }, 1000);
+        
       } else {
         setErrors({ general: result.error || 'Sign in failed' });
       }
@@ -156,6 +165,18 @@ function SignInForm() {
               <p className="text-white/70">Sign in to access your account and continue shopping</p>
             </div>
 
+            {/* Success Message */}
+            {isSubmitting && (
+              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl text-green-200 text-sm">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3 flex-shrink-0 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Signing you in and redirecting...
+                </div>
+              </div>
+            )}
+
             {/* General Error */}
             {errors.general && (
               <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm">
@@ -182,7 +203,8 @@ function SignInForm() {
                   autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
+                  disabled={isSubmitting}
+                  className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 disabled:opacity-50 ${
                     errors.email ? 'border-red-500/50' : 'border-white/30'
                   }`}
                   placeholder="Enter your email address"
@@ -205,7 +227,8 @@ function SignInForm() {
                     autoComplete="current-password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 pr-12 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-3 pr-12 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 disabled:opacity-50 ${
                       errors.password ? 'border-red-500/50' : 'border-white/30'
                     }`}
                     placeholder="Enter your password"
@@ -213,7 +236,8 @@ function SignInForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                    disabled={isSubmitting}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors disabled:opacity-50"
                     title={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -241,7 +265,8 @@ function SignInForm() {
                     type="checkbox"
                     checked={formData.rememberMe}
                     onChange={handleChange}
-                    className="mr-2 rounded text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-white/10 border-white/30"
+                    disabled={isSubmitting}
+                    className="mr-2 rounded text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-white/10 border-white/30 disabled:opacity-50"
                   />
                   <span className="text-white/80 text-sm">Remember me for 30 days</span>
                 </label>
