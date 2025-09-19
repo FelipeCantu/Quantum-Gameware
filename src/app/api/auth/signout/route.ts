@@ -1,42 +1,13 @@
-// src/app/api/auth/signout/route.ts
+// src/app/api/auth/signout/route.ts - Vercel-optimized version
+// ================================================================
+
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import { User } from '@/models/User';
-import { connectDB } from '@/lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    let token = authHeader?.substring(7); // Remove 'Bearer ' prefix
-
-    // If no token in header, try to get from cookies
-    if (!token) {
-      token = request.cookies.get('authToken')?.value;
-    }
-
-    // For real tokens, you might want to add to a blacklist or invalidate in some way
-    if (token && !token.startsWith('demo_token_')) {
-      try {
-        const secret = new TextEncoder().encode(
-          process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-        );
-        
-        const { payload } = await jwtVerify(token, secret);
-        
-        // Connect to database and optionally update user's last activity
-        await connectDB();
-        const user = await User.findById(payload.userId);
-        if (user) {
-          // You could add logout timestamp here if needed
-          // user.lastLogout = new Date();
-          // await user.save();
-        }
-      } catch (error) {
-        // Token might be expired or invalid, but we still want to clear the cookie
-        console.error('Error during token verification in signout:', error);
-      }
-    }
-
+    // For signout, we mainly just need to clear the cookie
+    // In production with a real database, you might want to blacklist the token
+    
     const response = NextResponse.json({
       message: 'Signed out successfully'
     });
@@ -53,6 +24,7 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
+
   } catch (error) {
     console.error('Sign out error:', error);
     

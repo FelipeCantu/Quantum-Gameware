@@ -1,8 +1,6 @@
-// src/app/api/auth/verify/route.ts
+// src/app/api/auth/verify/route.ts - Vercel-optimized version
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { User } from '@/models/User';
-import { connectDB } from '@/lib/mongodb';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +16,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { message: 'No token provided', valid: false },
         { status: 401 }
+      );
+    }
+
+    // Check environment variables
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET environment variable is not set');
+      return NextResponse.json(
+        { message: 'Server configuration error', valid: false },
+        { status: 500 }
       );
     }
 
@@ -53,51 +61,48 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify JWT token
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    );
+    const secret = new TextEncoder().encode(jwtSecret);
 
-    const { payload } = await jwtVerify(token, secret);
+    try {
+      const { payload } = await jwtVerify(token, secret);
 
-    // Connect to database and get user
-    await connectDB();
-    const user = await User.findById(payload.userId);
+      // Create mock user from payload for demo
+      const userData = {
+        id: payload.userId as string,
+        email: payload.email as string,
+        name: 'Demo User',
+        firstName: 'Demo',
+        lastName: 'User',
+        avatar: null,
+        phone: null,
+        address: null,
+        preferences: {
+          emailNotifications: true,
+          smsNotifications: false,
+          marketingEmails: false,
+          theme: 'system',
+          currency: 'USD',
+          language: 'en'
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        emailVerified: true,
+        role: payload.role as string,
+      };
 
-    if (!user || !user.isActive) {
+      return NextResponse.json({
+        valid: true,
+        user: userData
+      });
+
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError);
       return NextResponse.json(
-        { message: 'User not found or inactive', valid: false },
+        { message: 'Invalid token', valid: false },
         { status: 401 }
       );
     }
 
-    // Prepare user data for response
-    const userData = {
-      id: user._id.toString(),
-      email: user.email,
-      name: user.name,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
-      phone: user.phone,
-      address: user.address,
-      preferences: {
-        emailNotifications: user.preferences?.emailNotifications ?? true,
-        smsNotifications: user.preferences?.smsNotifications ?? false,
-        marketingEmails: user.preferences?.marketingEmails ?? false,
-        theme: user.preferences?.theme || 'system',
-        currency: user.preferences?.currency || 'USD',
-        language: user.preferences?.language || 'en'
-      },
-      createdAt: user.createdAt?.toISOString(),
-      updatedAt: user.updatedAt?.toISOString(),
-      emailVerified: user.emailVerified,
-      role: user.role,
-    };
-
-    return NextResponse.json({
-      valid: true,
-      user: userData
-    });
   } catch (error) {
     console.error('Token verification error:', error);
     return NextResponse.json(
