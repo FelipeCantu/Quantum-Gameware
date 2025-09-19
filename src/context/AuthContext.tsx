@@ -102,12 +102,56 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (token && userData) {
           try {
             const parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-          } catch {
-            // Invalid JSON data, clear storage
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
+            
+            // For demo tokens, just validate the format and set user
+            if (token.startsWith('demo_token_')) {
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+              setLoading(false);
+              return;
+            }
+            
+            // For production, verify token with backend
+            const response = await fetch('/api/auth/verify', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              if (result.valid && result.user) {
+                setUser(result.user);
+                setIsAuthenticated(true);
+              } else {
+                // Invalid token, clear storage
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+              }
+            } else {
+              // Token verification failed
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('userData');
+            }
+          } catch (error) {
+            console.error('Token verification error:', error);
+            // For demo mode, try to use stored user data anyway
+            if (token.startsWith('demo_token_')) {
+              try {
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+                setIsAuthenticated(true);
+              } catch {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+              }
+            } else {
+              // Clear storage on error for production tokens
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('userData');
+            }
           }
         }
       } catch (error) {
@@ -122,44 +166,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    initializeAuth();
+    // Add a small delay to ensure localStorage is ready
+    const timer = setTimeout(() => {
+      initializeAuth();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const signIn = async (credentials: SignInCredentials): Promise<{ success: boolean; error?: string }> => {
     try {
       setLoading(true);
       
-      // Simulate API call for now - replace with actual API endpoint
-      // For testing purposes, we'll simulate a successful login
-      if (credentials.email && credentials.password) {
-        const mockUser: User = {
-          id: 'user_123',
-          email: credentials.email,
-          name: 'Test User',
-          firstName: 'Test',
-          lastName: 'User',
-          avatar: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          emailVerified: true,
-          role: 'customer'
-        };
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-        const mockToken = 'mock_jwt_token_' + Date.now();
-        
+      const data = await response.json();
+
+      if (response.ok && data.user && data.token) {
         // Store auth data
         if (typeof window !== 'undefined') {
-          localStorage.setItem('authToken', mockToken);
-          localStorage.setItem('userData', JSON.stringify(mockUser));
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userData', JSON.stringify(data.user));
         }
         
-        setUser(mockUser);
+        setUser(data.user);
         setIsAuthenticated(true);
         
         return { success: true };
+      } else {
+        return { success: false, error: data.message || 'Invalid credentials' };
       }
-
-      return { success: false, error: 'Invalid credentials' };
     } catch (error) {
       console.error('Sign in error:', error);
       return { success: false, error: 'Network error. Please try again.' };
@@ -172,35 +214,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setLoading(true);
       
-      // Simulate API call - replace with actual endpoint
-      if (credentials.email && credentials.password && credentials.name && credentials.agreeToTerms) {
-        const mockUser: User = {
-          id: 'user_' + Date.now(),
-          email: credentials.email,
-          name: credentials.name,
-          firstName: credentials.firstName,
-          lastName: credentials.lastName,
-          avatar: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          emailVerified: false,
-          role: 'customer'
-        };
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-        const mockToken = 'mock_jwt_token_' + Date.now();
-        
+      const data = await response.json();
+
+      if (response.ok && data.user && data.token) {
         if (typeof window !== 'undefined') {
-          localStorage.setItem('authToken', mockToken);
-          localStorage.setItem('userData', JSON.stringify(mockUser));
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userData', JSON.stringify(data.user));
         }
         
-        setUser(mockUser);
+        setUser(data.user);
         setIsAuthenticated(true);
         
         return { success: true };
+      } else {
+        return { success: false, error: data.message || 'Registration failed' };
       }
-
-      return { success: false, error: 'All fields are required' };
     } catch (error) {
       console.error('Sign up error:', error);
       return { success: false, error: 'Network error. Please try again.' };
@@ -211,10 +247,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async (): Promise<void> => {
     try {
-      // In a real app, call logout API to invalidate token on server
-      // await fetch('/api/auth/signout', { method: 'POST' });
+      // Call backend to sign out
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        await fetch('/api/auth/signout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Sign out API error:', error);
     } finally {
-      // Clear local storage and state
+      // Clear local storage and state regardless of API call result
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
@@ -226,19 +272,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const updateProfile = async (updates: Partial<User>): Promise<{ success: boolean; error?: string }> => {
     try {
-      if (!user) {
+      if (!user || !isAuthenticated) {
         return { success: false, error: 'Not authenticated' };
       }
 
-      // Simulate API call
-      const updatedUser = { ...user, ...updates, updatedAt: new Date().toISOString() };
-      
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('userData', JSON.stringify(updatedUser));
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        return { success: false, error: 'No authentication token' };
       }
-      setUser(updatedUser);
-      
-      return { success: true };
+
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.user) {
+        const updatedUser = data.user;
+        
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userData', JSON.stringify(updatedUser));
+        }
+        setUser(updatedUser);
+        
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || 'Update failed' };
+      }
     } catch (error) {
       console.error('Profile update error:', error);
       return { success: false, error: 'Update failed. Please try again.' };
@@ -247,13 +312,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const resetPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Simulate API call
       if (!email || !/\S+@\S+\.\S+/.test(email)) {
         return { success: false, error: 'Invalid email address' };
       }
       
-      // In a real app, this would send a password reset email
-      return { success: true };
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || 'Reset failed' };
+      }
     } catch (error) {
       console.error('Password reset error:', error);
       return { success: false, error: 'Reset failed. Please try again.' };

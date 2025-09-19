@@ -22,13 +22,16 @@ function SignInForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Get redirect URL from query params
+  const redirectTo = searchParams?.get('redirect') || '/account';
+
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      const redirect = searchParams?.get('redirect') || '/';
-      router.push(redirect);
+      console.log('Already authenticated, redirecting to:', redirectTo);
+      router.push(redirectTo);
     }
-  }, [isAuthenticated, loading, router, searchParams]);
+  }, [isAuthenticated, loading, router, redirectTo]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -71,19 +74,26 @@ function SignInForm() {
     setErrors({});
     
     try {
+      console.log('Attempting sign in...');
       const result = await signIn({
         email: formData.email,
         password: formData.password,
         rememberMe: formData.rememberMe
       });
       
+      console.log('Sign in result:', result);
+      
       if (result.success) {
-        const redirect = searchParams?.get('redirect') || '/';
-        router.push(redirect);
+        console.log('Sign in successful, redirecting to:', redirectTo);
+        // Small delay to ensure auth state is updated
+        setTimeout(() => {
+          router.push(redirectTo);
+        }, 100);
       } else {
         setErrors({ general: result.error || 'Sign in failed' });
       }
     } catch (error) {
+      console.error('Sign in error:', error);
       setErrors({ general: 'An unexpected error occurred' });
     } finally {
       setIsSubmitting(false);
@@ -151,7 +161,7 @@ function SignInForm() {
             {/* Demo Credentials Notice */}
             <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-200 text-sm">
               <div className="font-semibold mb-2">Demo Mode Active</div>
-              <div>Use any email and password to sign in. This is for demonstration purposes.</div>
+              <div>Use any email and password (6+ chars) to sign in. Try: demo@example.com / password</div>
             </div>
 
             {/* General Error */}

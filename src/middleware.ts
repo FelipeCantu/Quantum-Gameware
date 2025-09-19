@@ -42,6 +42,15 @@ export async function middleware(request: NextRequest) {
       }
     } catch {
       // Token is invalid, allow access to auth routes
+      // Clear the invalid cookie
+      const response = NextResponse.next();
+      response.cookies.set({
+        name: 'authToken',
+        value: '',
+        maxAge: 0,
+        path: '/',
+      });
+      return response;
     }
   }
 
@@ -65,10 +74,18 @@ export async function middleware(request: NextRequest) {
       // Token is valid, continue
       return NextResponse.next();
     } catch {
-      // Token is invalid, redirect to signin
+      // Token is invalid, redirect to signin and clear cookie
       const signinUrl = new URL('/auth/signin', request.url);
       signinUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(signinUrl);
+      
+      const response = NextResponse.redirect(signinUrl);
+      response.cookies.set({
+        name: 'authToken',
+        value: '',
+        maxAge: 0,
+        path: '/',
+      });
+      return response;
     }
   }
 
@@ -76,6 +93,15 @@ export async function middleware(request: NextRequest) {
 }
 
 async function verifyToken(token: string) {
+  // Handle demo tokens for backward compatibility
+  if (token.startsWith('demo_token_')) {
+    return {
+      userId: 'demo_user',
+      email: 'demo@quantumgameware.com',
+      role: 'customer'
+    };
+  }
+
   const secret = new TextEncoder().encode(
     process.env.JWT_SECRET || 'your-super-secret-jwt-key'
   );
@@ -92,7 +118,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - static assets
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
