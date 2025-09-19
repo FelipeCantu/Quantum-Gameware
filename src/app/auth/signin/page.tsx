@@ -1,4 +1,4 @@
-// src/app/auth/signin/page.tsx - Fixed for Vercel deployment
+// src/app/auth/signin/page.tsx - Complete fixed version
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -21,24 +21,39 @@ function SignInForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const [redirectAttempted, setRedirectAttempted] = useState(false);
 
-  // Get redirect URL from query params
   const redirectTo = searchParams?.get('redirect') || '/account';
 
-  // Handle redirect for authenticated users - FIXED VERSION
   useEffect(() => {
-    // Only proceed if auth is initialized and we haven't redirected yet
-    if (!initialized || hasRedirected) return;
-
-    if (isAuthenticated) {
-      console.log('✅ User already authenticated, redirecting to:', redirectTo);
-      setHasRedirected(true);
-      
-      // Use router.replace to prevent back button issues
-      router.replace(redirectTo);
+    if (!initialized) {
+      console.log('⏳ Waiting for auth initialization...');
+      return;
     }
-  }, [isAuthenticated, initialized, redirectTo, router, hasRedirected]);
+
+    if (isAuthenticated && !redirectAttempted) {
+      console.log('✅ User already authenticated, redirecting to:', redirectTo);
+      setRedirectAttempted(true);
+      
+      const performRedirect = () => {
+        try {
+          router.replace(redirectTo);
+          
+          setTimeout(() => {
+            if (window.location.pathname === '/auth/signin') {
+              console.log('🔄 Router redirect failed, using window.location');
+              window.location.href = redirectTo;
+            }
+          }, 1000);
+        } catch (error) {
+          console.error('❌ Redirect error:', error);
+          window.location.href = redirectTo;
+        }
+      };
+
+      performRedirect();
+    }
+  }, [isAuthenticated, initialized, redirectTo, router, redirectAttempted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -47,7 +62,6 @@ function SignInForm() {
       [name]: type === 'checkbox' ? checked : value
     }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -89,9 +103,14 @@ function SignInForm() {
       console.log('📊 Sign in result:', result);
       
       if (result.success) {
-        console.log('✅ Sign in successful, will redirect via useEffect');
-        // Don't manually redirect here - let useEffect handle it
-        // The useEffect will trigger once isAuthenticated becomes true
+        console.log('✅ Sign in successful, redirecting...');
+        router.replace(redirectTo);
+        
+        setTimeout(() => {
+          if (window.location.pathname === '/auth/signin') {
+            window.location.href = redirectTo;
+          }
+        }, 500);
       } else {
         setErrors({ general: result.error || 'Sign in failed' });
       }
@@ -103,27 +122,37 @@ function SignInForm() {
     }
   };
 
-  // Show loading while auth is initializing
-  if (!initialized || loading) {
+  const forceRedirect = () => {
+    console.log('🚀 Force redirecting to:', redirectTo);
+    window.location.href = redirectTo;
+  };
+
+  if (!initialized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">
-            {!initialized ? 'Initializing...' : 'Loading...'}
-          </p>
+          <p className="text-white text-lg">Initializing...</p>
+          <p className="text-white/60 text-sm mt-2">Setting up authentication...</p>
         </div>
       </div>
     );
   }
 
-  // Don't render the form if user is authenticated and we're redirecting
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white text-lg">Redirecting...</p>
+          <p className="text-white/60 text-sm mt-2">Taking you to {redirectTo}</p>
+          
+          <button
+            onClick={forceRedirect}
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+          >
+            Click here if redirect doesn't work
+          </button>
         </div>
       </div>
     );
@@ -131,20 +160,16 @@ function SignInForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}></div>
       </div>
 
-      {/* Content with proper spacing for header */}
       <div className="flex items-center justify-center min-h-screen pt-24 pb-8 px-4 relative z-10">
         <div className="w-full max-w-md">
-          {/* Sign In Card */}
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl p-8">
             
-            {/* Header */}
             <div className="text-center mb-8">
               <Link href="/" className="inline-flex items-center space-x-3 mb-6 group">
                 <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500 to-purple-600">
@@ -179,7 +204,6 @@ function SignInForm() {
               <p className="text-white/70">Sign in to access your account and continue shopping</p>
             </div>
 
-            {/* Success Message */}
             {isSubmitting && (
               <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl text-green-200 text-sm">
                 <div className="flex items-center">
@@ -191,7 +215,6 @@ function SignInForm() {
               </div>
             )}
 
-            {/* General Error */}
             {errors.general && (
               <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm">
                 <div className="flex items-center">
@@ -203,9 +226,7 @@ function SignInForm() {
               </div>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-white font-medium mb-2">
                   Email Address
@@ -228,7 +249,6 @@ function SignInForm() {
                 )}
               </div>
 
-              {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-white font-medium mb-2">
                   Password
@@ -271,7 +291,6 @@ function SignInForm() {
                 )}
               </div>
 
-              {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input
@@ -292,7 +311,6 @@ function SignInForm() {
                 </Link>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -317,14 +335,12 @@ function SignInForm() {
               </button>
             </form>
 
-            {/* Divider */}
             <div className="my-6 flex items-center">
               <div className="flex-1 border-t border-white/20"></div>
               <span className="px-4 text-white/60 text-sm">or</span>
               <div className="flex-1 border-t border-white/20"></div>
             </div>
 
-            {/* Sign Up Link */}
             <div className="text-center">
               <p className="text-white/70 mb-4">
                 Don&apos;t have an account yet?
@@ -340,57 +356,12 @@ function SignInForm() {
               </Link>
             </div>
           </div>
-
-          {/* Additional Info */}
-          <div className="mt-8 text-center">
-            <div className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6 mb-6">
-              <h3 className="text-white font-semibold mb-3">Why Create an Account?</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm text-white/80">
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Order tracking
-                </div>
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Wishlist
-                </div>
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Exclusive deals
-                </div>
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Faster checkout
-                </div>
-              </div>
-            </div>
-
-            <p className="text-white/60 text-sm">
-              By signing in, you agree to our{' '}
-              <Link href="/terms" className="text-white/80 hover:text-white transition-colors underline">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="text-white/80 hover:text-white transition-colors underline">
-                Privacy Policy
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// Loading fallback component
 function SignInPageFallback() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
@@ -399,7 +370,6 @@ function SignInPageFallback() {
   );
 }
 
-// Main page component with Suspense wrapper
 export default function SignInPage() {
   return (
     <Suspense fallback={<SignInPageFallback />}>

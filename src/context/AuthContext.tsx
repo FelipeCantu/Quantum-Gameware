@@ -1,9 +1,8 @@
-// src/context/AuthContext.tsx - Fixed for Vercel deployment
+// src/context/AuthContext.tsx - Complete fixed version
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-// Enhanced types for real user data
 interface User {
   id: string;
   email: string;
@@ -41,7 +40,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  initialized: boolean; // NEW: Track if auth has been initialized
+  initialized: boolean;
 }
 
 interface SignInCredentials {
@@ -90,11 +89,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Check for existing session on mount - FIXED VERSION
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Ensure we're in the browser
         if (typeof window === 'undefined') {
           setLoading(false);
           setInitialized(true);
@@ -119,7 +116,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const parsedUser = JSON.parse(userData);
           console.log('📄 Found stored user:', parsedUser.email);
           
-          // For demo tokens, validate format and set user immediately
           if (token.startsWith('demo_token_')) {
             console.log('✅ Demo token detected, setting user');
             setUser(parsedUser);
@@ -129,7 +125,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             return;
           }
           
-          // For production tokens, verify with backend
           console.log('🔍 Verifying token with backend...');
           const response = await fetch('/api/auth/verify', {
             method: 'POST',
@@ -145,12 +140,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               console.log('✅ Token verified, user authenticated');
               setUser(result.user);
               setIsAuthenticated(true);
-              
-              // Update localStorage with fresh user data
               localStorage.setItem('userData', JSON.stringify(result.user));
             } else {
               console.log('❌ Token verification failed');
-              // Invalid token, clear storage
               localStorage.removeItem('authToken');
               localStorage.removeItem('userData');
               setUser(null);
@@ -158,7 +150,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             }
           } else {
             console.log('❌ Token verification request failed');
-            // Token verification failed, clear storage
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
             setUser(null);
@@ -166,7 +157,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         } catch (parseError) {
           console.error('❌ Error parsing stored data:', parseError);
-          // Clear corrupted data
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
           setUser(null);
@@ -174,7 +164,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
-        // Clear potentially corrupted data
         if (typeof window !== 'undefined') {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
@@ -188,7 +177,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    // Initialize auth immediately
     initializeAuth();
   }, []);
 
@@ -210,7 +198,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (response.ok && data.user && data.token) {
         console.log('✅ Sign in successful');
         
-        // Store auth data
         if (typeof window !== 'undefined') {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('userData', JSON.stringify(data.user));
@@ -275,7 +262,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       console.log('🚪 Signing out...');
       
-      // Call backend to sign out
       const token = localStorage.getItem('authToken');
       if (token) {
         await fetch('/api/auth/signout', {
@@ -288,7 +274,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('❌ Sign out API error:', error);
     } finally {
-      // Clear local storage and state regardless of API call result
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');

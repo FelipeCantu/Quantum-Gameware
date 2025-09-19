@@ -1,4 +1,4 @@
-// src/app/orders/page.tsx
+// src/app/orders/page.tsx - Complete fixed version
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -33,16 +33,24 @@ function OrdersPageContent() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
+        if (typeof window === 'undefined') {
           setLoading(false);
           return;
         }
 
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          console.log('No auth token found');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Fetching orders with token...');
         const response = await fetch('/api/orders', {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -51,17 +59,26 @@ function OrdersPageContent() {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('Orders fetched successfully:', data);
           setOrders(data.orders || []);
+        } else {
+          console.error('Failed to fetch orders:', response.status, response.statusText);
+          setError(`Failed to load orders: ${response.status}`);
         }
       } catch (error) {
-        console.error('Failed to fetch orders:', error);
+        console.error('Error fetching orders:', error);
+        setError('Network error while loading orders');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrders();
-  }, []);
+    if (user) {
+      fetchOrders();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -76,18 +93,12 @@ function OrdersPageContent() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'processing':
-        return <span className="text-lg">⏳</span>;
-      case 'confirmed':
-        return <span className="text-lg">✅</span>;
-      case 'shipped':
-        return <span className="text-lg">🚚</span>;
-      case 'delivered':
-        return <span className="text-lg">📦</span>;
-      case 'cancelled':
-        return <span className="text-lg">❌</span>;
-      default:
-        return <span className="text-lg">📋</span>;
+      case 'processing': return <span className="text-lg">⏳</span>;
+      case 'confirmed': return <span className="text-lg">✅</span>;
+      case 'shipped': return <span className="text-lg">🚚</span>;
+      case 'delivered': return <span className="text-lg">📦</span>;
+      case 'cancelled': return <span className="text-lg">❌</span>;
+      default: return <span className="text-lg">📋</span>;
     }
   };
 
@@ -102,10 +113,28 @@ function OrdersPageContent() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-24 pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-6 text-center">
+            <h2 className="text-xl font-bold text-red-200 mb-2">Error Loading Orders</h2>
+            <p className="text-red-300 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-24 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-white/80 mb-8">
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,14 +147,12 @@ function OrdersPageContent() {
           <span className="text-white font-medium">My Orders</span>
         </nav>
 
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">My Orders</h1>
           <p className="text-white/80 text-lg">Track and manage your gaming gear orders</p>
         </div>
 
         {orders.length === 0 ? (
-          /* Empty State */
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-12 text-center">
             <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
               <svg className="w-12 h-12 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +174,6 @@ function OrdersPageContent() {
             </Link>
           </div>
         ) : (
-          /* Orders List */
           <div className="space-y-6">
             {orders.map((order) => (
               <div
@@ -155,7 +181,6 @@ function OrdersPageContent() {
                 className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  {/* Order Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-4">
                       <h3 className="text-xl font-bold text-white font-mono">
@@ -189,7 +214,6 @@ function OrdersPageContent() {
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link
                       href={`/orders/${order.id}`}
@@ -208,7 +232,6 @@ function OrdersPageContent() {
                   </div>
                 </div>
 
-                {/* Order Items Preview */}
                 <div className="mt-6 pt-6 border-t border-white/20">
                   <div className="flex items-center gap-4 overflow-x-auto pb-2">
                     {order.items.slice(0, 4).map((item, index) => (
@@ -248,7 +271,6 @@ function OrdersPageContent() {
           </div>
         )}
 
-        {/* Quick Actions */}
         <div className="mt-12 bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
           <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

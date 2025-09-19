@@ -1,9 +1,8 @@
-// src/middleware.ts - Fixed for Vercel deployment
+// src/middleware.ts - Complete fixed version
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-// Routes that require authentication
 const protectedRoutes = [
   '/account',
   '/orders',
@@ -13,12 +12,10 @@ const protectedRoutes = [
   '/checkout'
 ];
 
-// Admin-only routes
 const adminRoutes = [
   '/admin'
 ];
 
-// Routes that should redirect authenticated users away
 const authRoutes = [
   '/auth/signin',
   '/auth/signup'
@@ -33,19 +30,16 @@ export async function middleware(request: NextRequest) {
     tokenType: token?.startsWith('demo_token_') ? 'demo' : 'jwt'
   });
 
-  // Check if the route requires authentication
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-  // Skip middleware for API routes and static files
   if (pathname.startsWith('/api/') || 
       pathname.startsWith('/_next/') || 
       pathname.includes('.')) {
     return NextResponse.next();
   }
 
-  // Handle authentication routes
   if (isAuthRoute) {
     if (token) {
       try {
@@ -55,7 +49,6 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/', request.url));
         }
       } catch {
-        // Token is invalid, clear it and allow access to auth routes
         console.log('🧹 Clearing invalid token');
         const response = NextResponse.next();
         response.cookies.set({
@@ -67,11 +60,9 @@ export async function middleware(request: NextRequest) {
         return response;
       }
     }
-    // No token or invalid token, allow access to auth routes
     return NextResponse.next();
   }
 
-  // Handle protected routes
   if (isProtectedRoute) {
     if (!token) {
       console.log('🚫 No token for protected route, redirecting to signin');
@@ -83,18 +74,15 @@ export async function middleware(request: NextRequest) {
     try {
       const payload = await verifyToken(token);
       
-      // Check admin access for admin routes
       if (isAdminRoute && payload.role !== 'admin') {
         console.log('🚫 Non-admin accessing admin route, redirecting home');
         return NextResponse.redirect(new URL('/', request.url));
       }
       
       console.log('✅ Access granted to protected route');
-      // Token is valid, continue
       return NextResponse.next();
     } catch (error) {
       console.log('❌ Token verification failed, redirecting to signin');
-      // Token is invalid, redirect to signin and clear cookie
       const signinUrl = new URL('/auth/signin', request.url);
       signinUrl.searchParams.set('redirect', pathname);
       
@@ -109,12 +97,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // For all other routes, just continue
   return NextResponse.next();
 }
 
 async function verifyToken(token: string) {
-  // Handle demo tokens for backward compatibility
   if (token.startsWith('demo_token_')) {
     console.log('✅ Demo token verified');
     return {
@@ -124,7 +110,6 @@ async function verifyToken(token: string) {
     };
   }
 
-  // Verify JWT tokens
   try {
     const secret = new TextEncoder().encode(
       process.env.JWT_SECRET || 'your-super-secret-jwt-key'
@@ -141,14 +126,6 @@ async function verifyToken(token: string) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - static assets
-     */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

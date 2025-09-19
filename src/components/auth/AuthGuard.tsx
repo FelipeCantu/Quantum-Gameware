@@ -1,4 +1,4 @@
-// src/components/auth/AuthGuard.tsx - Fixed for Vercel deployment
+// src/components/auth/AuthGuard.tsx - Complete fixed version
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -23,7 +23,6 @@ export default function AuthGuard({
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
-    // Don't do anything until auth is initialized
     if (!initialized) {
       console.log('⏳ AuthGuard waiting for auth initialization...');
       return;
@@ -40,7 +39,6 @@ export default function AuthGuard({
 
     if (requireAuth && !isAuthenticated) {
       console.log('🚫 Access denied: authentication required');
-      // Redirect to sign in with return URL
       const currentPath = window.location.pathname;
       const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
       console.log('↩️ Redirecting to:', redirectUrl);
@@ -50,17 +48,14 @@ export default function AuthGuard({
 
     if (adminOnly && (!user || user.role !== 'admin')) {
       console.log('🚫 Access denied: admin required');
-      // Redirect non-admin users
       router.replace('/');
       return;
     }
 
-    // All checks passed
     console.log('✅ AuthGuard: Access granted');
     setShouldRender(true);
   }, [isAuthenticated, loading, user, requireAuth, adminOnly, redirectTo, router, initialized]);
 
-  // Show loading while auth is initializing or checking
   if (!initialized || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
@@ -74,7 +69,6 @@ export default function AuthGuard({
     );
   }
 
-  // Don't render if auth requirements aren't met
   if (requireAuth && !isAuthenticated) {
     return null;
   }
@@ -83,7 +77,6 @@ export default function AuthGuard({
     return null;
   }
 
-  // Only render children when we're sure it's safe
   if (!shouldRender) {
     return null;
   }
