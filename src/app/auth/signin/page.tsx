@@ -1,4 +1,4 @@
-// src/app/auth/signin/page.tsx - Fixed Redirect Version
+// src/app/auth/signin/page.tsx - Fixed for Vercel deployment
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, isAuthenticated, loading } = useAuth();
+  const { signIn, isAuthenticated, loading, initialized } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -21,18 +21,24 @@ function SignInForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   // Get redirect URL from query params
   const redirectTo = searchParams?.get('redirect') || '/account';
 
-  // Redirect if already authenticated - FIXED VERSION
+  // Handle redirect for authenticated users - FIXED VERSION
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      console.log('Already authenticated, forcing redirect to:', redirectTo);
-      // Use window.location.href for immediate redirect
-      window.location.href = redirectTo;
+    // Only proceed if auth is initialized and we haven't redirected yet
+    if (!initialized || hasRedirected) return;
+
+    if (isAuthenticated) {
+      console.log('✅ User already authenticated, redirecting to:', redirectTo);
+      setHasRedirected(true);
+      
+      // Use router.replace to prevent back button issues
+      router.replace(redirectTo);
     }
-  }, [isAuthenticated, loading, redirectTo]);
+  }, [isAuthenticated, initialized, redirectTo, router, hasRedirected]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -73,44 +79,52 @@ function SignInForm() {
     setErrors({});
     
     try {
-      console.log('Attempting sign in...');
+      console.log('🔑 Attempting sign in...');
       const result = await signIn({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
         rememberMe: formData.rememberMe
       });
       
-      console.log('Sign in result:', result);
+      console.log('📊 Sign in result:', result);
       
       if (result.success) {
-        console.log('Sign in successful, forcing navigation to:', redirectTo);
-        
-        // FIXED: Use window.location.href for immediate redirect
-        // This bypasses Next.js router issues and forces a page change
-        window.location.href = redirectTo;
-        
-        // Alternative: Also try router methods as backup
-        setTimeout(() => {
-          if (window.location.pathname === '/auth/signin') {
-            router.replace(redirectTo);
-          }
-        }, 1000);
-        
+        console.log('✅ Sign in successful, will redirect via useEffect');
+        // Don't manually redirect here - let useEffect handle it
+        // The useEffect will trigger once isAuthenticated becomes true
       } else {
         setErrors({ general: result.error || 'Sign in failed' });
       }
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('❌ Sign in error:', error);
       setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) {
+  // Show loading while auth is initializing
+  if (!initialized || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">
+            {!initialized ? 'Initializing...' : 'Loading...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render the form if user is authenticated and we're redirecting
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">Redirecting...</p>
+        </div>
       </div>
     );
   }
@@ -172,7 +186,7 @@ function SignInForm() {
                   <svg className="w-5 h-5 mr-3 flex-shrink-0 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Signing you in and redirecting...
+                  Signing you in...
                 </div>
               </div>
             )}
