@@ -1,4 +1,4 @@
-// src/app/auth/signup/page.tsx
+// src/app/auth/signup/page.tsx - Enhanced for Real Users
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -13,27 +13,40 @@ function SignUpForm() {
   
   const [formData, setFormData] = useState({
     name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    phone: '',
     agreeToTerms: false,
-    subscribeToMarketing: true
+    subscribeToMarketing: false
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: '' });
 
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.push('/');
+      router.push('/account');
     }
   }, [isAuthenticated, loading, router]);
 
+  // Auto-fill name field when first/last name changes
+  useEffect(() => {
+    if (formData.firstName || formData.lastName) {
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      setFormData(prev => ({ ...prev, name: fullName }));
+    }
+  }, [formData.firstName, formData.lastName]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -43,37 +56,79 @@ function SignUpForm() {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+
+    // Real-time password strength check
+    if (name === 'password') {
+      checkPasswordStrength(value);
+    }
+  };
+
+  const checkPasswordStrength = (password: string) => {
+    let score = 0;
+    let feedback = '';
+
+    if (password.length === 0) {
+      setPasswordStrength({ score: 0, feedback: '' });
+      return;
+    }
+
+    if (password.length < 8) {
+      feedback = 'Password must be at least 8 characters';
+    } else {
+      score += 1;
+      
+      if (/[a-z]/.test(password)) score += 1;
+      if (/[A-Z]/.test(password)) score += 1;
+      if (/[0-9]/.test(password)) score += 1;
+      if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+      const strengthLevels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+      feedback = strengthLevels[Math.min(score - 1, 4)];
+    }
+
+    setPasswordStrength({ score, feedback });
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+    // Name validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
     }
     
+    // Email validation
     if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
     
+    // Phone validation (optional but if provided, must be valid)
+    if (formData.phone && !/^\+?[\d\s-()]+$/.test(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
+    
+    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain uppercase, lowercase, and number';
+    } else if (passwordStrength.score < 3) {
+      newErrors.password = 'Please choose a stronger password';
     }
     
+    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
+    // Terms agreement
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = 'You must agree to the terms and conditions';
     }
@@ -93,19 +148,24 @@ function SignUpForm() {
     try {
       const result = await signUp({
         name: formData.name.trim(),
-        email: formData.email,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.toLowerCase().trim(),
         password: formData.password,
+        phone: formData.phone.trim() || undefined,
         agreeToTerms: formData.agreeToTerms,
         subscribeToMarketing: formData.subscribeToMarketing
       });
       
       if (result.success) {
-        router.push('/');
+        // Success! User will be redirected by useEffect
+        console.log('Account created successfully');
       } else {
-        setErrors({ general: result.error || 'Sign up failed' });
+        setErrors({ general: result.error || 'Account creation failed' });
       }
     } catch (error) {
-      setErrors({ general: 'An unexpected error occurred' });
+      console.error('Signup error:', error);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -119,6 +179,13 @@ function SignUpForm() {
     );
   }
 
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength.score <= 1) return 'bg-red-500';
+    if (passwordStrength.score <= 2) return 'bg-yellow-500';
+    if (passwordStrength.score <= 3) return 'bg-blue-500';
+    return 'bg-green-500';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
       {/* Background Pattern */}
@@ -128,9 +195,9 @@ function SignUpForm() {
         }}></div>
       </div>
 
-      {/* Content with proper spacing for header */}
+      {/* Content */}
       <div className="flex items-center justify-center min-h-screen pt-24 pb-8 px-4 relative z-10">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
           {/* Sign Up Card */}
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl p-8">
             
@@ -165,14 +232,8 @@ function SignUpForm() {
                 </div>
               </Link>
               
-              <h1 className="text-3xl font-bold text-white mb-2">Join the Game</h1>
-              <p className="text-white/70">Create your account to get started</p>
-            </div>
-
-            {/* Demo Mode Notice */}
-            <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-200 text-sm">
-              <div className="font-semibold mb-2">Demo Mode Active</div>
-              <div>Create an account with any details. This is for demonstration purposes.</div>
+              <h1 className="text-3xl font-bold text-white mb-2">Create Your Account</h1>
+              <p className="text-white/70">Join the gaming community and start shopping</p>
             </div>
 
             {/* General Error */}
@@ -184,32 +245,55 @@ function SignUpForm() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Field */}
-              <div>
-                <label htmlFor="name" className="block text-white font-medium mb-2">
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
-                    errors.name ? 'border-red-500/50' : 'border-white/30'
-                  }`}
-                  placeholder="Enter your full name"
-                />
-                {errors.name && (
-                  <p className="mt-2 text-red-400 text-sm">{errors.name}</p>
-                )}
+              {/* Name Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-white font-medium mb-2">
+                    First Name *
+                  </label>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
+                      errors.firstName ? 'border-red-500/50' : 'border-white/30'
+                    }`}
+                    placeholder="John"
+                  />
+                  {errors.firstName && (
+                    <p className="mt-2 text-red-400 text-sm">{errors.firstName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="block text-white font-medium mb-2">
+                    Last Name *
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
+                      errors.lastName ? 'border-red-500/50' : 'border-white/30'
+                    }`}
+                    placeholder="Doe"
+                  />
+                  {errors.lastName && (
+                    <p className="mt-2 text-red-400 text-sm">{errors.lastName}</p>
+                  )}
+                </div>
               </div>
 
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-white font-medium mb-2">
-                  Email Address
+                  Email Address *
                 </label>
                 <input
                   id="email"
@@ -221,17 +305,39 @@ function SignUpForm() {
                   className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
                     errors.email ? 'border-red-500/50' : 'border-white/30'
                   }`}
-                  placeholder="Enter your email"
+                  placeholder="john.doe@example.com"
                 />
                 {errors.email && (
                   <p className="mt-2 text-red-400 text-sm">{errors.email}</p>
                 )}
               </div>
 
+              {/* Phone Field */}
+              <div>
+                <label htmlFor="phone" className="block text-white font-medium mb-2">
+                  Phone Number <span className="text-white/60">(optional)</span>
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
+                    errors.phone ? 'border-red-500/50' : 'border-white/30'
+                  }`}
+                  placeholder="+1 (555) 123-4567"
+                />
+                {errors.phone && (
+                  <p className="mt-2 text-red-400 text-sm">{errors.phone}</p>
+                )}
+              </div>
+
               {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-white font-medium mb-2">
-                  Password
+                  Password *
                 </label>
                 <div className="relative">
                   <input
@@ -244,7 +350,7 @@ function SignUpForm() {
                     className={`w-full px-4 py-3 pr-12 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
                       errors.password ? 'border-red-500/50' : 'border-white/30'
                     }`}
-                    placeholder="Create a password"
+                    placeholder="Create a strong password"
                   />
                   <button
                     type="button"
@@ -263,6 +369,22 @@ function SignUpForm() {
                     )}
                   </button>
                 </div>
+                
+                {/* Password Strength Indicator */}
+                {formData.password && (
+                  <div className="mt-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-1 bg-white/20 rounded-full h-2">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                          style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-white/80">{passwordStrength.feedback}</span>
+                    </div>
+                  </div>
+                )}
+                
                 {errors.password && (
                   <p className="mt-2 text-red-400 text-sm">{errors.password}</p>
                 )}
@@ -271,7 +393,7 @@ function SignUpForm() {
               {/* Confirm Password Field */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-white font-medium mb-2">
-                  Confirm Password
+                  Confirm Password *
                 </label>
                 <div className="relative">
                   <input
@@ -344,7 +466,7 @@ function SignUpForm() {
                     className="mt-1 mr-3 rounded text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-white/10 border-white/30"
                   />
                   <span className="text-white/80 text-sm leading-relaxed">
-                    Subscribe to marketing emails for exclusive gaming deals and updates (optional)
+                    Subscribe to our newsletter for exclusive gaming deals, new arrivals, and updates
                   </span>
                 </label>
               </div>

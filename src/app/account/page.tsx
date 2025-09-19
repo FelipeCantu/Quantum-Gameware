@@ -1,7 +1,9 @@
-// src/app/account/page.tsx
-"use client";
+// src/app/account/page.tsx - Enhanced User Account Dashboard with Beautiful Styling
+'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Header from '@/components/ui/Header';
@@ -22,16 +24,44 @@ interface RecentOrder {
   items: number;
 }
 
-function AccountPageContent() {
-  const { user, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+interface EditProfileData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  preferences: {
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    marketingEmails: boolean;
+    theme: 'light' | 'dark' | 'system';
+    currency: string;
+    language: string;
+  };
+}
 
-  // Mock data - replace with real API calls
+function AccountPageContent() {
+  const { user, signOut, updateProfile, loading } = useAuth();
+  const router = useRouter();
+  
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  
+  // Mock user stats - replace with real API calls
   const [userStats] = useState<UserStats>({
-    totalOrders: 12,
-    totalSpent: 2847.99,
-    rewardPoints: 1420,
-    memberSince: 'March 2023'
+    totalOrders: user ? 12 : 0,
+    totalSpent: user ? 2847.99 : 0,
+    rewardPoints: user ? 1420 : 0,
+    memberSince: user ? 'March 2023' : ''
   });
 
   const [recentOrders] = useState<RecentOrder[]>([
@@ -58,6 +88,57 @@ function AccountPageContent() {
     }
   ]);
 
+  const [editData, setEditData] = useState<EditProfileData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    avatar: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'US'
+    },
+    preferences: {
+      emailNotifications: true,
+      smsNotifications: false,
+      marketingEmails: false,
+      theme: 'system',
+      currency: 'USD',
+      language: 'en'
+    }
+  });
+
+  // Initialize edit data when user loads
+  useEffect(() => {
+    if (user) {
+      setEditData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        avatar: user.avatar || '',
+        address: user.address || {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'US'
+        },
+        preferences: user.preferences || {
+          emailNotifications: true,
+          smsNotifications: false,
+          marketingEmails: false,
+          theme: 'system',
+          currency: 'USD',
+          language: 'en'
+        }
+      });
+    }
+  }, [user]);
+
   const getStatusColor = (status: RecentOrder['status']) => {
     switch (status) {
       case 'delivered': return 'bg-green-100 text-green-800';
@@ -71,10 +152,95 @@ function AccountPageContent() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      // AuthGuard will handle redirect
+      router.push('/');
     } catch (error) {
       console.error('Sign out error:', error);
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setSaveMessage('');
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setSaveMessage('');
+    // Reset to original user data
+    if (user) {
+      setEditData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        avatar: user.avatar || '',
+        address: user.address || {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'US'
+        },
+        preferences: user.preferences || {
+          emailNotifications: true,
+          smsNotifications: false,
+          marketingEmails: false,
+          theme: 'system',
+          currency: 'USD',
+          language: 'en'
+        }
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveMessage('');
+
+    try {
+      const updates = {
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        name: `${editData.firstName} ${editData.lastName}`.trim(),
+        phone: editData.phone,
+        avatar: editData.avatar,
+        address: editData.address,
+        preferences: editData.preferences
+      };
+
+      const result = await updateProfile(updates);
+
+      if (result.success) {
+        setIsEditing(false);
+        setSaveMessage('Profile updated successfully!');
+        setTimeout(() => setSaveMessage(''), 3000);
+      } else {
+        setSaveMessage(result.error || 'Failed to update profile');
+      }
+    } catch (error) {
+      setSaveMessage('An error occurred while updating your profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setEditData(prev => {
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent as keyof EditProfileData],
+            [child]: value
+          }
+        };
+      }
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
   };
 
   const tabs = [
@@ -83,6 +249,14 @@ function AccountPageContent() {
     { id: 'security', label: 'Security', icon: '🔒' },
     { id: 'preferences', label: 'Preferences', icon: '⚙️' }
   ];
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
@@ -93,7 +267,7 @@ function AccountPageContent() {
           {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Welcome back, {user?.name}!
+              Welcome back, {user.name}!
             </h1>
             <p className="text-white/80 text-lg">
               Manage your account, orders, and preferences all in one place.
@@ -106,7 +280,7 @@ function AccountPageContent() {
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
                 <div className="p-6 border-b border-white/20">
                   <div className="flex items-center space-x-3">
-                    {user?.avatar ? (
+                    {user.avatar ? (
                       <img 
                         src={user.avatar} 
                         alt={user.name}
@@ -114,13 +288,13 @@ function AccountPageContent() {
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-lg">
-                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                        {user.name?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     )}
                     <div>
-                      <div className="font-semibold text-white">{user?.name}</div>
-                      <div className="text-sm text-white/70">{user?.email}</div>
-                      {user?.role === 'admin' && (
+                      <div className="font-semibold text-white">{user.name}</div>
+                      <div className="text-sm text-white/70">{user.email}</div>
+                      {user.role === 'admin' && (
                         <div className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded-full inline-block mt-1">
                           Admin
                         </div>
@@ -149,20 +323,20 @@ function AccountPageContent() {
                 {/* Quick Actions */}
                 <div className="p-4 border-t border-white/20">
                   <div className="space-y-2">
-                    <a
+                    <Link
                       href="/orders"
                       className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
                     >
                       <span className="text-lg">📦</span>
                       <span className="font-medium">My Orders</span>
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="/wishlist"
                       className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
                     >
                       <span className="text-lg">❤️</span>
                       <span className="font-medium">Wishlist</span>
-                    </a>
+                    </Link>
                     <button
                       onClick={handleSignOut}
                       className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all duration-300 text-left"
@@ -235,12 +409,12 @@ function AccountPageContent() {
                     <div className="p-6 border-b border-white/20">
                       <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold text-white">Recent Orders</h2>
-                        <a
+                        <Link
                           href="/orders"
                           className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
                         >
                           View All
-                        </a>
+                        </Link>
                       </div>
                     </div>
                     
@@ -260,12 +434,12 @@ function AccountPageContent() {
                             <div className="text-white/70">
                               {new Date(order.date).toLocaleDateString()} • {order.items} items
                             </div>
-                            <a
+                            <Link
                               href={`/orders/${order.id}`}
                               className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
                             >
                               View Details
-                            </a>
+                            </Link>
                           </div>
                         </div>
                       ))}
@@ -276,58 +450,109 @@ function AccountPageContent() {
 
               {activeTab === 'profile' && (
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Profile Information</h2>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-white">Profile Information</h2>
+                    {!isEditing ? (
+                      <button
+                        onClick={handleEdit}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium"
+                      >
+                        Edit Profile
+                      </button>
+                    ) : (
+                      <div className="space-x-3">
+                        <button
+                          onClick={handleCancel}
+                          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          disabled={isSaving}
+                          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50"
+                        >
+                          {isSaving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {saveMessage && (
+                    <div className={`mb-6 p-4 rounded-xl ${
+                      saveMessage.includes('success') 
+                        ? 'bg-green-500/20 text-green-200 border border-green-500/30' 
+                        : 'bg-red-500/20 text-red-200 border border-red-500/30'
+                    }`}>
+                      {saveMessage}
+                    </div>
+                  )}
                   
-                  <form className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-white font-medium mb-2">Full Name</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-white font-medium mb-2">First Name</label>
+                      {isEditing ? (
                         <input
                           type="text"
-                          defaultValue={user?.name}
+                          value={editData.firstName}
+                          onChange={(e) => handleInputChange('firstName', e.target.value)}
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-white font-medium mb-2">Email</label>
+                      ) : (
+                        <div className="text-white p-3">{user.firstName || 'Not provided'}</div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-white font-medium mb-2">Last Name</label>
+                      {isEditing ? (
                         <input
-                          type="email"
-                          defaultValue={user?.email}
+                          type="text"
+                          value={editData.lastName}
+                          onChange={(e) => handleInputChange('lastName', e.target.value)}
                           className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                      </div>
+                      ) : (
+                        <div className="text-white p-3">{user.lastName || 'Not provided'}</div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-white font-medium mb-2">Email</label>
+                      <div className="text-white p-3 bg-white/5 rounded-xl">{user.email}</div>
+                      <p className="text-xs text-white/50 mt-1">Email cannot be changed here</p>
                     </div>
 
                     <div>
                       <label className="block text-white font-medium mb-2">Phone Number</label>
-                      <input
-                        type="tel"
-                        defaultValue={user?.phone}
-                        placeholder="+1 (555) 123-4567"
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      {isEditing ? (
+                        <input
+                          type="tel"
+                          value={editData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      ) : (
+                        <div className="text-white p-3">{user.phone || 'Not provided'}</div>
+                      )}
                     </div>
 
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="block text-white font-medium mb-2">Avatar URL</label>
-                      <input
-                        type="url"
-                        defaultValue={user?.avatar}
-                        placeholder="https://example.com/avatar.jpg"
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      {isEditing ? (
+                        <input
+                          type="url"
+                          value={editData.avatar}
+                          onChange={(e) => handleInputChange('avatar', e.target.value)}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="https://example.com/avatar.jpg"
+                        />
+                      ) : (
+                        <div className="text-white p-3">{user.avatar || 'Not provided'}</div>
+                      )}
                     </div>
-
-                    <div className="flex justify-end">
-                      <button
-                        type="submit"
-                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium"
-                      >
-                        Save Changes
-                      </button>
-                    </div>
-                  </form>
+                  </div>
                 </div>
               )}
 
@@ -339,7 +564,7 @@ function AccountPageContent() {
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
-                        <form className="space-y-4">
+                        <div className="space-y-4">
                           <div>
                             <label className="block text-white font-medium mb-2">Current Password</label>
                             <input
@@ -370,7 +595,7 @@ function AccountPageContent() {
                           >
                             Update Password
                           </button>
-                        </form>
+                        </div>
                       </div>
 
                       <div className="border-t border-white/20 pt-6">
@@ -392,25 +617,56 @@ function AccountPageContent() {
 
               {activeTab === 'preferences' && (
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">Preferences</h2>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-white">Preferences</h2>
+                    {!isEditing ? (
+                      <button
+                        onClick={handleEdit}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium"
+                      >
+                        Edit Preferences
+                      </button>
+                    ) : (
+                      <div className="space-x-3">
+                        <button
+                          onClick={handleCancel}
+                          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          disabled={isSaving}
+                          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50"
+                        >
+                          {isSaving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-4">Notifications</h3>
                       <div className="space-y-4">
                         {[
-                          { label: 'Order Updates', description: 'Get notified about order status changes' },
-                          { label: 'New Products', description: 'Receive alerts about new gaming gear' },
-                          { label: 'Sales & Promotions', description: 'Be the first to know about deals' },
-                          { label: 'Newsletter', description: 'Monthly gaming tips and product reviews' }
-                        ].map((item, index) => (
-                          <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                          { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive order updates and news via email' },
+                          { key: 'smsNotifications', label: 'SMS Notifications', description: 'Receive order updates via SMS' },
+                          { key: 'marketingEmails', label: 'Marketing Emails', description: 'Receive promotional offers and deals' }
+                        ].map((item) => (
+                          <div key={item.key} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
                             <div>
                               <div className="text-white font-medium">{item.label}</div>
                               <div className="text-white/70 text-sm">{item.description}</div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" defaultChecked />
+                              <input 
+                                type="checkbox" 
+                                checked={isEditing ? editData.preferences[item.key as keyof typeof editData.preferences] : user.preferences?.[item.key as keyof typeof user.preferences]}
+                                onChange={(e) => isEditing && handleInputChange(`preferences.${item.key}`, e.target.checked)}
+                                disabled={!isEditing}
+                                className="sr-only peer" 
+                              />
                               <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                             </label>
                           </div>
@@ -423,32 +679,57 @@ function AccountPageContent() {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-white font-medium mb-2">Currency</label>
-                          <select className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="USD" className="bg-gray-800">USD ($)</option>
-                            <option value="EUR" className="bg-gray-800">EUR (€)</option>
-                            <option value="GBP" className="bg-gray-800">GBP (£)</option>
-                          </select>
+                          {isEditing ? (
+                            <select 
+                              value={editData.preferences.currency}
+                              onChange={(e) => handleInputChange('preferences.currency', e.target.value)}
+                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="USD" className="bg-gray-800">USD ($)</option>
+                              <option value="EUR" className="bg-gray-800">EUR (€)</option>
+                              <option value="GBP" className="bg-gray-800">GBP (£)</option>
+                              <option value="CAD" className="bg-gray-800">CAD ($)</option>
+                            </select>
+                          ) : (
+                            <div className="text-white p-3">{user.preferences?.currency || 'USD'}</div>
+                          )}
                         </div>
                         
                         <div>
                           <label className="block text-white font-medium mb-2">Language</label>
-                          <select className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="en" className="bg-gray-800">English</option>
-                            <option value="es" className="bg-gray-800">Español</option>
-                            <option value="fr" className="bg-gray-800">Français</option>
-                            <option value="de" className="bg-gray-800">Deutsch</option>
-                          </select>
+                          {isEditing ? (
+                            <select 
+                              value={editData.preferences.language}
+                              onChange={(e) => handleInputChange('preferences.language', e.target.value)}
+                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="en" className="bg-gray-800">English</option>
+                              <option value="es" className="bg-gray-800">Español</option>
+                              <option value="fr" className="bg-gray-800">Français</option>
+                              <option value="de" className="bg-gray-800">Deutsch</option>
+                            </select>
+                          ) : (
+                            <div className="text-white p-3">{user.preferences?.language || 'English'}</div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-white font-medium mb-2">Theme</label>
+                          {isEditing ? (
+                            <select 
+                              value={editData.preferences.theme}
+                              onChange={(e) => handleInputChange('preferences.theme', e.target.value)}
+                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="light" className="bg-gray-800">Light</option>
+                              <option value="dark" className="bg-gray-800">Dark</option>
+                              <option value="system" className="bg-gray-800">System</option>
+                            </select>
+                          ) : (
+                            <div className="text-white p-3 capitalize">{user.preferences?.theme || 'System'}</div>
+                          )}
                         </div>
                       </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <button
-                        type="submit"
-                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium"
-                      >
-                        Save Preferences
-                      </button>
                     </div>
                   </div>
                 </div>

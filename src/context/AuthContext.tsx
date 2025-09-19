@@ -1,9 +1,9 @@
-// src/context/AuthContext.tsx
+// src/context/AuthContext.tsx - Enhanced for Real Users
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-// Types for our authentication system
+// Enhanced types for real user data
 interface User {
   id: string;
   email: string;
@@ -55,6 +55,7 @@ interface SignUpCredentials {
   name: string;
   firstName?: string;
   lastName?: string;
+  phone?: string;
   agreeToTerms: boolean;
   subscribeToMarketing?: boolean;
 }
@@ -65,6 +66,7 @@ interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,6 +127,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               if (result.valid && result.user) {
                 setUser(result.user);
                 setIsAuthenticated(true);
+                
+                // Update localStorage with fresh user data
+                localStorage.setItem('userData', JSON.stringify(result.user));
               } else {
                 // Invalid token, clear storage
                 localStorage.removeItem('authToken');
@@ -198,6 +203,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(data.user);
         setIsAuthenticated(true);
         
+        console.log('User signed in successfully:', data.user.email);
         return { success: true };
       } else {
         return { success: false, error: data.message || 'Invalid credentials' };
@@ -233,6 +239,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(data.user);
         setIsAuthenticated(true);
         
+        console.log('User account created successfully:', data.user.email);
         return { success: true };
       } else {
         return { success: false, error: data.message || 'Registration failed' };
@@ -267,6 +274,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       setUser(null);
       setIsAuthenticated(false);
+      console.log('User signed out successfully');
     }
   };
 
@@ -300,6 +308,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         setUser(updatedUser);
         
+        console.log('Profile updated successfully');
         return { success: true };
       } else {
         return { success: false, error: data.message || 'Update failed' };
@@ -337,6 +346,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.valid && result.user) {
+          setUser(result.user);
+          localStorage.setItem('userData', JSON.stringify(result.user));
+        }
+      }
+    } catch (error) {
+      console.error('User refresh error:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -346,6 +380,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOut,
     updateProfile,
     resetPassword,
+    refreshUser,
   };
 
   return (

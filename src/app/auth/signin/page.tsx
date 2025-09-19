@@ -1,4 +1,4 @@
-// src/app/auth/signin/page.tsx
+// src/app/auth/signin/page.tsx - Enhanced for Real Users
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -51,14 +51,12 @@ function SignInForm() {
     
     if (!formData.email) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
     
     setErrors(newErrors);
@@ -76,7 +74,7 @@ function SignInForm() {
     try {
       console.log('Attempting sign in...');
       const result = await signIn({
-        email: formData.email,
+        email: formData.email.toLowerCase().trim(),
         password: formData.password,
         rememberMe: formData.rememberMe
       });
@@ -94,7 +92,7 @@ function SignInForm() {
       }
     } catch (error) {
       console.error('Sign in error:', error);
-      setErrors({ general: 'An unexpected error occurred' });
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -155,19 +153,18 @@ function SignInForm() {
               </Link>
               
               <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-              <p className="text-white/70">Sign in to your account to continue</p>
-            </div>
-
-            {/* Demo Credentials Notice */}
-            <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl text-blue-200 text-sm">
-              <div className="font-semibold mb-2">Demo Mode Active</div>
-              <div>Use any email and password (6+ chars) to sign in. Try: demo@example.com / password</div>
+              <p className="text-white/70">Sign in to access your account and continue shopping</p>
             </div>
 
             {/* General Error */}
             {errors.general && (
               <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm">
-                {errors.general}
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  {errors.general}
+                </div>
               </div>
             )}
 
@@ -188,7 +185,7 @@ function SignInForm() {
                   className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300 ${
                     errors.email ? 'border-red-500/50' : 'border-white/30'
                   }`}
-                  placeholder="Enter your email"
+                  placeholder="Enter your email address"
                 />
                 {errors.email && (
                   <p className="mt-2 text-red-400 text-sm">{errors.email}</p>
@@ -217,6 +214,7 @@ function SignInForm() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                    title={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,11 +243,11 @@ function SignInForm() {
                     onChange={handleChange}
                     className="mr-2 rounded text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-white/10 border-white/30"
                   />
-                  <span className="text-white/80 text-sm">Remember me</span>
+                  <span className="text-white/80 text-sm">Remember me for 30 days</span>
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-white/80 hover:text-white transition-colors"
+                  className="text-sm text-white/80 hover:text-white transition-colors underline"
                 >
                   Forgot password?
                 </Link>
@@ -270,34 +268,79 @@ function SignInForm() {
                     Signing In...
                   </div>
                 ) : (
-                  'Sign In'
+                  <>
+                    <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Sign In
+                  </>
                 )}
               </button>
             </form>
 
+            {/* Divider */}
+            <div className="my-6 flex items-center">
+              <div className="flex-1 border-t border-white/20"></div>
+              <span className="px-4 text-white/60 text-sm">or</span>
+              <div className="flex-1 border-t border-white/20"></div>
+            </div>
+
             {/* Sign Up Link */}
-            <div className="text-center mt-6">
-              <p className="text-white/70">
-                Don&apos;t have an account?{' '}
-                <Link
-                  href="/auth/signup"
-                  className="text-white hover:text-blue-200 font-semibold transition-colors"
-                >
-                  Sign up
-                </Link>
+            <div className="text-center">
+              <p className="text-white/70 mb-4">
+                Don&apos;t have an account yet?
               </p>
+              <Link
+                href="/auth/signup"
+                className="inline-flex items-center justify-center w-full px-6 py-3 border border-white/30 rounded-xl text-white font-semibold hover:bg-white/10 transition-all duration-300 hover:scale-105"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                Create New Account
+              </Link>
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Additional Info */}
           <div className="mt-8 text-center">
+            <div className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6 mb-6">
+              <h3 className="text-white font-semibold mb-3">Why Create an Account?</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm text-white/80">
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Order tracking
+                </div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Wishlist
+                </div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Exclusive deals
+                </div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Faster checkout
+                </div>
+              </div>
+            </div>
+
             <p className="text-white/60 text-sm">
               By signing in, you agree to our{' '}
-              <Link href="/terms" className="text-white/80 hover:text-white transition-colors">
+              <Link href="/terms" className="text-white/80 hover:text-white transition-colors underline">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-white/80 hover:text-white transition-colors">
+              <Link href="/privacy" className="text-white/80 hover:text-white transition-colors underline">
                 Privacy Policy
               </Link>
             </p>
