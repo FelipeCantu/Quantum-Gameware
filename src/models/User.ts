@@ -1,151 +1,264 @@
-// test-auth-complete.js
-const { MongoClient } = require('mongodb');
+// src/models/User.ts
+import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-async function testCompleteAuth() {
-  console.log('🧪 Testing Complete Authentication System...\n');
-
-  // First, test database connection
-  console.log('1️⃣ Testing MongoDB Connection...');
-  try {
-    const client = new MongoClient('mongodb://localhost:27017');
-    await client.connect();
-    console.log('✅ MongoDB connection successful');
-    
-    const db = client.db('quantum-gameware'); // Using your database name
-    const usersCollection = db.collection('users');
-    
-    // Check if collection exists and get count
-    const userCount = await usersCollection.countDocuments();
-    console.log(`📊 Current users in database: ${userCount}`);
-    
-    await client.close();
-  } catch (error) {
-    console.error('❌ MongoDB connection failed:', error.message);
-    return;
-  }
-
-  // Test API endpoints (requires Next.js to be running)
-  const baseUrl = 'http://localhost:3000';
-  
-  try {
-    console.log('\n2️⃣ Testing Signup API...');
-    
-    const signupData = {
-      name: 'Test User',
-      email: `test${Date.now()}@example.com`, // Unique email each time
-      password: 'SecurePass123',
-      agreeToTerms: true,
-      subscribeToMarketing: false
-    };
-
-    const signupResponse = await fetch(`${baseUrl}/api/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(signupData)
-    });
-
-    if (signupResponse.ok) {
-      const result = await signupResponse.json();
-      console.log('✅ Signup successful!');
-      console.log('📄 User created:', {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        role: result.user.role
-      });
-
-      // Test signin with the same credentials
-      console.log('\n3️⃣ Testing Signin API...');
-      
-      const signinResponse = await fetch(`${baseUrl}/api/auth/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: signupData.email,
-          password: signupData.password,
-          rememberMe: false
-        })
-      });
-
-      if (signinResponse.ok) {
-        const signinResult = await signinResponse.json();
-        console.log('✅ Signin successful!');
-        console.log('🔑 Token received:', signinResult.token ? 'Yes' : 'No');
-        
-        // Test signout
-        console.log('\n4️⃣ Testing Signout API...');
-        
-        const signoutResponse = await fetch(`${baseUrl}/api/auth/signout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${signinResult.token}`,
-            'Content-Type': 'application/json',
-          }
-        });
-
-        if (signoutResponse.ok) {
-          console.log('✅ Signout successful!');
-        } else {
-          console.log('❌ Signout failed');
-        }
-      } else {
-        const error = await signinResponse.json();
-        console.log('❌ Signin failed:', error.message);
-      }
-    } else {
-      const error = await signupResponse.json();
-      console.log('❌ Signup failed:', error.message);
-    }
-
-    // Test invalid credentials
-    console.log('\n5️⃣ Testing Invalid Credentials...');
-    
-    const invalidResponse = await fetch(`${baseUrl}/api/auth/signin`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: 'nonexistent@example.com',
-        password: 'wrongpassword'
-      })
-    });
-
-    if (!invalidResponse.ok) {
-      const error = await invalidResponse.json();
-      console.log('✅ Invalid credentials properly rejected:', error.message);
-    } else {
-      console.log('❌ Invalid credentials should have been rejected');
-    }
-
-    console.log('\n🎉 All tests completed!');
-    
-    console.log('\n📋 System Status:');
-    console.log('✅ MongoDB 8.2 - Running');
-    console.log('✅ User Model - Advanced features');
-    console.log('✅ JWT Authentication - Working');
-    console.log('✅ Password Hashing - Secure');
-    console.log('✅ Input Validation - Comprehensive');
-    console.log('✅ Error Handling - Robust');
-    
-    console.log('\n🚀 Your authentication system is production-ready!');
-
-  } catch (error) {
-    console.error('❌ API test failed:', error.message);
-    console.log('\n💡 Make sure your Next.js app is running:');
-    console.log('   npm run dev');
-  }
+export interface UserAddress {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
-// Instructions
-console.log('📋 Test Instructions:');
-console.log('1. Make sure MongoDB is running (should be automatic)');
-console.log('2. Start your Next.js app: npm run dev');
-console.log('3. Run this test: node test-auth-complete.js\n');
+export interface UserPreferences {
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  marketingEmails: boolean;
+  theme: 'light' | 'dark' | 'system';
+  currency: string;
+  language: string;
+}
 
-// Run the test
-testCompleteAuth();
+export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  password: string;
+  avatar?: string;
+  phone?: string;
+  address?: UserAddress;
+  preferences?: UserPreferences;
+  role: 'customer' | 'admin';
+  isActive: boolean;
+  emailVerified: boolean;
+  emailVerificationToken?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  lastLogin?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  
+  // Instance methods
+  comparePassword(candidatePassword: string): Promise<boolean>;
+  updateLastLogin(): Promise<void>;
+  generatePasswordResetToken(): string;
+}
+
+export interface IUserModel extends mongoose.Model<IUser> {
+  findByEmail(email: string): Promise<IUser | null>;
+  findByResetToken(token: string): Promise<IUser | null>;
+}
+
+const userSchema = new Schema<IUser>({
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
+    trim: true,
+    maxlength: [100, 'Name cannot exceed 100 characters']
+  },
+  firstName: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'First name cannot exceed 50 characters']
+  },
+  lastName: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Last name cannot exceed 50 characters']
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      'Please enter a valid email'
+    ]
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [8, 'Password must be at least 8 characters long'],
+    select: false // Don't include password in queries by default
+  },
+  avatar: {
+    type: String,
+    default: null
+  },
+  phone: {
+    type: String,
+    default: null,
+    match: [/^\+?[\d\s-()]+$/, 'Please enter a valid phone number']
+  },
+  address: {
+    street: { type: String, trim: true },
+    city: { type: String, trim: true },
+    state: { type: String, trim: true },
+    zipCode: { type: String, trim: true },
+    country: { type: String, trim: true, default: 'US' }
+  },
+  preferences: {
+    emailNotifications: { type: Boolean, default: true },
+    smsNotifications: { type: Boolean, default: false },
+    marketingEmails: { type: Boolean, default: false },
+    theme: { 
+      type: String, 
+      enum: ['light', 'dark', 'system'], 
+      default: 'system' 
+    },
+    currency: { type: String, default: 'USD' },
+    language: { type: String, default: 'en' }
+  },
+  role: {
+    type: String,
+    enum: ['customer', 'admin'],
+    default: 'customer'
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: {
+    type: String,
+    select: false
+  },
+  passwordResetToken: {
+    type: String,
+    select: false
+  },
+  passwordResetExpires: {
+    type: Date,
+    select: false
+  },
+  lastLogin: {
+    type: Date,
+    default: null
+  }
+}, {
+  timestamps: true,
+  toJSON: { 
+    virtuals: true,
+    transform: function(doc, ret) {
+      delete ret.password;
+      delete ret.emailVerificationToken;
+      delete ret.passwordResetToken;
+      delete ret.passwordResetExpires;
+      delete ret.__v;
+      return ret;
+    }
+  },
+  toObject: { virtuals: true }
+});
+
+// Virtual for full name
+userSchema.virtual('fullName').get(function(this: IUser) {
+  if (this.firstName && this.lastName) {
+    return `${this.firstName} ${this.lastName}`;
+  }
+  return this.name;
+});
+
+// Pre-save middleware to hash password
+userSchema.pre('save', async function(this: IUser, next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
+
+  try {
+    // Hash password with cost of 12
+    const hashedPassword = await bcrypt.hash(this.password, 12);
+    this.password = hashedPassword;
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
+
+// Pre-save middleware to set firstName and lastName from name
+userSchema.pre('save', function(this: IUser, next) {
+  if (this.isModified('name') && this.name && (!this.firstName || !this.lastName)) {
+    const nameParts = this.name.trim().split(' ');
+    if (nameParts.length >= 2) {
+      this.firstName = this.firstName || nameParts[0];
+      this.lastName = this.lastName || nameParts.slice(1).join(' ');
+    } else if (nameParts.length === 1) {
+      this.firstName = this.firstName || nameParts[0];
+      this.lastName = this.lastName || '';
+    }
+  }
+  next();
+});
+
+// Instance method to compare password
+userSchema.methods.comparePassword = async function(
+  this: IUser,
+  candidatePassword: string
+): Promise<boolean> {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    throw new Error('Password comparison failed');
+  }
+};
+
+// Instance method to update last login
+userSchema.methods.updateLastLogin = async function(this: IUser): Promise<void> {
+  this.lastLogin = new Date();
+  await this.save({ validateBeforeSave: false });
+};
+
+// Instance method to generate password reset token
+userSchema.methods.generatePasswordResetToken = function(this: IUser): string {
+  const crypto = require('crypto');
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  
+  // Token expires in 10 minutes
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+  
+  return resetToken;
+};
+
+// Static method to find user by email
+userSchema.statics.findByEmail = async function(
+  this: IUserModel,
+  email: string
+): Promise<IUser | null> {
+  return this.findOne({ email: email.toLowerCase() }).select('+password');
+};
+
+// Static method to find user by reset token
+userSchema.statics.findByResetToken = async function(
+  this: IUserModel,
+  token: string
+): Promise<IUser | null> {
+  const crypto = require('crypto');
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  return this.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() }
+  });
+};
+
+// Create compound index for better query performance
+userSchema.index({ email: 1, isActive: 1 });
+userSchema.index({ passwordResetToken: 1, passwordResetExpires: 1 });
+
+// Ensure the model is only compiled once
+export const User = (mongoose.models.User as IUserModel) || 
+  mongoose.model<IUser, IUserModel>('User', userSchema);

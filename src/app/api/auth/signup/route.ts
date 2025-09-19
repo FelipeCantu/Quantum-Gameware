@@ -1,6 +1,5 @@
-// src/app/api/auth/signup/route.ts
+// src/app/api/auth/signup/route.ts - FIXED VERSION
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { User } from '@/models/User';
 import { connectDB } from '@/lib/mongodb';
@@ -16,13 +15,22 @@ interface SignUpRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json() as SignUpRequest;
+    
+    // Extract and validate data - CRITICAL: Don't destructure password
     const { 
       name, 
       email, 
-      password, 
+      password,  // Keep password as-is, don't destructure or modify
       agreeToTerms, 
       subscribeToMarketing = false 
-    }: SignUpRequest = await request.json();
+    } = body;
+
+    // Add debugging (remove in production)
+    console.log('🔐 Signup Debug:');
+    console.log(`Password received: "${password}"`);
+    console.log(`Password length: ${password.length}`);
+    console.log(`Password type: ${typeof password}`);
 
     // Validate input
     if (!name || !email || !password || !agreeToTerms) {
@@ -61,18 +69,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     // Generate email verification token
     const emailVerificationToken = crypto.randomBytes(32).toString('hex');
 
-    // Create user
+    // Create user - CRITICAL: Pass password exactly as received
+    console.log(`🔐 Creating user with password: "${password}"`);
+    
     const user = new User({
       name: name.trim(),
-      email: email.toLowerCase(),
-      password: hashedPassword,
+      email: email.toLowerCase().trim(),
+      password: password, // Don't modify the password in any way
       emailVerificationToken,
       preferences: {
         emailNotifications: true,
@@ -87,7 +93,10 @@ export async function POST(request: NextRequest) {
       emailVerified: false
     });
 
+    // Save user - the pre-save middleware will handle password hashing
     await user.save();
+    
+    console.log('🔐 User saved successfully');
 
     // Create JWT token
     const secret = new TextEncoder().encode(
