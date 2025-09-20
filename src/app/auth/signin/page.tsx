@@ -1,7 +1,7 @@
-// src/app/auth/signin/page.tsx - Complete fixed version
+// src/app/auth/signin/page.tsx - SIMPLE VERSION (no auto-redirect)
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, isAuthenticated, loading, initialized } = useAuth();
+  const { signIn, isAuthenticated, loading } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -21,39 +21,8 @@ function SignInForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [redirectAttempted, setRedirectAttempted] = useState(false);
 
   const redirectTo = searchParams?.get('redirect') || '/account';
-
-  useEffect(() => {
-    if (!initialized) {
-      console.log('⏳ Waiting for auth initialization...');
-      return;
-    }
-
-    if (isAuthenticated && !redirectAttempted) {
-      console.log('✅ User already authenticated, redirecting to:', redirectTo);
-      setRedirectAttempted(true);
-      
-      const performRedirect = () => {
-        try {
-          router.replace(redirectTo);
-          
-          setTimeout(() => {
-            if (window.location.pathname === '/auth/signin') {
-              console.log('🔄 Router redirect failed, using window.location');
-              window.location.href = redirectTo;
-            }
-          }, 1000);
-        } catch (error) {
-          console.error('❌ Redirect error:', error);
-          window.location.href = redirectTo;
-        }
-      };
-
-      performRedirect();
-    }
-  }, [isAuthenticated, initialized, redirectTo, router, redirectAttempted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -93,65 +62,39 @@ function SignInForm() {
     setErrors({});
     
     try {
-      console.log('🔑 Attempting sign in...');
       const result = await signIn({
         email: formData.email.toLowerCase().trim(),
         password: formData.password,
         rememberMe: formData.rememberMe
       });
       
-      console.log('📊 Sign in result:', result);
-      
       if (result.success) {
-        console.log('✅ Sign in successful, redirecting...');
-        router.replace(redirectTo);
-        
-        setTimeout(() => {
-          if (window.location.pathname === '/auth/signin') {
-            window.location.href = redirectTo;
-          }
-        }, 500);
+        // Manual redirect after successful sign in
+        console.log('✅ Sign in successful, redirecting to:', redirectTo);
+        window.location.href = redirectTo;
       } else {
         setErrors({ general: result.error || 'Sign in failed' });
       }
     } catch (error) {
-      console.error('❌ Sign in error:', error);
+      console.error('Sign in error:', error);
       setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const forceRedirect = () => {
-    console.log('🚀 Force redirecting to:', redirectTo);
-    window.location.href = redirectTo;
-  };
-
-  if (!initialized) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">Initializing...</p>
-          <p className="text-white/60 text-sm mt-2">Setting up authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // If already authenticated, show message with manual redirect button
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">Redirecting...</p>
-          <p className="text-white/60 text-sm mt-2">Taking you to {redirectTo}</p>
-          
+        <div className="text-center bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
+          <h2 className="text-2xl font-bold text-white mb-4">Already Signed In</h2>
+          <p className="text-white/70 mb-6">You are already authenticated.</p>
           <button
-            onClick={forceRedirect}
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
+            onClick={() => window.location.href = redirectTo}
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300"
           >
-            Click here if redirect doesn't work
+            Go to {redirectTo}
           </button>
         </div>
       </div>

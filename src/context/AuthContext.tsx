@@ -1,4 +1,4 @@
-// src/context/AuthContext.tsx - Complete fixed version
+// src/context/AuthContext.tsx - SIMPLE VERSION (no auto-redirects)
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -40,7 +40,6 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  initialized: boolean;
 }
 
 interface SignInCredentials {
@@ -87,102 +86,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [initialized, setInitialized] = useState(false);
 
+  // Simple initialization - check localStorage once
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initAuth = () => {
       try {
         if (typeof window === 'undefined') {
           setLoading(false);
-          setInitialized(true);
           return;
         }
-
-        console.log('🔐 Initializing auth...');
 
         const token = localStorage.getItem('authToken');
         const userData = localStorage.getItem('userData');
         
-        if (!token || !userData) {
-          console.log('❌ No token or user data found');
-          setUser(null);
-          setIsAuthenticated(false);
-          setLoading(false);
-          setInitialized(true);
-          return;
-        }
-
-        try {
-          const parsedUser = JSON.parse(userData);
-          console.log('📄 Found stored user:', parsedUser.email);
-          
-          if (token.startsWith('demo_token_')) {
-            console.log('✅ Demo token detected, setting user');
+        if (token && userData) {
+          try {
+            const parsedUser = JSON.parse(userData);
             setUser(parsedUser);
             setIsAuthenticated(true);
-            setLoading(false);
-            setInitialized(true);
-            return;
-          }
-          
-          console.log('🔍 Verifying token with backend...');
-          const response = await fetch('/api/auth/verify', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            if (result.valid && result.user) {
-              console.log('✅ Token verified, user authenticated');
-              setUser(result.user);
-              setIsAuthenticated(true);
-              localStorage.setItem('userData', JSON.stringify(result.user));
-            } else {
-              console.log('❌ Token verification failed');
-              localStorage.removeItem('authToken');
-              localStorage.removeItem('userData');
-              setUser(null);
-              setIsAuthenticated(false);
-            }
-          } else {
-            console.log('❌ Token verification request failed');
+            console.log('✅ User loaded from localStorage:', parsedUser.email);
+          } catch (error) {
+            console.log('❌ Error parsing user data, clearing storage');
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
-            setUser(null);
-            setIsAuthenticated(false);
           }
-        } catch (parseError) {
-          console.error('❌ Error parsing stored data:', parseError);
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
-          setUser(null);
-          setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('❌ Auth initialization error:', error);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
-        }
-        setUser(null);
-        setIsAuthenticated(false);
+        console.error('Auth init error:', error);
       } finally {
-        console.log('🏁 Auth initialization complete');
         setLoading(false);
-        setInitialized(true);
       }
     };
 
-    initializeAuth();
+    initAuth();
   }, []);
 
   const signIn = async (credentials: SignInCredentials): Promise<{ success: boolean; error?: string }> => {
     try {
-      console.log('🔑 Starting sign in process...');
       setLoading(true);
       
       const response = await fetch('/api/auth/signin', {
@@ -196,8 +136,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const data = await response.json();
 
       if (response.ok && data.user && data.token) {
-        console.log('✅ Sign in successful');
-        
         if (typeof window !== 'undefined') {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('userData', JSON.stringify(data.user));
@@ -208,11 +146,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         return { success: true };
       } else {
-        console.log('❌ Sign in failed:', data.message);
         return { success: false, error: data.message || 'Invalid credentials' };
       }
     } catch (error) {
-      console.error('❌ Sign in error:', error);
+      console.error('Sign in error:', error);
       return { success: false, error: 'Network error. Please try again.' };
     } finally {
       setLoading(false);
@@ -221,7 +158,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signUp = async (credentials: SignUpCredentials): Promise<{ success: boolean; error?: string }> => {
     try {
-      console.log('📝 Starting sign up process...');
       setLoading(true);
       
       const response = await fetch('/api/auth/signup', {
@@ -235,8 +171,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const data = await response.json();
 
       if (response.ok && data.user && data.token) {
-        console.log('✅ Sign up successful');
-        
         if (typeof window !== 'undefined') {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('userData', JSON.stringify(data.user));
@@ -247,11 +181,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         return { success: true };
       } else {
-        console.log('❌ Sign up failed:', data.message);
         return { success: false, error: data.message || 'Registration failed' };
       }
     } catch (error) {
-      console.error('❌ Sign up error:', error);
+      console.error('Sign up error:', error);
       return { success: false, error: 'Network error. Please try again.' };
     } finally {
       setLoading(false);
@@ -260,8 +193,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async (): Promise<void> => {
     try {
-      console.log('🚪 Signing out...');
-      
       const token = localStorage.getItem('authToken');
       if (token) {
         await fetch('/api/auth/signout', {
@@ -272,7 +203,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       }
     } catch (error) {
-      console.error('❌ Sign out API error:', error);
+      console.error('Sign out API error:', error);
     } finally {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
@@ -280,7 +211,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       setUser(null);
       setIsAuthenticated(false);
-      console.log('✅ Sign out complete');
     }
   };
 
@@ -314,13 +244,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         setUser(updatedUser);
         
-        console.log('✅ Profile updated successfully');
         return { success: true };
       } else {
         return { success: false, error: data.message || 'Update failed' };
       }
     } catch (error) {
-      console.error('❌ Profile update error:', error);
+      console.error('Profile update error:', error);
       return { success: false, error: 'Update failed. Please try again.' };
     }
   };
@@ -347,7 +276,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, error: data.message || 'Reset failed' };
       }
     } catch (error) {
-      console.error('❌ Password reset error:', error);
+      console.error('Password reset error:', error);
       return { success: false, error: 'Reset failed. Please try again.' };
     }
   };
@@ -373,7 +302,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
     } catch (error) {
-      console.error('❌ User refresh error:', error);
+      console.error('User refresh error:', error);
     }
   };
 
@@ -381,7 +310,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     loading,
     isAuthenticated,
-    initialized,
     signIn,
     signUp,
     signOut,
