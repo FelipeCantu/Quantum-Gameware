@@ -1,4 +1,4 @@
-// src/app/orders/page.tsx - Complete fixed version
+// src/app/orders/page.tsx - Simple version that works with simple auth
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -30,30 +30,33 @@ interface OrderItem {
 }
 
 function OrdersPageContent() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
-        if (typeof window === 'undefined') {
-          setLoading(false);
-          return;
-        }
+      // Only fetch if user is authenticated
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
 
+      try {
         const token = localStorage.getItem('authToken');
         if (!token) {
           console.log('No auth token found');
+          setError('Authentication token not found');
           setLoading(false);
           return;
         }
 
-        console.log('Fetching orders with token...');
+        console.log('Fetching orders for user:', user.email);
         const response = await fetch('/api/orders', {
           headers: {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         });
 
@@ -63,7 +66,8 @@ function OrdersPageContent() {
           setOrders(data.orders || []);
         } else {
           console.error('Failed to fetch orders:', response.status, response.statusText);
-          setError(`Failed to load orders: ${response.status}`);
+          const errorText = await response.text();
+          setError(`Failed to load orders (${response.status}): ${errorText}`);
         }
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -73,12 +77,8 @@ function OrdersPageContent() {
       }
     };
 
-    if (user) {
-      fetchOrders();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
+    fetchOrders();
+  }, [user, isAuthenticated]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -120,12 +120,20 @@ function OrdersPageContent() {
           <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-6 text-center">
             <h2 className="text-xl font-bold text-red-200 mb-2">Error Loading Orders</h2>
             <p className="text-red-300 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
-            >
-              Retry
-            </button>
+            <div className="space-x-4">
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+              >
+                Retry
+              </button>
+              <Link
+                href="/account"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg inline-block"
+              >
+                Go to Account
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -135,6 +143,7 @@ function OrdersPageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-24 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-white/80 mb-8">
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,12 +156,17 @@ function OrdersPageContent() {
           <span className="text-white font-medium">My Orders</span>
         </nav>
 
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">My Orders</h1>
           <p className="text-white/80 text-lg">Track and manage your gaming gear orders</p>
+          {user && (
+            <p className="text-white/60 text-sm mt-2">Signed in as: {user.email}</p>
+          )}
         </div>
 
         {orders.length === 0 ? (
+          /* Empty State */
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-12 text-center">
             <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
               <svg className="w-12 h-12 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,6 +188,7 @@ function OrdersPageContent() {
             </Link>
           </div>
         ) : (
+          /* Orders List */
           <div className="space-y-6">
             {orders.map((order) => (
               <div
@@ -181,6 +196,7 @@ function OrdersPageContent() {
                 className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  {/* Order Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-4 mb-4">
                       <h3 className="text-xl font-bold text-white font-mono">
@@ -214,6 +230,7 @@ function OrdersPageContent() {
                     </div>
                   </div>
 
+                  {/* Actions */}
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link
                       href={`/orders/${order.id}`}
@@ -232,6 +249,7 @@ function OrdersPageContent() {
                   </div>
                 </div>
 
+                {/* Order Items Preview */}
                 <div className="mt-6 pt-6 border-t border-white/20">
                   <div className="flex items-center gap-4 overflow-x-auto pb-2">
                     {order.items.slice(0, 4).map((item, index) => (
@@ -271,6 +289,7 @@ function OrdersPageContent() {
           </div>
         )}
 
+        {/* Quick Actions */}
         <div className="mt-12 bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
           <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
