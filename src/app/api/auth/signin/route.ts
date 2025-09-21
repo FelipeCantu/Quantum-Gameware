@@ -1,4 +1,4 @@
-// src/app/api/auth/signin/route.ts - Fixed with Real Database
+// src/app/api/auth/signin/route.ts - SIMPLIFIED VERSION FOR VERCEL
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { connectDB } from '@/lib/mongodb';
@@ -14,13 +14,27 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🔑 Signin API called');
     
-    // Connect to database
-    await connectDB();
-    
+    // Check environment variables first
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET is not set');
+      return NextResponse.json(
+        { message: 'Server configuration error: JWT_SECRET missing' },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.MONGODB_URI) {
+      console.error('❌ MONGODB_URI is not set');
+      return NextResponse.json(
+        { message: 'Server configuration error: MONGODB_URI missing' },
+        { status: 500 }
+      );
+    }
+
+    // Parse request body
     let body: SignInRequest;
     try {
       body = await request.json();
-      console.log('✅ Request body parsed');
     } catch (parseError) {
       console.error('❌ JSON parse error:', parseError);
       return NextResponse.json(
@@ -31,17 +45,10 @@ export async function POST(request: NextRequest) {
 
     const { email, password, rememberMe = false } = body;
 
-    // Validation
-    if (!email?.trim()) {
+    // Basic validation
+    if (!email?.trim() || !password) {
       return NextResponse.json(
-        { message: 'Email is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!password) {
-      return NextResponse.json(
-        { message: 'Password is required' },
+        { message: 'Email and password are required' },
         { status: 400 }
       );
     }
@@ -55,10 +62,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ Validation passed, looking up user:', email);
+    console.log('✅ Validation passed, connecting to database...');
 
-    // Find user by email (including password field for comparison)
-    const user = await User.findByEmail(email.toLowerCase().trim());
+    // Connect to database
+    try {
+      await connectDB();
+      console.log('✅ Database connected');
+    } catch (dbError) {
+      console.error('❌ Database connection failed:', dbError);
+      return NextResponse.json(
+        { message: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
+    // Find user
+    let user;
+    try {
+      user = await User.findByEmail(email.toLowerCase().trim());
+    } catch (userError) {
+      console.error('❌ User lookup failed:', userError);
+      return NextResponse.json(
+        { message: 'User lookup failed' },
+        { status: 500 }
+      );
+    }
     
     if (!user) {
       console.log('❌ User not found');
@@ -68,39 +96,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('✅ User found, checking password');
-
     // Check if user is active
     if (!user.isActive) {
-      console.log('❌ User account is inactive');
       return NextResponse.json(
-        { message: 'Your account has been deactivated. Please contact support.' },
+        { message: 'Account has been deactivated' },
         { status: 403 }
       );
     }
 
     // Verify password
-    const isPasswordValid = await user.comparePassword(password);
+    let isPasswordValid;
+    try {
+      isPasswordValid = await user.comparePassword(password);
+    } catch (passwordError) {
+      console.error('❌ Password comparison failed:', passwordError);
+      return NextResponse.json(
+        { message: 'Authentication failed' },
+        { status: 500 }
+      );
+    }
     
     if (!isPasswordValid) {
-      console.log('❌ Invalid password');
       return NextResponse.json(
         { message: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    console.log('✅ Password verified, updating last login');
-
-    // Update last login
-    await user.updateLastLogin();
+    console.log('✅ Password verified, creating token...');
 
     // Create JWT token
     let token: string;
     try {
-      const secret = new TextEncoder().encode(
-        process.env.JWT_SECRET || 'fallback-secret-for-development'
-      );
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
       token = await new SignJWT({
         userId: user._id.toString(),
@@ -121,7 +149,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare user data for response (exclude sensitive fields)
+    // Update last login (don't fail if this fails)
+    try {
+      await user.updateLastLogin();
+    } catch (loginUpdateError) {
+      console.warn('⚠️ Failed to update last login:', loginUpdateError);
+    }
+
+    // Prepare user data for response
     const userData = {
       id: user._id.toString(),
       email: user.email,
@@ -145,7 +180,7 @@ export async function POST(request: NextRequest) {
       message: 'Sign in successful'
     });
 
-    // Set HTTP-only cookie
+    // Set cookie (don't fail if this fails)
     try {
       response.cookies.set({
         name: 'authToken',
@@ -156,7 +191,6 @@ export async function POST(request: NextRequest) {
         maxAge: rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60,
         path: '/',
       });
-      console.log('✅ Cookie set successfully');
     } catch (cookieError) {
       console.error('⚠️ Cookie setting error:', cookieError);
     }
@@ -165,17 +199,12 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error('❌ Signin route error:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
+    console.error('❌ Signin route error:', error);
     return NextResponse.json(
       { 
         message: 'Internal server error',
-        ...(process.env.NODE_ENV === 'development' && {
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
+        error: process.env.NODE_ENV === 'development' ? 
+          (error instanceof Error ? error.message : 'Unknown error') : undefined
       },
       { status: 500 }
     );

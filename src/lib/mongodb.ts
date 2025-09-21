@@ -1,10 +1,10 @@
-// src/lib/mongodb.ts
+// src/lib/mongodb.ts - FIXED VERSION FOR VERCEL
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/quantum-gameware';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  throw new Error('Please define the MONGODB_URI environment variable');
 }
 
 interface MongooseConnection {
@@ -12,11 +12,13 @@ interface MongooseConnection {
   promise: Promise<typeof mongoose> | null;
 }
 
-// In production environments, it's best to not use a global variable.
+// Declare global variable for caching
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: MongooseConnection | undefined;
 }
 
+// Initialize cached connection
 const cached: MongooseConnection = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
@@ -24,37 +26,54 @@ if (!global.mongoose) {
 }
 
 export async function connectDB(): Promise<typeof mongoose> {
+  // If we have a cached connection, return it
   if (cached.conn) {
     return cached.conn;
   }
 
+  // If we don't have a promise, create one
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      family: 4, // Use IPv4, skip trying IPv6
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      family: 4,
+      maxIdleTimeMS: 30000,
+      retryWrites: true,
+      retryReads: true,
+      connectTimeoutMS: 10000,
+      heartbeatFrequencyMS: 30000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      console.log('✅ Connected to MongoDB');
-      return mongoose;
-    }).catch((error) => {
-      console.error('❌ MongoDB connection error:', error);
-      cached.promise = null; // Reset promise on error
-      throw error;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongoose) => {
+        console.log('✅ Connected to MongoDB successfully');
+        return mongoose;
+      })
+      .catch((error) => {
+        console.error('❌ MongoDB connection error:', error);
+        cached.promise = null;
+        
+        if (error.name === 'MongoNetworkError') {
+          throw new Error('Database network error. Please check your connection string and network access.');
+        } else if (error.name === 'MongoServerSelectionError') {
+          throw new Error('Could not connect to MongoDB server. Please check your database configuration.');
+        } else if (error.message?.includes('authentication')) {
+          throw new Error('Database authentication failed. Please check your credentials.');
+        } else {
+          throw new Error(`Database connection failed: ${error.message}`);
+        }
+      });
   }
 
   try {
     cached.conn = await cached.promise;
+    return cached.conn;
   } catch (e) {
     cached.promise = null;
     throw e;
   }
-
-  return cached.conn;
 }
 
 // Alternative function name for backward compatibility
@@ -62,22 +81,43 @@ export const connectToDatabase = connectDB;
 
 // Function to disconnect from MongoDB
 export async function disconnectDB(): Promise<void> {
-  if (cached.conn) {
-    await mongoose.disconnect();
-    cached.conn = null;
-    cached.promise = null;
-    console.log('✅ Disconnected from MongoDB');
+  try {
+    if (cached.conn) {
+      await mongoose.disconnect();
+      cached.conn = null;
+      cached.promise = null;
+      console.log('✅ Disconnected from MongoDB');
+    }
+  } catch (error) {
+    console.error('❌ Error disconnecting from MongoDB:', error);
   }
 }
 
 // Function to check connection status
 export function getConnectionStatus(): string {
   const state = mongoose.connection.readyState;
-  const states = {
+  const states: Record<number, string> = {
     0: 'disconnected',
     1: 'connected',
     2: 'connecting',
     3: 'disconnecting',
   };
-  return states[state as keyof typeof states] || 'unknown';
+  return states[state] || 'unknown';
+}
+
+// Health check function for monitoring
+export async function healthCheck(): Promise<{ status: string; database?: string; host?: string }> {
+  try {
+    if (cached.conn && mongoose.connection.readyState === 1) {
+      return {
+        status: 'healthy',
+        database: mongoose.connection.db?.databaseName,
+        host: mongoose.connection.host || undefined
+      };
+    } else {
+      return { status: 'disconnected' };
+    }
+  } catch (error) {
+    return { status: 'error' };
+  }
 }

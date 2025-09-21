@@ -1,4 +1,4 @@
-// src/app/api/auth/signup/route.ts - Real Database Integration
+// src/app/api/auth/signup/route.ts - VERCEL OPTIMIZED VERSION
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { connectDB } from '@/lib/mongodb';
@@ -19,9 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🚀 Signup API called');
     
-    // Connect to database
-    await connectDB();
-    
+    // Parse request body first
     let body: SignUpRequest;
     try {
       body = await request.json();
@@ -91,10 +89,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check environment variables before database connection
+    const jwtSecret = process.env.JWT_SECRET;
+    const mongoUri = process.env.MONGODB_URI;
+    
+    if (!jwtSecret) {
+      console.error('❌ JWT_SECRET is not set');
+      return NextResponse.json(
+        { message: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    if (!mongoUri) {
+      console.error('❌ MONGODB_URI is not set');
+      return NextResponse.json(
+        { message: 'Database configuration error' },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ Environment variables validated');
+
+    // Connect to database with timeout
+    try {
+      await connectDB();
+      console.log('✅ Database connected');
+    } catch (dbError) {
+      console.error('❌ Database connection failed:', dbError);
+      return NextResponse.json(
+        { message: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
     console.log('✅ Validation passed, checking for existing user');
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    let existingUser;
+    try {
+      existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    } catch (findError) {
+      console.error('❌ User lookup failed:', findError);
+      return NextResponse.json(
+        { message: 'User lookup failed' },
+        { status: 500 }
+      );
+    }
+
     if (existingUser) {
       return NextResponse.json(
         { message: 'An account with this email already exists' },
@@ -105,40 +147,65 @@ export async function POST(request: NextRequest) {
     console.log('✅ No existing user found, creating new user');
 
     // Create new user
-    const newUser = new User({
-      name: name.trim(),
-      firstName: firstName?.trim() || name.trim().split(' ')[0] || '',
-      lastName: lastName?.trim() || name.trim().split(' ').slice(1).join(' ') || '',
-      email: email.toLowerCase().trim(),
-      password: password, // Will be hashed by the pre-save middleware
-      phone: phone?.trim() || undefined,
-      preferences: {
-        emailNotifications: true,
-        smsNotifications: false,
-        marketingEmails: subscribeToMarketing,
-        theme: 'system',
-        currency: 'USD',
-        language: 'en'
-      },
-      role: 'customer',
-      isActive: true,
-      emailVerified: false
-    });
+    let newUser;
+    try {
+      newUser = new User({
+        name: name.trim(),
+        firstName: firstName?.trim() || name.trim().split(' ')[0] || '',
+        lastName: lastName?.trim() || name.trim().split(' ').slice(1).join(' ') || '',
+        email: email.toLowerCase().trim(),
+        password: password, // Will be hashed by the pre-save middleware
+        phone: phone?.trim() || undefined,
+        preferences: {
+          emailNotifications: true,
+          smsNotifications: false,
+          marketingEmails: subscribeToMarketing,
+          theme: 'system',
+          currency: 'USD',
+          language: 'en'
+        },
+        role: 'customer',
+        isActive: true,
+        emailVerified: false
+      });
 
-    const savedUser = await newUser.save();
-    console.log('✅ User created successfully:', savedUser.email);
+      const savedUser = await newUser.save();
+      console.log('✅ User created successfully:', savedUser.email);
+    } catch (saveError) {
+      console.error('❌ User creation failed:', saveError);
+      
+      // Handle specific MongoDB errors
+      if (saveError instanceof Error && 'code' in saveError && saveError.code === 11000) {
+        return NextResponse.json(
+          { message: 'An account with this email already exists' },
+          { status: 409 }
+        );
+      }
+
+      // Handle validation errors
+      if (saveError instanceof Error && saveError.name === 'ValidationError') {
+        const validationErrors = Object.values((saveError as any).errors).map((err: any) => err.message);
+        return NextResponse.json(
+          { message: validationErrors[0] || 'Validation failed' },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json(
+        { message: 'Failed to create user account' },
+        { status: 500 }
+      );
+    }
 
     // Create JWT token
     let token: string;
     try {
-      const secret = new TextEncoder().encode(
-        process.env.JWT_SECRET || 'fallback-secret-for-development'
-      );
+      const secret = new TextEncoder().encode(jwtSecret);
 
       token = await new SignJWT({
-        userId: savedUser._id.toString(),
-        email: savedUser.email,
-        role: savedUser.role,
+        userId: newUser._id.toString(),
+        email: newUser.email,
+        role: newUser.role,
       })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -156,19 +223,19 @@ export async function POST(request: NextRequest) {
 
     // Prepare user data for response (exclude sensitive fields)
     const userData = {
-      id: savedUser._id.toString(),
-      email: savedUser.email,
-      name: savedUser.name,
-      firstName: savedUser.firstName,
-      lastName: savedUser.lastName,
-      phone: savedUser.phone,
-      avatar: savedUser.avatar,
-      address: savedUser.address,
-      preferences: savedUser.preferences,
-      createdAt: savedUser.createdAt.toISOString(),
-      updatedAt: savedUser.updatedAt.toISOString(),
-      emailVerified: savedUser.emailVerified,
-      role: savedUser.role,
+      id: newUser._id.toString(),
+      email: newUser.email,
+      name: newUser.name,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      phone: newUser.phone,
+      avatar: newUser.avatar,
+      address: newUser.address,
+      preferences: newUser.preferences,
+      createdAt: newUser.createdAt.toISOString(),
+      updatedAt: newUser.updatedAt.toISOString(),
+      emailVerified: newUser.emailVerified,
+      role: newUser.role,
     };
 
     // Create response
@@ -178,7 +245,7 @@ export async function POST(request: NextRequest) {
       message: 'Account created successfully'
     }, { status: 201 });
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie (don't fail if this fails)
     try {
       response.cookies.set({
         name: 'authToken',
