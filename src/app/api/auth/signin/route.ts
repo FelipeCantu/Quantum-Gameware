@@ -1,6 +1,8 @@
-// src/app/api/auth/signin/route.ts - Vercel Compatible
+// src/app/api/auth/signin/route.ts - Real Database Integration
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
+import { connectDB } from '@/lib/mongodb';
+import { User } from '@/models/User';
 
 interface SignInRequest {
   email: string;
@@ -10,14 +12,17 @@ interface SignInRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Signin API route called');
+    console.log('🔑 Signin API called');
+    
+    // Connect to database
+    await connectDB();
     
     let body: SignInRequest;
     try {
       body = await request.json();
-      console.log('Request body parsed successfully');
+      console.log('✅ Request body parsed');
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+      console.error('❌ JSON parse error:', parseError);
       return NextResponse.json(
         { message: 'Invalid JSON in request body' },
         { status: 400 }
@@ -50,47 +55,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Validation passed, checking credentials');
+    console.log('✅ Validation passed, looking up user:', email);
 
-    // For now, use mock authentication
-    // Replace this with your actual database logic once basic routing works
+    // Find user by email (including password field for comparison)
+    const user = await User.findByEmail(email.toLowerCase().trim());
     
-    // Simple mock authentication - accepts any email/password combo that's valid format
-    // In production, you'll replace this with actual database lookup
-    const isValidCredentials = password.length >= 6; // Simple check for demo
-    
-    if (!isValidCredentials) {
+    if (!user) {
+      console.log('❌ User not found');
       return NextResponse.json(
         { message: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    // Create mock user data
-    const userData = {
-      id: `user_${email.replace('@', '_').replace('.', '_')}`,
-      email: email.toLowerCase().trim(),
-      name: email.split('@')[0], // Use email prefix as name for demo
-      firstName: email.split('@')[0],
-      lastName: 'User',
-      avatar: null,
-      phone: null,
-      address: null,
-      preferences: {
-        emailNotifications: true,
-        smsNotifications: false,
-        marketingEmails: false,
-        theme: 'system' as const,
-        currency: 'USD',
-        language: 'en'
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      emailVerified: true,
-      role: 'customer' as const,
-    };
+    console.log('✅ User found, checking password');
 
-    console.log('User authenticated, creating JWT');
+    // Check if user is active
+    if (!user.isActive) {
+      console.log('❌ User account is inactive');
+      return NextResponse.json(
+        { message: 'Your account has been deactivated. Please contact support.' },
+        { status: 403 }
+      );
+    }
+
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
+    
+    if (!isPasswordValid) {
+      console.log('❌ Invalid password');
+      return NextResponse.json(
+        { message: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    console.log('✅ Password verified, updating last login');
+
+    // Update last login
+    await user.updateLastLogin();
 
     // Create JWT token
     let token: string;
@@ -100,23 +103,40 @@ export async function POST(request: NextRequest) {
       );
 
       token = await new SignJWT({
-        userId: userData.id,
-        email: userData.email,
-        role: userData.role,
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
       })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime(rememberMe ? '30d' : '7d')
         .sign(secret);
       
-      console.log('JWT token created successfully');
+      console.log('✅ JWT token created');
     } catch (jwtError) {
-      console.error('JWT creation error:', jwtError);
+      console.error('❌ JWT creation error:', jwtError);
       return NextResponse.json(
         { message: 'Failed to create authentication token' },
         { status: 500 }
       );
     }
+
+    // Prepare user data for response (exclude sensitive fields)
+    const userData = {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      avatar: user.avatar,
+      address: user.address,
+      preferences: user.preferences,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      emailVerified: user.emailVerified,
+      role: user.role,
+    };
 
     // Create response
     const response = NextResponse.json({
@@ -135,23 +155,19 @@ export async function POST(request: NextRequest) {
         sameSite: 'lax',
         maxAge: rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60,
         path: '/',
-        ...(process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL && {
-          domain: new URL(process.env.NEXTAUTH_URL).hostname
-        })
       });
-      console.log('Cookie set successfully');
+      console.log('✅ Cookie set successfully');
     } catch (cookieError) {
-      console.error('Cookie setting error:', cookieError);
+      console.error('⚠️ Cookie setting error:', cookieError);
     }
 
-    console.log('Signin completed successfully');
+    console.log('🎉 Signin completed successfully for:', user.email);
     return response;
 
   } catch (error) {
-    console.error('Signin route error:', {
+    console.error('❌ Signin route error:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : 'UnknownError'
     });
 
     return NextResponse.json(

@@ -10,7 +10,9 @@
     "migrate:categories": "tsx scripts/migrate-categories.ts",
     "migrate:brands": "tsx scripts/migrate-brands.ts",
     "migrate:products": "tsx scripts/migrate-products.ts",
-    "migrate:all": "npm run migrate:categories && npm run migrate:brands"
+    "migrate:all": "npm run migrate:categories && npm run migrate:brands",
+    "setup-db": "node scripts/setup-database.js",
+    "test-auth": "node scripts/test-auth.js"
   },
   "dependencies": {
     "@portabletext/react": "^4.0.2",
@@ -23,6 +25,7 @@
     "mongoose": "^8.18.1",
     "next": "15.5.2",
     "next-sanity": "^10.0.15",
+    "node-fetch": "^2.7.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sanity": "^4.6.0",

@@ -1,6 +1,8 @@
-// src/app/api/auth/signup/route.ts - Vercel Compatible
+// src/app/api/auth/signup/route.ts - Real Database Integration
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
+import { connectDB } from '@/lib/mongodb';
+import { User } from '@/models/User';
 
 interface SignUpRequest {
   name: string;
@@ -15,16 +17,17 @@ interface SignUpRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    // Add comprehensive logging for Vercel debugging
-    console.log('Signup API route called');
+    console.log('🚀 Signup API called');
     
-    // Parse request body with error handling
+    // Connect to database
+    await connectDB();
+    
     let body: SignUpRequest;
     try {
       body = await request.json();
-      console.log('Request body parsed successfully');
+      console.log('✅ Request body parsed');
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+      console.error('❌ JSON parse error:', parseError);
       return NextResponse.json(
         { message: 'Invalid JSON in request body' },
         { status: 400 }
@@ -88,41 +91,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Validation passed, creating user');
+    console.log('✅ Validation passed, checking for existing user');
 
-    // For production deployment, we'll use mock data first
-    // Once this works, you can add your MongoDB logic
-    
-    // Create mock user data
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
-    
-    const userData = {
-      id: userId,
-      email: email.toLowerCase().trim(),
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
+      return NextResponse.json(
+        { message: 'An account with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    console.log('✅ No existing user found, creating new user');
+
+    // Create new user
+    const newUser = new User({
       name: name.trim(),
       firstName: firstName?.trim() || name.trim().split(' ')[0] || '',
       lastName: lastName?.trim() || name.trim().split(' ').slice(1).join(' ') || '',
-      phone: phone?.trim() || null,
-      avatar: null,
-      address: null,
+      email: email.toLowerCase().trim(),
+      password: password, // Will be hashed by the pre-save middleware
+      phone: phone?.trim() || undefined,
       preferences: {
         emailNotifications: true,
         smsNotifications: false,
         marketingEmails: subscribeToMarketing,
-        theme: 'system' as const,
+        theme: 'system',
         currency: 'USD',
         language: 'en'
       },
-      createdAt: now,
-      updatedAt: now,
-      emailVerified: false,
-      role: 'customer' as const,
-    };
+      role: 'customer',
+      isActive: true,
+      emailVerified: false
+    });
 
-    console.log('User data prepared, creating JWT');
+    const savedUser = await newUser.save();
+    console.log('✅ User created successfully:', savedUser.email);
 
-    // Create JWT token with better error handling
+    // Create JWT token
     let token: string;
     try {
       const secret = new TextEncoder().encode(
@@ -130,23 +136,40 @@ export async function POST(request: NextRequest) {
       );
 
       token = await new SignJWT({
-        userId: userData.id,
-        email: userData.email,
-        role: userData.role,
+        userId: savedUser._id.toString(),
+        email: savedUser.email,
+        role: savedUser.role,
       })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('7d')
         .sign(secret);
       
-      console.log('JWT token created successfully');
+      console.log('✅ JWT token created');
     } catch (jwtError) {
-      console.error('JWT creation error:', jwtError);
+      console.error('❌ JWT creation error:', jwtError);
       return NextResponse.json(
         { message: 'Failed to create authentication token' },
         { status: 500 }
       );
     }
+
+    // Prepare user data for response (exclude sensitive fields)
+    const userData = {
+      id: savedUser._id.toString(),
+      email: savedUser.email,
+      name: savedUser.name,
+      firstName: savedUser.firstName,
+      lastName: savedUser.lastName,
+      phone: savedUser.phone,
+      avatar: savedUser.avatar,
+      address: savedUser.address,
+      preferences: savedUser.preferences,
+      createdAt: savedUser.createdAt.toISOString(),
+      updatedAt: savedUser.updatedAt.toISOString(),
+      emailVerified: savedUser.emailVerified,
+      role: savedUser.role,
+    };
 
     // Create response
     const response = NextResponse.json({
@@ -155,7 +178,7 @@ export async function POST(request: NextRequest) {
       message: 'Account created successfully'
     }, { status: 201 });
 
-    // Set HTTP-only cookie with proper settings for Vercel
+    // Set HTTP-only cookie
     try {
       response.cookies.set({
         name: 'authToken',
@@ -165,26 +188,37 @@ export async function POST(request: NextRequest) {
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60, // 7 days
         path: '/',
-        // Add domain for production if needed
-        ...(process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_URL && {
-          domain: new URL(process.env.NEXTAUTH_URL).hostname
-        })
       });
-      console.log('Cookie set successfully');
+      console.log('✅ Cookie set successfully');
     } catch (cookieError) {
-      console.error('Cookie setting error:', cookieError);
+      console.error('⚠️ Cookie setting error:', cookieError);
       // Don't fail the request if cookie setting fails
     }
 
-    console.log('Signup completed successfully');
+    console.log('🎉 Signup completed successfully');
     return response;
 
   } catch (error) {
-    // Comprehensive error logging for Vercel
-    console.error('Signup route error:', {
+    // Handle MongoDB duplicate key error
+    if (error instanceof Error && 'code' in error && error.code === 11000) {
+      return NextResponse.json(
+        { message: 'An account with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Handle validation errors
+    if (error instanceof Error && error.name === 'ValidationError') {
+      const validationErrors = Object.values((error as any).errors).map((err: any) => err.message);
+      return NextResponse.json(
+        { message: validationErrors[0] || 'Validation failed' },
+        { status: 400 }
+      );
+    }
+
+    console.error('❌ Signup route error:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : 'UnknownError'
     });
 
     return NextResponse.json(
@@ -199,7 +233,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Add OPTIONS handler for CORS if needed
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
