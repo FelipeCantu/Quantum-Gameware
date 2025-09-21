@@ -1,4 +1,4 @@
-// src/app/api/auth/signin/route.ts - Real Database Integration
+// src/app/api/auth/signin/route.ts - Fixed with Real Database
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { connectDB } from '@/lib/mongodb';
