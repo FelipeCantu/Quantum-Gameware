@@ -1,6 +1,7 @@
+// File: src/app/cart/checkout/success/page.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -41,7 +42,27 @@ interface Order {
   estimatedDelivery: Date;
 }
 
-export default function SuccessPage() {
+// Loading component
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}></div>
+        </div>
+      </div>
+      <div className="relative z-10">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-white text-lg">Loading your order...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main content component that uses useSearchParams
+function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
@@ -56,12 +77,12 @@ export default function SuccessPage() {
     window.addEventListener('popstate', handlePopState);
 
     // Get order from URL params or localStorage
-    const getOrderData = async () => {
+    const getOrderData = () => {
       const orderId = searchParams.get('order');
       
       if (orderId) {
         try {
-          // Try to get order from localStorage first
+          // Try to get order from localStorage
           const savedOrders = localStorage.getItem('userOrders');
           if (savedOrders) {
             const orders = JSON.parse(savedOrders);
@@ -72,16 +93,7 @@ export default function SuccessPage() {
                 createdAt: new Date(foundOrder.createdAt),
                 estimatedDelivery: new Date(foundOrder.estimatedDelivery)
               });
-              setLoading(false);
-              return;
             }
-          }
-
-          // If not found in localStorage, try to import and get from OrderService
-          const { OrderService } = await import('@/services/paymentService');
-          const foundOrder = OrderService.getOrderById(orderId);
-          if (foundOrder) {
-            setOrder(foundOrder);
           }
         } catch (error) {
           console.error('Error loading order:', error);
@@ -97,21 +109,7 @@ export default function SuccessPage() {
   }, [router, searchParams]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-            }}></div>
-          </div>
-        </div>
-        <div className="relative z-10">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg">Loading your order...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   const defaultOrderNumber = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -398,4 +396,13 @@ export default function SuccessPage() {
       </div>
     </div>
   );
-} 
+}
+
+// Main exported component with Suspense boundary
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <SuccessContent />
+    </Suspense>
+  );
+}
