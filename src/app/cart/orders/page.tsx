@@ -1,10 +1,9 @@
-// File: src/app/cart/orders/page.tsx (NEW FILE)
+// File: src/app/cart/orders/page.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { OrderService, Order } from '@/services/paymentService';
 
 export default function OrderTrackingPage() {
   const [orders, setOrders] = useState<Order[]>([]);
