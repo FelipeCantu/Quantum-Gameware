@@ -18,6 +18,8 @@
     "@portabletext/react": "^4.0.2",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.6.0",
+    "@stripe/react-stripe-js": "^4.0.2",
+    "@stripe/stripe-js": "^7.9.0",
     "bcryptjs": "^3.0.2",
     "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -29,6 +31,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "sanity": "^4.6.0",
+    "stripe": "^18.5.0",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
