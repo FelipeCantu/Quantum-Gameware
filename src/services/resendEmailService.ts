@@ -72,7 +72,7 @@ export class ResendEmailService extends EmailService {
         tags: [
           { name: 'category', value: 'order_confirmation' },
           { name: 'order_id', value: order.id },
-          { name: 'customer_email', value: order.shipping.email },
+          { name: 'customer_domain', value: order.shipping.email.split('@')[1] || 'unknown' },
           { name: 'order_total', value: order.totals.total.toString() }
         ]
       });
