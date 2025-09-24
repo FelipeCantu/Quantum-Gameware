@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { ResendEmailService as EmailService, type EmailOrder } from '@/services/resendEmailService';
+import { type EmailOrder } from '@/services/emailService';
 
 interface ShippingForm {
   firstName: string;

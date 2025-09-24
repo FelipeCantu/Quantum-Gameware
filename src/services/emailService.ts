@@ -38,7 +38,7 @@ export interface EmailOrder {
 
 export class EmailService {
   private static readonly COMPANY_INFO = {
-    name: "QuantumGameware",
+    name: "Quantum Gameware",
     email: "support@quantumgameware.com",
     phone: "1-800-QUANTUM",
     website: "https://quantumgameware.com",
@@ -196,6 +196,7 @@ export class EmailService {
             align-items: center;
             justify-content: center;
             border: 1px solid #e2e8f0;
+            flex-shrink: 0;
         }
         
         .item-details {
@@ -402,6 +403,33 @@ export class EmailService {
     <div class="email-container">
         <!-- Header -->
         <div class="header">
+            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                <tr>
+                    <td style="vertical-align: middle; padding-right: 12px;">
+                        <table cellpadding="0" cellspacing="0" border="0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 12px;">
+                            <tr>
+                                <td style="padding: 6px;">
+                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
+                                        <tr>
+                                            <td style="text-align: center; vertical-align: middle;">
+                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <div style="color: white; font-size: 24px; font-weight: bold; line-height: 1; margin-bottom: 2px;">
+                            Quantum
+                        </div>
+                        <div style="color: rgba(255, 255, 255, 0.8); font-size: 12px;">
+                            Gameware
+                        </div>
+                    </td>
+                </tr>
+            </table>
             <h1>🎮 Order Confirmed!</h1>
             <p>Thank you for your purchase, ${order.shipping.firstName}!</p>
         </div>
@@ -436,19 +464,27 @@ export class EmailService {
             <div class="items-section">
                 <h2 class="section-title">Items Ordered</h2>
                 ${order.items.map(item => `
-                    <div class="item">
-                        <div class="item-image">
-                            ${item.image ? 
-                                `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">` :
-                                `<div style="color: #a0aec0; font-size: 24px;">📦</div>`
-                            }
-                        </div>
-                        <div class="item-details">
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-meta">Quantity: ${item.quantity}</div>
-                            <div class="item-price">$${(item.price * item.quantity).toFixed(2)}</div>
-                        </div>
-                    </div>
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
+                        <tr>
+                            <td style="width: 80px; vertical-align: top; padding-right: 20px;">
+                                <table cellpadding="0" cellspacing="0" border="0" style="width: 80px; height: 80px; background-color: #f7fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                    <tr>
+                                        <td style="text-align: center; vertical-align: middle;">
+                                            ${item.image && item.image !== '' ? 
+                                                `<img src="${item.image.includes('://') ? item.image : 'https://quantumgameware.com' + (item.image.startsWith('/') ? item.image : '/' + item.image)}" alt="${item.name}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; display: block;" />` :
+                                                `<div style="color: #a0aec0; font-size: 24px;">📦</div>`
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <div style="font-weight: 600; font-size: 16px; color: #2d3748; margin-bottom: 5px;">${item.name}</div>
+                                <div style="color: #718096; font-size: 14px; margin-bottom: 8px;">Quantity: ${item.quantity}</div>
+                                <div style="font-weight: 700; font-size: 16px; color: #2d3748;">${(item.price * item.quantity).toFixed(2)}</div>
+                            </td>
+                        </tr>
+                    </table>
                 `).join('')}
             </div>
             
@@ -487,30 +523,56 @@ export class EmailService {
                 </div>
             </div>
             
-            <!-- What's Next */
+            <!-- What's Next -->
             <div class="next-steps">
                 <h3>What happens next?</h3>
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <div class="step-title">Order Confirmation</div>
-                        <div class="step-description">We've received your order and will send you tracking information once it ships.</div>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <div class="step-title">Processing (1-2 days)</div>
-                        <div class="step-description">We're preparing your gaming gear with care and attention to detail.</div>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <div class="step-title">Shipping & Tracking</div>
-                        <div class="step-description">Your order will be shipped with tracking information sent to this email.</div>
-                    </div>
-                </div>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                        <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%;">
+                                <tr>
+                                    <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                        1
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="vertical-align: top; padding-bottom: 15px;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: white;">Order Confirmation</div>
+                            <div style="opacity: 0.9; font-size: 14px; color: white;">We've received your order and will send you tracking information once it ships.</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%;">
+                                <tr>
+                                    <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                        2
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="vertical-align: top; padding-bottom: 15px;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: white;">Processing (1-2 days)</div>
+                            <div style="opacity: 0.9; font-size: 14px; color: white;">We're preparing your gaming gear with care and attention to detail.</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background-color: rgba(255, 255, 255, 0.2); border-radius: 50%;">
+                                <tr>
+                                    <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                        3
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: white;">Shipping & Tracking</div>
+                            <div style="opacity: 0.9; font-size: 14px; color: white;">Your order will be shipped with tracking information sent to this email.</div>
+                        </td>
+                    </tr>
+                </table>
             </div>
             
             <!-- Call to Action -->
@@ -523,6 +585,29 @@ export class EmailService {
         <!-- Footer -->
         <div class="footer">
             <div class="footer-content">
+                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                    <tr>
+                        <td style="vertical-align: middle; padding-right: 8px;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 8px;">
+                                <tr>
+                                    <td style="padding: 4px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
+                                            <tr>
+                                                <td style="text-align: center; vertical-align: middle;">
+                                                    <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <div style="color: #4a5568; font-size: 16px; font-weight: bold;">Quantum Gameware</div>
+                        </td>
+                    </tr>
+                </table>
+                
                 <div class="contact-info">
                     <strong>${this.COMPANY_INFO.name}</strong><br>
                     ${this.COMPANY_INFO.address.street}<br>
@@ -566,7 +651,7 @@ export class EmailService {
     });
 
     return `
-🎮 ORDER CONFIRMATION - ${this.COMPANY_INFO.name}
+🎮 ORDER CONFIRMATION - Quantum Gameware
 
 Hi ${order.shipping.firstName},
 
@@ -584,15 +669,15 @@ ITEMS ORDERED
 ${order.items.map(item => `
 • ${item.name}
   Quantity: ${item.quantity}
-  Price: ${(item.price * item.quantity).toFixed(2)}
+  Price: $${(item.price * item.quantity).toFixed(2)}
 `).join('')}
 
 ORDER SUMMARY
 =============
-Subtotal: ${order.totals.subtotal.toFixed(2)}
-Shipping: ${order.totals.shipping === 0 ? 'FREE' : `${order.totals.shipping.toFixed(2)}`}
-Tax: ${order.totals.tax.toFixed(2)}
-Total: ${order.totals.total.toFixed(2)}
+Subtotal: $${order.totals.subtotal.toFixed(2)}
+Shipping: ${order.totals.shipping === 0 ? 'FREE' : `$${order.totals.shipping.toFixed(2)}`}
+Tax: $${order.totals.tax.toFixed(2)}
+Total: $${order.totals.total.toFixed(2)}
 
 SHIPPING ADDRESS
 ================
@@ -613,9 +698,9 @@ NEED HELP?
 Track your order: ${this.COMPANY_INFO.website}/cart/orders
 Contact us: ${this.COMPANY_INFO.email} or ${this.COMPANY_INFO.phone}
 
-Thanks for choosing ${this.COMPANY_INFO.name}!
+Thanks for choosing Quantum Gameware!
 
-${this.COMPANY_INFO.name}
+Quantum Gameware
 ${this.COMPANY_INFO.address.street}
 ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
     `;

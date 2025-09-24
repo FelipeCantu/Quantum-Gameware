@@ -71,9 +71,9 @@ export class ResendEmailService extends EmailService {
         },
         tags: [
           { name: 'category', value: 'order_confirmation' },
-          { name: 'order_id', value: order.id },
-          { name: 'customer_domain', value: order.shipping.email.split('@')[1] || 'unknown' },
-          { name: 'order_total', value: order.totals.total.toString() }
+          { name: 'order_id', value: order.id.replace(/[^a-zA-Z0-9_-]/g, '_') },
+          { name: 'customer_domain', value: (order.shipping.email.split('@')[1] || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_') },
+          { name: 'order_total', value: Math.floor(order.totals.total).toString() }
         ]
       });
 
