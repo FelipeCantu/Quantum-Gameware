@@ -1,3 +1,4 @@
+// File: src/app/cart/checkout/page.tsx
 "use client";
 
 import { useState } from 'react';
@@ -5,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
+import { ResendEmailService as EmailService, type EmailOrder } from '@/services/resendEmailService';
 
 interface ShippingForm {
   firstName: string;
@@ -128,6 +130,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const [shippingForm, setShippingForm] = useState<ShippingForm>({
     firstName: '',
@@ -176,16 +179,12 @@ export default function CheckoutPage() {
     try {
       // Handle different payment methods
       if (paymentForm.paymentMethod === 'paypal') {
-        // Simulate PayPal payment
         await new Promise(resolve => setTimeout(resolve, 2000));
-        // In real implementation, redirect to PayPal
         console.log('Processing PayPal payment...');
       } else if (paymentForm.paymentMethod === 'apple_pay') {
-        // Simulate Apple Pay
         await new Promise(resolve => setTimeout(resolve, 1500));
         console.log('Processing Apple Pay payment...');
       } else if (paymentForm.paymentMethod === 'google_pay') {
-        // Simulate Google Pay
         await new Promise(resolve => setTimeout(resolve, 1500));
         console.log('Processing Google Pay payment...');
       } else {
@@ -206,7 +205,6 @@ export default function CheckoutPage() {
           throw new Error('Invalid name on card');
         }
 
-        // Simulate processing delay
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Check for test failure scenarios
@@ -223,10 +221,9 @@ export default function CheckoutPage() {
 
       // Generate transaction ID
       const transactionId = 'TXN_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9).toUpperCase();
-
-      // Create order
       const orderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6).toUpperCase();
       
+      // Create order
       const order = {
         id: orderId,
         items: items.map(item => ({
@@ -263,11 +260,35 @@ export default function CheckoutPage() {
       // Save order to localStorage
       try {
         const existingOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-        const updatedOrders = [order, ...existingOrders].slice(0, 50); // Keep last 50 orders
+        const updatedOrders = [order, ...existingOrders].slice(0, 50);
         localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
       } catch (storageError) {
         console.error('Failed to save order:', storageError);
-        // Continue anyway, don't block the success flow
+      }
+
+      // Send confirmation email
+      try {
+        const emailOrder: EmailOrder = {
+          id: order.id,
+          items: order.items,
+          shipping: order.shipping,
+          payment: order.payment,
+          totals: order.totals,
+          status: order.status,
+          createdAt: order.createdAt,
+          estimatedDelivery: order.estimatedDelivery
+        };
+
+        const emailSuccess = await EmailService.sendOrderConfirmationEmail(emailOrder);
+        setEmailSent(emailSuccess);
+        
+        if (emailSuccess) {
+          console.log('✅ Order confirmation email sent successfully');
+        } else {
+          console.warn('⚠️ Failed to send confirmation email, but order was processed');
+        }
+      } catch (emailError) {
+        console.error('Email service error:', emailError);
       }
       
       // Clear cart and redirect to success page
@@ -381,6 +402,16 @@ export default function CheckoutPage() {
             </nav>
           </div>
 
+          {/* Email Status Notification */}
+          {isProcessing && (
+            <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+              <div className="flex items-center text-white">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                <span>Processing your order and preparing confirmation email...</span>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-8">
@@ -417,7 +448,8 @@ export default function CheckoutPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
+                        Email Address * 
+                        <span className="text-gray-500 text-sm">(for order confirmation)</span>
                       </label>
                       <input
                         type="email"
@@ -425,7 +457,11 @@ export default function CheckoutPage() {
                         value={shippingForm.email}
                         onChange={(e) => setShippingForm({...shippingForm, email: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                        placeholder="your.email@example.com"
                       />
+                      <p className="text-sm text-gray-600 mt-1">
+                        We'll send your order confirmation and tracking information to this email.
+                      </p>
                     </div>
 
                     <div>
@@ -515,7 +551,7 @@ export default function CheckoutPage() {
                           <option value="MS">Mississippi</option>
                           <option value="MO">Missouri</option>
                           <option value="MT">Montana</option>
-                          <option value="NE"> Nebraska</option>
+                          <option value="NE">Nebraska</option>
                           <option value="NV">Nevada</option>
                           <option value="NH">New Hampshire</option>
                           <option value="NJ">New Jersey</option>
@@ -670,6 +706,9 @@ export default function CheckoutPage() {
                           {shippingForm.address}<br/>
                           {shippingForm.city}, {shippingForm.state} {shippingForm.zipCode}
                         </p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          📧 Confirmation email: {shippingForm.email}
+                        </p>
                       </div>
                       <button
                         onClick={() => setCurrentStep(1)}
@@ -822,6 +861,7 @@ export default function CheckoutPage() {
                           <h4 className="text-sm font-semibold text-blue-900 mb-1">Your payment is secure</h4>
                           <p className="text-sm text-blue-700">
                             We use 256-bit SSL encryption and never store your payment information.
+                            You'll receive an email confirmation once your order is processed.
                           </p>
                         </div>
                       </div>
@@ -843,7 +883,7 @@ export default function CheckoutPage() {
                         {isProcessing ? (
                           <div className="flex items-center">
                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                            Processing Payment...
+                            Processing Order...
                           </div>
                         ) : (
                           <div className="flex items-center">
@@ -908,6 +948,23 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {/* Email Confirmation Notice */}
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <h4 className="text-sm font-semibold text-green-900">Email Confirmation</h4>
+                      <p className="text-sm text-green-700 mt-1">
+                        We'll send a detailed order confirmation and invoice to{' '}
+                        <span className="font-medium">{shippingForm.email || 'your email address'}</span> 
+                        {' '}immediately after payment.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Trust Indicators */}
                 <div className="mt-6 space-y-3 pt-6 border-t border-gray-200">
                   <div className="flex items-center text-sm text-gray-600">
@@ -927,6 +984,12 @@ export default function CheckoutPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                     <span>Free shipping worldwide</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Instant email confirmation</span>
                   </div>
                 </div>
               </div>

@@ -42,6 +42,9 @@ interface Order {
   estimatedDelivery: Date;
 }
 
+// Email status types
+type EmailStatus = 'sending' | 'sent' | 'failed' | 'not_sent';
+
 // Loading component
 function LoadingScreen() {
   return (
@@ -61,12 +64,81 @@ function LoadingScreen() {
   );
 }
 
+// Email Status Component
+function EmailStatusBanner({ status, customerEmail }: { status: EmailStatus; customerEmail?: string }) {
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'sending':
+        return {
+          bgColor: 'bg-blue-50',
+          borderColor: 'border-blue-200',
+          textColor: 'text-blue-800',
+          icon: (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+          ),
+          title: 'Sending Confirmation Email',
+          message: 'We\'re sending your order confirmation email...'
+        };
+      case 'sent':
+        return {
+          bgColor: 'bg-green-50',
+          borderColor: 'border-green-200',
+          textColor: 'text-green-800',
+          icon: (
+            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          ),
+          title: 'Confirmation Email Sent!',
+          message: `Order confirmation has been sent to ${customerEmail}`
+        };
+      case 'failed':
+        return {
+          bgColor: 'bg-red-50',
+          borderColor: 'border-red-200',
+          textColor: 'text-red-800',
+          icon: (
+            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          ),
+          title: 'Email Delivery Issue',
+          message: 'We couldn\'t send the confirmation email, but your order is confirmed. Please contact support if needed.'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const config = getStatusConfig();
+  if (!config) return null;
+
+  return (
+    <div className={`mb-6 ${config.bgColor} backdrop-blur-sm rounded-2xl p-4 border ${config.borderColor}`}>
+      <div className="flex items-center">
+        <div className="flex-shrink-0 mr-3">
+          {config.icon}
+        </div>
+        <div className="flex-1">
+          <h4 className={`text-sm font-semibold ${config.textColor} mb-1`}>
+            {config.title}
+          </h4>
+          <p className={`text-sm ${config.textColor.replace('800', '700')}`}>
+            {config.message}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Main content component that uses useSearchParams
 function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>('not_sent');
 
   useEffect(() => {
     // Prevent back navigation to checkout
@@ -77,8 +149,17 @@ function SuccessContent() {
     window.addEventListener('popstate', handlePopState);
 
     // Get order from URL params or localStorage
-    const getOrderData = () => {
+    const getOrderData = async () => {
       const orderId = searchParams.get('order');
+      const emailSent = searchParams.get('emailSent') === 'true';
+      const emailFailed = searchParams.get('emailFailed') === 'true';
+      
+      // Set initial email status based on URL params
+      if (emailSent) {
+        setEmailStatus('sent');
+      } else if (emailFailed) {
+        setEmailStatus('failed');
+      }
       
       if (orderId) {
         try {
@@ -88,15 +169,22 @@ function SuccessContent() {
             const orders = JSON.parse(savedOrders);
             const foundOrder = orders.find((o: Order) => o.id === orderId);
             if (foundOrder) {
-              setOrder({
+              const orderWithDates = {
                 ...foundOrder,
                 createdAt: new Date(foundOrder.createdAt),
                 estimatedDelivery: new Date(foundOrder.estimatedDelivery)
-              });
+              };
+              setOrder(orderWithDates);
+
+              // If email status wasn't set from URL params, try to send confirmation
+              if (!emailSent && !emailFailed) {
+                await sendConfirmationEmail(orderWithDates);
+              }
             }
           }
         } catch (error) {
           console.error('Error loading order:', error);
+          setEmailStatus('failed');
         }
       }
       
@@ -107,6 +195,45 @@ function SuccessContent() {
 
     return () => window.removeEventListener('popstate', handlePopState);
   }, [router, searchParams]);
+
+  const sendConfirmationEmail = async (orderData: Order) => {
+    setEmailStatus('sending');
+    
+    try {
+      // Call your API route to send the email
+      const response = await fetch('/api/send-confirmation-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order: {
+            id: orderData.id,
+            items: orderData.items,
+            shipping: orderData.shipping,
+            payment: orderData.payment,
+            totals: orderData.totals,
+            status: orderData.status,
+            createdAt: orderData.createdAt.toISOString(),
+            estimatedDelivery: orderData.estimatedDelivery.toISOString()
+          }
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setEmailStatus('sent');
+        console.log('✅ Confirmation email sent successfully');
+      } else {
+        setEmailStatus('failed');
+        console.warn('⚠️ Failed to send confirmation email:', result.error);
+      }
+    } catch (error) {
+      setEmailStatus('failed');
+      console.error('❌ Error sending confirmation email:', error);
+    }
+  };
 
   if (loading) {
     return <LoadingScreen />;
@@ -132,6 +259,12 @@ function SuccessContent() {
       <div className="relative z-10 flex items-center justify-center min-h-screen pt-24 pb-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-white/20">
+            
+            {/* Email Status Banner */}
+            <EmailStatusBanner 
+              status={emailStatus} 
+              customerEmail={order?.shipping.email}
+            />
             
             {/* Success Icon Animation */}
             <div className="text-center mb-8">
@@ -231,6 +364,14 @@ function SuccessContent() {
                       </svg>
                       Free Standard Shipping
                     </div>
+                    {emailStatus === 'sent' && (
+                      <div className="mt-3 flex items-center text-blue-300">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Confirmation sent to {order.shipping.email}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -281,13 +422,25 @@ function SuccessContent() {
               <h2 className="text-xl font-semibold text-white mb-4">What happens next?</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-4 bg-white/10 rounded-xl p-4">
-                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    emailStatus === 'sent' ? 'bg-green-500' : 
+                    emailStatus === 'sending' ? 'bg-blue-500 animate-pulse' : 
+                    emailStatus === 'failed' ? 'bg-red-500' : 'bg-gray-500'
+                  }`}>
                     <span className="text-white font-bold text-sm">1</span>
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">Confirmation Email Sent</h3>
+                    <h3 className="text-white font-semibold">
+                      {emailStatus === 'sent' ? 'Confirmation Email Sent ✓' : 
+                       emailStatus === 'sending' ? 'Sending Confirmation Email...' :
+                       emailStatus === 'failed' ? 'Email Delivery Issue' :
+                       'Confirmation Email'}
+                    </h3>
                     <p className="text-white/70 text-sm">
-                      Check your inbox at {order?.shipping.email || 'your email'} for order confirmation and tracking details.
+                      {emailStatus === 'sent' ? `Confirmation sent to ${order?.shipping.email || 'your email'}` :
+                       emailStatus === 'sending' ? 'Preparing your order confirmation email...' :
+                       emailStatus === 'failed' ? 'Your order is confirmed, but email delivery failed. Please contact support if needed.' :
+                       `Check your inbox at ${order?.shipping.email || 'your email'} for order confirmation and tracking details.`}
                     </p>
                   </div>
                 </div>
@@ -354,17 +507,17 @@ function SuccessContent() {
               <div className="text-center">
                 <p className="text-white/80 mb-4">Need help with your order?</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
-                  <a href="mailto:support@gamegear.com" className="text-white hover:text-green-300 transition-colors flex items-center justify-center">
+                  <a href="mailto:support@quantumgameware.com" className="text-white hover:text-green-300 transition-colors flex items-center justify-center">
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    support@gamegear.com
+                    support@quantumgameware.com
                   </a>
-                  <a href="tel:+1-800-GAMEGEAR" className="text-white hover:text-green-300 transition-colors flex items-center justify-center">
+                  <a href="tel:+1-800-QUANTUM" className="text-white hover:text-green-300 transition-colors flex items-center justify-center">
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                    1-800-GAMEGEAR
+                    1-800-QUANTUM
                   </a>
                   <Link href="/support" className="text-white hover:text-green-300 transition-colors flex items-center justify-center">
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
