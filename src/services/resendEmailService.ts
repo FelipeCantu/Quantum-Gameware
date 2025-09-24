@@ -1,8 +1,47 @@
 // File: src/services/resendEmailService.ts
-import { Resend } from 'resend';
 import { EmailService, type EmailOrder } from './emailService';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Simple Resend API client without the full SDK to avoid dependencies
+class SimpleResendClient {
+  private apiKey: string;
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  async send(emailData: {
+    from: string;
+    to: string[];
+    subject: string;
+    html: string;
+    text: string;
+    headers?: Record<string, string>;
+    tags?: Array<{ name: string; value: string }>;
+  }) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { data: null, error: result };
+      }
+
+      return { data: result, error: null };
+    } catch (error) {
+      return { data: null, error };
+    }
+  }
+}
+
+const resend = new SimpleResendClient(process.env.RESEND_API_KEY || '');
 
 export class ResendEmailService extends EmailService {
   /**
@@ -10,13 +49,18 @@ export class ResendEmailService extends EmailService {
    */
   static async sendOrderConfirmationEmail(order: EmailOrder): Promise<boolean> {
     try {
+      if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is not set');
+        return false;
+      }
+
       // Generate email content using your existing templates
       const htmlContent = this.generateOrderConfirmationEmail(order);
       const textContent = this.generatePlainTextEmail(order);
       
       // Send email via Resend
-      const { data, error } = await resend.emails.send({
-        from: `QuantumGameware Orders <orders@${process.env.NEXT_PUBLIC_DOMAIN || 'yourdomain.com'}>`,
+      const { data, error } = await resend.send({
+        from: `QuantumGameware Orders <orders@${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}>`,
         to: [order.shipping.email],
         subject: `Order Confirmed! #${order.id} - Your Gaming Gear is On Its Way`,
         html: htmlContent,
@@ -41,7 +85,7 @@ export class ResendEmailService extends EmailService {
       console.log(`✅ Order confirmation email sent successfully!`);
       console.log(`📧 Email ID: ${data?.id}`);
       console.log(`📬 Sent to: ${order.shipping.email}`);
-      console.log(`🛍️  Order: ${order.id}`);
+      console.log(`🛍️ Order: ${order.id}`);
       
       return true;
       
@@ -52,40 +96,17 @@ export class ResendEmailService extends EmailService {
   }
 
   /**
-   * Send shipping notification email
-   */
-  static async sendShippingNotification(
-    order: EmailOrder, 
-    trackingNumber: string, 
-    carrier: string
-  ): Promise<boolean> {
-    try {
-      const { data, error } = await resend.emails.send({
-        from: `QuantumGameware Shipping <shipping@${process.env.NEXT_PUBLIC_DOMAIN || 'yourdomain.com'}>`,
-        to: [order.shipping.email],
-        subject: `Your Order #${order.id} Has Shipped!`,
-        html: this.generateShippingNotificationEmail(order, trackingNumber, carrier),
-        tags: [
-          { name: 'category', value: 'shipping_notification' },
-          { name: 'order_id', value: order.id },
-          { name: 'tracking_number', value: trackingNumber }
-        ]
-      });
-
-      return !error;
-    } catch (error) {
-      console.error('Failed to send shipping notification:', error);
-      return false;
-    }
-  }
-
-  /**
    * Test email configuration
    */
   static async testEmailConfiguration(testEmail: string): Promise<boolean> {
     try {
-      const { data, error } = await resend.emails.send({
-        from: `QuantumGameware Test <test@${process.env.NEXT_PUBLIC_DOMAIN || 'yourdomain.com'}>`,
+      if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND_API_KEY is not set');
+        return false;
+      }
+
+      const { data, error } = await resend.send({
+        from: `QuantumGameware Test <test@${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}>`,
         to: [testEmail],
         subject: 'Email Configuration Test - QuantumGameware',
         html: `
@@ -96,7 +117,7 @@ export class ResendEmailService extends EmailService {
               <h3 style="margin: 0 0 10px 0; color: #2d3748;">Test Details:</h3>
               <ul style="margin: 0; padding-left: 20px;">
                 <li><strong>Service:</strong> Resend</li>
-                <li><strong>Domain:</strong> ${process.env.NEXT_PUBLIC_DOMAIN || 'yourdomain.com'}</li>
+                <li><strong>Domain:</strong> ${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}</li>
                 <li><strong>Status:</strong> <span style="color: #38a169; font-weight: bold;">Active</span></li>
                 <li><strong>Test Date:</strong> ${new Date().toLocaleString()}</li>
               </ul>
@@ -104,6 +125,7 @@ export class ResendEmailService extends EmailService {
             <p style="color: #718096;">Your order confirmation emails will be sent successfully.</p>
           </div>
         `,
+        text: `Email Configuration Test - QuantumGameware\n\nCongratulations! Your Resend email configuration is working perfectly.\n\nTest Details:\n- Service: Resend\n- Domain: ${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}\n- Status: Active\n- Test Date: ${new Date().toLocaleString()}\n\nYour order confirmation emails will be sent successfully.`,
         tags: [{ name: 'category', value: 'configuration_test' }]
       });
 
@@ -118,60 +140,5 @@ export class ResendEmailService extends EmailService {
       console.error('Test email error:', error);
       return false;
     }
-  }
-
-  /**
-   * Generate shipping notification email template
-   */
-  private static generateShippingNotificationEmail(
-    order: EmailOrder, 
-    trackingNumber: string, 
-    carrier: string
-  ): string {
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Order Has Shipped!</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
-        .container { max-width: 600px; margin: 0 auto; background: white; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-        .content { padding: 30px; }
-        .tracking-box { background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
-        .tracking-number { font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold; color: #0ea5e9; }
-        .button { display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📦 Your Order Has Shipped!</h1>
-            <p>Order #${order.id} is on its way to you</p>
-        </div>
-        <div class="content">
-            <p>Hi ${order.shipping.firstName},</p>
-            <p>Great news! Your order has been shipped and is on its way to you.</p>
-            
-            <div class="tracking-box">
-                <h3>Track Your Package</h3>
-                <p><strong>Carrier:</strong> ${carrier}</p>
-                <div class="tracking-number">${trackingNumber}</div>
-                <a href="https://www.${carrier.toLowerCase()}.com/tracking/${trackingNumber}" class="button">Track Package</a>
-            </div>
-            
-            <p><strong>Shipping Address:</strong><br>
-            ${order.shipping.firstName} ${order.shipping.lastName}<br>
-            ${order.shipping.address}<br>
-            ${order.shipping.city}, ${order.shipping.state} ${order.shipping.zipCode}</p>
-            
-            <p>Thanks for choosing QuantumGameware!</p>
-        </div>
-    </div>
-</body>
-</html>
-    `;
   }
 }
