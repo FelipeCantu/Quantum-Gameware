@@ -1,4 +1,4 @@
-// components/ui/Header/MobileMenu.tsx
+// components/ui/Header/MobileMenu.tsx - Complete Version with All Features
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -44,12 +44,10 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       
-      // Only close if clicking on the backdrop, not the menu content
       if (
         isMenuOpen && 
         mobileMenuRef.current && 
         !mobileMenuRef.current.contains(target) &&
-        // Make sure we're clicking on the backdrop div specifically
         (target as Element)?.classList?.contains('mobile-menu-backdrop')
       ) {
         handleCloseMenu();
@@ -58,7 +56,6 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
 
     if (isMenuOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      // Add small delay to prevent immediate closing
       const timeoutId = setTimeout(() => {
         document.addEventListener('click', handleClickOutside);
       }, 100);
@@ -74,10 +71,8 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   // FIXED: Better scroll lock management
   useEffect(() => {
     if (isMenuOpen) {
-      // Store current scroll position
       scrollPositionRef.current = window.pageYOffset || document.documentElement.scrollTop;
       
-      // Apply styles to prevent scrolling
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollPositionRef.current}px`;
       document.body.style.left = '0';
@@ -85,16 +80,13 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
       
-      // Prevent scroll on mobile Safari
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.position = 'fixed';
       document.documentElement.style.width = '100%';
       document.documentElement.style.height = '100%';
     } else {
-      // Restore scroll position
       const scrollY = scrollPositionRef.current;
       
-      // Remove the fixed positioning
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
@@ -107,13 +99,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
       document.documentElement.style.width = '';
       document.documentElement.style.height = '';
       
-      // Restore scroll position smoothly
       if (scrollY > 0) {
         window.scrollTo(0, scrollY);
       }
     }
 
-    // Cleanup on unmount
     return () => {
       if (isMenuOpen) {
         document.body.style.position = '';
@@ -146,15 +136,15 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     }
   };
 
+  // FIXED: Better toggle submenu function
   const toggleSubmenu = (menu: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('Toggling submenu:', menu, 'Current:', activeSubmenu); // Debug log
     setActiveSubmenu(activeSubmenu === menu ? null : menu);
   };
 
   const handleLinkClick = (e: React.MouseEvent) => {
-    // Don't prevent default - let Next.js handle the navigation
-    // Just close the menu after a small delay to allow navigation
     setTimeout(() => {
       handleCloseMenu();
     }, 50);
@@ -168,13 +158,12 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   };
 
   if (!isMenuOpen) {
-    return null; // Don't render anything when closed
+    return null;
   }
 
   return (
-    // FIXED: Use fixed positioning that covers entire viewport
     <div className="lg:hidden fixed inset-0 z-[60] transition-all duration-300 ease-out">
-      {/* FIXED: Better backdrop with proper positioning */}
+      {/* Backdrop */}
       <div 
         className="mobile-menu-backdrop fixed inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900"
         onClick={handleCloseMenu}
@@ -189,7 +178,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
         </div>
       </div>
       
-      {/* FIXED: Menu Content with proper scrolling */}
+      {/* Menu Content */}
       <div 
         ref={mobileMenuRef}
         className="fixed inset-0 flex flex-col bg-transparent overflow-hidden"
@@ -236,7 +225,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
           </button>
         </div>
 
-        {/* FIXED: Scrollable content area */}
+        {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {/* Search Section */}
           <div className="p-6">
@@ -283,7 +272,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                     <div>
                       <button
                         onClick={(e) => toggleSubmenu(link.label, e)}
-                        className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 backdrop-blur-sm active:scale-95 group"
+                        className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 backdrop-blur-sm active:scale-95 group focus:outline-none focus:ring-2 focus:ring-white/30"
+                        style={{
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent'
+                        }}
                       >
                         <div className="flex items-center space-x-4">
                           <span className="text-2xl transition-transform duration-300 group-hover:scale-110">
@@ -302,9 +295,14 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                       </button>
                       
                       {/* Submenu */}
-                      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                        activeSubmenu === link.label ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0'
-                      }`}>
+                      <div 
+                        className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                          activeSubmenu === link.label ? 'max-h-[600px] opacity-100 mt-2' : 'max-h-0 opacity-0'
+                        }`}
+                        style={{
+                          visibility: activeSubmenu === link.label ? 'visible' : 'hidden'
+                        }}
+                      >
                         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 ml-4 border border-white/10">
                           <div className="grid grid-cols-2 gap-3">
                             {link.submenu?.map((category) => (
@@ -312,7 +310,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                                 key={category.slug}
                                 href={`/categories/${category.slug}`}
                                 onClick={handleLinkClick}
-                                className="flex flex-col items-center p-4 rounded-xl hover:bg-white/10 transition-all duration-300 group border border-white/5 hover:border-white/20"
+                                className="flex flex-col items-center p-4 rounded-xl hover:bg-white/10 active:bg-white/20 transition-all duration-300 group border border-white/5 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                                style={{
+                                  touchAction: 'manipulation',
+                                  WebkitTapHighlightColor: 'transparent'
+                                }}
                               >
                                 <span className="text-2xl mb-2 transition-transform duration-300 group-hover:scale-110">
                                   {category.icon}
@@ -329,7 +331,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                           <Link
                             href="/categories"
                             onClick={handleLinkClick}
-                            className="flex items-center justify-center w-full mt-4 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-300 font-medium group"
+                            className="flex items-center justify-center w-full mt-4 px-4 py-3 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-xl transition-all duration-300 font-medium group focus:outline-none focus:ring-2 focus:ring-white/30"
+                            style={{
+                              touchAction: 'manipulation',
+                              WebkitTapHighlightColor: 'transparent'
+                            }}
                           >
                             View All Categories
                             <svg className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -343,7 +349,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                     <Link 
                       href={link.href} 
                       onClick={handleLinkClick}
-                      className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 backdrop-blur-sm active:scale-95 group"
+                      className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 active:bg-white/20 backdrop-blur-sm active:scale-95 group focus:outline-none focus:ring-2 focus:ring-white/30"
+                      style={{
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
                     >
                       <div className="flex items-center space-x-4">
                         <span className="text-2xl transition-transform duration-300 group-hover:scale-110">
@@ -371,7 +381,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleCartClick}
-                  className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20"
+                  className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <div className="relative">
                     <svg className="w-6 h-6 text-white mb-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,7 +404,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                 <Link
                   href="/account"
                   onClick={handleLinkClick}
-                  className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20"
+                  className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <svg className="w-6 h-6 text-white mb-2 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -410,7 +428,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                     key={category.slug}
                     href={`/categories/${category.slug}`}
                     onClick={handleLinkClick}
-                    className="flex flex-col items-center p-4 bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 hover:shadow-xl"
+                    className="flex flex-col items-center p-4 bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 active:from-white/30 active:to-white/15 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white/30"
+                    style={{
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent'
+                    }}
                   >
                     <span className="text-3xl mb-2 transition-transform duration-300 group-hover:scale-110">
                       {category.icon}
@@ -489,8 +511,12 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                       flex items-center justify-center w-12 h-12 bg-white/10 rounded-xl 
                       transition-all duration-300 group border border-white/10 
                       hover:border-white/30 hover:scale-110 hover:shadow-lg
-                      ${social.bgColor}
+                      ${social.bgColor} focus:outline-none focus:ring-2 focus:ring-white/30
                     `}
+                    style={{
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent'
+                    }}
                     aria-label={social.label}
                     target="_blank"
                     rel="noopener noreferrer"
