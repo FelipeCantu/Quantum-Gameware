@@ -1,4 +1,4 @@
-// components/ui/PortalDropdown.tsx
+// components/ui/PortalDropdown.tsx - Mobile Optimized Version
 import { useState, useRef, useEffect, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -10,6 +10,7 @@ interface PortalDropdownProps {
   onClose: () => void;
   className?: string;
   position?: 'bottom-left' | 'bottom-center' | 'bottom-right';
+  isMobile?: boolean;
 }
 
 export default function PortalDropdown({
@@ -19,7 +20,8 @@ export default function PortalDropdown({
   onToggle,
   onClose,
   className = '',
-  position = 'bottom-left'
+  position = 'bottom-left',
+  isMobile = false
 }: PortalDropdownProps) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -36,9 +38,32 @@ export default function PortalDropdown({
     if (!triggerRef.current || !isOpen) return;
 
     const triggerRect = triggerRef.current.getBoundingClientRect();
-    const dropdownWidth = 320; // Default width
-    const dropdownHeight = 400; // Max height
-    const gap = 8; // Gap between trigger and dropdown
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Mobile-specific handling
+    if (isMobile || viewportWidth < 1024) {
+      // On mobile, use a different approach - fullscreen or bottom sheet style
+      setDropdownStyle({
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        bottom: '0',
+        zIndex: 9999,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        padding: '16px',
+      });
+      return;
+    }
+
+    // Desktop dropdown positioning (existing logic)
+    const dropdownWidth = 320;
+    const dropdownHeight = 400;
+    const gap = 8;
 
     let top = triggerRect.bottom + gap + window.scrollY;
     let left = triggerRect.left + window.scrollX;
@@ -58,19 +83,14 @@ export default function PortalDropdown({
     }
 
     // Keep dropdown within viewport bounds
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Horizontal bounds check
     if (left < 16) left = 16;
     if (left + dropdownWidth > viewportWidth - 16) {
       left = viewportWidth - dropdownWidth - 16;
     }
 
-    // Vertical bounds check - if dropdown would go below viewport, show above trigger
+    // Vertical bounds check
     if (top + dropdownHeight > viewportHeight + window.scrollY - 16) {
       top = triggerRect.top + window.scrollY - dropdownHeight - gap;
-      // If still doesn't fit above, position at top of viewport
       if (top < window.scrollY + 16) {
         top = window.scrollY + 16;
       }
@@ -90,11 +110,7 @@ export default function PortalDropdown({
       updatePosition();
       
       const handleResize = () => updatePosition();
-      const handleScroll = () => {
-        updatePosition();
-        // Optionally close dropdown on scroll
-        // onClose();
-      };
+      const handleScroll = () => updatePosition();
 
       window.addEventListener('resize', handleResize, { passive: true });
       window.addEventListener('scroll', handleScroll, { passive: true });
@@ -104,13 +120,13 @@ export default function PortalDropdown({
         window.removeEventListener('scroll', handleScroll);
       };
     }
-  }, [isOpen, position]);
+  }, [isOpen, position, isMobile]);
 
   // Handle clicks outside
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node;
       
       if (
@@ -129,32 +145,65 @@ export default function PortalDropdown({
       }
     };
 
-    // Use capture phase to ensure we catch the event
+    // Mobile-friendly event listeners
     document.addEventListener('mousedown', handleClickOutside, true);
+    document.addEventListener('touchstart', handleClickOutside, true);
     document.addEventListener('keydown', handleEscape, true);
+
+    // Prevent body scroll on mobile when dropdown is open
+    if (isMobile || window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden';
+    }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
       document.removeEventListener('keydown', handleEscape, true);
+      document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isMobile]);
 
   if (!mounted) return null;
+
+  // Mobile vs Desktop content wrapper
+  const ContentWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (isMobile || window.innerWidth < 1024) {
+      return (
+        <div className="w-full max-w-md mx-auto bg-white rounded-t-2xl shadow-2xl animate-fade-in-up max-h-[80vh] overflow-hidden">
+          {children}
+        </div>
+      );
+    }
+    return <div className={`animate-fade-in ${className}`}>{children}</div>;
+  };
 
   const dropdownContent = isOpen ? (
     <div
       ref={dropdownRef}
-      className={`animate-fade-in ${className}`}
       style={dropdownStyle}
       role="menu"
+      onClick={(e) => {
+        // Close dropdown if clicking on mobile backdrop
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
-      {children}
+      <ContentWrapper>{children}</ContentWrapper>
     </div>
   ) : null;
 
   return (
     <>
-      <div ref={triggerRef} onClick={onToggle}>
+      <div 
+        ref={triggerRef} 
+        onClick={onToggle}
+        onTouchStart={(e) => {
+          // Prevent double-tap zoom on mobile
+          e.preventDefault();
+          onToggle();
+        }}
+      >
         {trigger}
       </div>
       {dropdownContent && createPortal(dropdownContent, document.body)}

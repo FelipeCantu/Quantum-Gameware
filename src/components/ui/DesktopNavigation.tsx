@@ -1,6 +1,6 @@
-// components/ui/Header/DesktopNavigation.tsx
+// components/ui/Header/DesktopNavigation.tsx - Mobile Aware Version
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { categories } from '@/data/categories';
 import PortalDropdown from './PortalDropdown';
 
@@ -10,6 +10,22 @@ interface DesktopNavigationProps {
 
 export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps) {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Better mobile detection
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isMobileViewport = window.innerWidth < 1024;
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
+      setIsMobile(isMobileDevice || (isMobileViewport && isTouchDevice));
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   const navLinkClasses = `relative px-4 py-2.5 transition-all duration-300 font-medium rounded-xl group overflow-hidden text-center whitespace-nowrap ${
     isScrolled 
@@ -34,7 +50,7 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
   // Categories dropdown trigger
   const categoriesTrigger = (
     <button
-      className={`${navLinkClasses} flex items-center`}
+      className={`${navLinkClasses} flex items-center ${isMobile ? 'active:bg-white/20' : ''}`}
       aria-expanded={isCategoriesOpen}
       aria-haspopup="true"
     >
@@ -51,34 +67,63 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
     </button>
   );
 
-  // Categories dropdown content
+  // Categories dropdown content - mobile optimized
   const categoriesContent = (
-    <div className="w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden ${
+      isMobile ? 'w-full' : 'w-80'
+    }`}>
+      {/* Header */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
-        <h3 className="font-semibold text-gray-900 mb-1">Shop by Category</h3>
-        <p className="text-sm text-gray-600">Find exactly what you need</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-1">Shop by Category</h3>
+            <p className="text-sm text-gray-600">Find exactly what you need</p>
+          </div>
+          {isMobile && (
+            <button
+              onClick={handleCategoriesClose}
+              className="p-2 hover:bg-white/50 rounded-full transition-colors"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Categories Grid */}
       <div className="max-h-96 overflow-y-auto scrollbar-thin">
-        <div className="grid grid-cols-2 gap-1 p-2">
+        <div className={`gap-1 p-2 ${isMobile ? 'grid grid-cols-1' : 'grid grid-cols-2'}`}>
           {categories.slice(0, 8).map((category) => (
             <Link
               key={category.slug}
               href={`/categories/${category.slug}`}
               onClick={handleCategoriesClose}
-              className="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+              className={`flex items-center p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group ${
+                isMobile ? 'py-4' : ''
+              }`}
               role="menuitem"
             >
-              <span className="text-2xl mr-3 group-hover:scale-110 transition-transform">
+              <span className={`mr-3 group-hover:scale-110 transition-transform ${
+                isMobile ? 'text-3xl' : 'text-2xl'
+              }`}>
                 {category.icon}
               </span>
-              <div>
-                <div className="font-medium text-gray-900 text-sm">
+              <div className="flex-1">
+                <div className={`font-medium text-gray-900 ${isMobile ? 'text-base' : 'text-sm'}`}>
                   {category.name.split(' ')[1] || category.name}
                 </div>
-                <div className="text-xs text-gray-500">
-                  ${category.priceRange.min}+
+                <div className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                  From ${category.priceRange.min}
                 </div>
               </div>
+              {isMobile && (
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
             </Link>
           ))}
         </div>
@@ -86,7 +131,9 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
           <Link
             href="/categories"
             onClick={handleCategoriesClose}
-            className="flex items-center justify-center w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium"
+            className={`flex items-center justify-center w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 transition-colors font-medium ${
+              isMobile ? 'py-3 text-base' : ''
+            }`}
             role="menuitem"
           >
             View All Categories
@@ -113,6 +160,7 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
         onToggle={handleCategoriesToggle}
         onClose={handleCategoriesClose}
         position="bottom-left"
+        isMobile={isMobile}
       >
         {categoriesContent}
       </PortalDropdown>
