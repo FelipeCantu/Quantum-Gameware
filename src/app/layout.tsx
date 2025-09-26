@@ -5,6 +5,7 @@ import { CartProvider } from '@/context/CartContext';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import Cart from '@/components/Cart';
+import ScrollBehavior from '@/components/ui/ScrollBehavior';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -56,6 +57,8 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
           <CartProvider>
+            {/* Global scroll behavior - ensures all page navigations start from top */}
+            <ScrollBehavior />
             <div className="min-h-screen flex flex-col bg-gray-50">
               <Header />
               <main className="flex-1">
