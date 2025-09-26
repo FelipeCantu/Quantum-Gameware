@@ -70,56 +70,35 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     }
   }, [isMenuOpen]);
 
-  // FIXED: Better scroll lock management
+  // OPTIMIZED: Better scroll lock management
   useEffect(() => {
     if (isMenuOpen) {
       scrollPositionRef.current = window.pageYOffset || document.documentElement.scrollTop;
       
+      // Simplified body lock
+      document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollPositionRef.current}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
       document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'fixed';
-      document.documentElement.style.width = '100%';
-      document.documentElement.style.height = '100%';
     } else {
-      const scrollY = scrollPositionRef.current;
-      
+      // Quick restore without smooth scrolling
+      document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
       document.body.style.width = '';
-      document.body.style.overflow = '';
       
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      
-      if (scrollY > 0) {
-        window.scrollTo({ top: scrollY, behavior: 'instant' });
+      // Only restore scroll if we're still on the same page
+      if (scrollPositionRef.current > 0 && window.location.pathname === window.location.pathname) {
+        window.scrollTo(0, scrollPositionRef.current);
       }
     }
 
     return () => {
-      if (isMenuOpen) {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        
-        document.documentElement.style.overflow = '';
-        document.documentElement.style.position = '';
-        document.documentElement.style.width = '';
-        document.documentElement.style.height = '';
-      }
+      // Cleanup
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
     };
   }, [isMenuOpen]);
 
@@ -155,35 +134,16 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     setActiveSubmenu(activeSubmenu === menu ? null : menu);
   };
 
-  // NEW: Enhanced link click handler that ensures starting from top
+  // OPTIMIZED: Fast and smooth link click handler
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
+    e.stopPropagation();
     
-    // Close the menu immediately
-    handleCloseMenu();
-    
-    // Use router.push to navigate
+    // Start navigation immediately while menu is still open
     router.push(href);
     
-    // Force scroll to top after a short delay to ensure navigation is complete
-    setTimeout(() => {
-      window.scrollTo({ 
-        top: 0, 
-        left: 0,
-        behavior: 'instant' 
-      });
-    }, 50);
-    
-    // Additional fallback to ensure scroll position
-    setTimeout(() => {
-      if (window.pageYOffset > 0) {
-        window.scrollTo({ 
-          top: 0, 
-          left: 0,
-          behavior: 'instant' 
-        });
-      }
-    }, 200);
+    // Close menu after navigation starts (no delay)
+    handleCloseMenu();
   };
 
   const handleCartClick = (e: React.MouseEvent) => {
