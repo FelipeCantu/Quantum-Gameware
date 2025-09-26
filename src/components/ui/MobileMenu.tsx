@@ -1,7 +1,8 @@
-// components/ui/Header/MobileMenu.tsx - Complete Version with All Features
+// components/ui/Header/MobileMenu.tsx - Updated to start from top of new pages
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { categories } from '@/data/categories';
 
@@ -17,6 +18,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   const [logoError, setLogoError] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const cartCount = getCartCount();
 
   // Store original scroll position to restore later
@@ -100,7 +102,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
       document.documentElement.style.height = '';
       
       if (scrollY > 0) {
-        window.scrollTo(0, scrollY);
+        window.scrollTo({ top: scrollY, behavior: 'instant' });
       }
     }
 
@@ -131,8 +133,17 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+      // Close menu immediately
       handleCloseMenu();
+      
+      // Navigate and scroll to top
+      const searchUrl = `/products?search=${encodeURIComponent(searchQuery)}`;
+      router.push(searchUrl);
+      
+      // Ensure we scroll to top after navigation
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }, 100);
     }
   };
 
@@ -144,10 +155,35 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
     setActiveSubmenu(activeSubmenu === menu ? null : menu);
   };
 
-  const handleLinkClick = (e: React.MouseEvent) => {
+  // NEW: Enhanced link click handler that ensures starting from top
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    
+    // Close the menu immediately
+    handleCloseMenu();
+    
+    // Use router.push to navigate
+    router.push(href);
+    
+    // Force scroll to top after a short delay to ensure navigation is complete
     setTimeout(() => {
-      handleCloseMenu();
+      window.scrollTo({ 
+        top: 0, 
+        left: 0,
+        behavior: 'instant' 
+      });
     }, 50);
+    
+    // Additional fallback to ensure scroll position
+    setTimeout(() => {
+      if (window.pageYOffset > 0) {
+        window.scrollTo({ 
+          top: 0, 
+          left: 0,
+          behavior: 'instant' 
+        });
+      }
+    }, 200);
   };
 
   const handleCartClick = (e: React.MouseEvent) => {
@@ -186,7 +222,11 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
       >
         {/* Header with Logo and Close Button - Fixed at top */}
         <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-white/10 bg-black/20 backdrop-blur-sm">
-          <Link href="/" onClick={handleLinkClick} className="flex items-center space-x-3 group">
+          <a 
+            href="/" 
+            onClick={(e) => handleLinkClick(e, '/')} 
+            className="flex items-center space-x-3 group"
+          >
             <div className="relative w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
               <div className="w-full h-full bg-white rounded-lg flex items-center justify-center overflow-hidden">
                 {!logoError ? (
@@ -208,7 +248,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               <div className="text-white font-bold text-xl leading-none">Quantum</div>
               <div className="text-white/70 text-sm leading-none">Gameware</div>
             </div>
-          </Link>
+          </a>
           
           {/* Close Button */}
           <button
@@ -306,10 +346,10 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 ml-4 border border-white/10">
                           <div className="grid grid-cols-2 gap-3">
                             {link.submenu?.map((category) => (
-                              <Link
+                              <a
                                 key={category.slug}
                                 href={`/categories/${category.slug}`}
-                                onClick={handleLinkClick}
+                                onClick={(e) => handleLinkClick(e, `/categories/${category.slug}`)}
                                 className="flex flex-col items-center p-4 rounded-xl hover:bg-white/10 active:bg-white/20 transition-all duration-300 group border border-white/5 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                                 style={{
                                   touchAction: 'manipulation',
@@ -325,12 +365,12 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                                 <span className="text-white/60 text-xs mt-1">
                                   ${category.priceRange.min}+
                                 </span>
-                              </Link>
+                              </a>
                             ))}
                           </div>
-                          <Link
+                          <a
                             href="/categories"
-                            onClick={handleLinkClick}
+                            onClick={(e) => handleLinkClick(e, '/categories')}
                             className="flex items-center justify-center w-full mt-4 px-4 py-3 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white rounded-xl transition-all duration-300 font-medium group focus:outline-none focus:ring-2 focus:ring-white/30"
                             style={{
                               touchAction: 'manipulation',
@@ -341,14 +381,14 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                             <svg className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
-                          </Link>
+                          </a>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <Link 
+                    <a 
                       href={link.href} 
-                      onClick={handleLinkClick}
+                      onClick={(e) => handleLinkClick(e, link.href)}
                       className="flex items-center justify-between w-full px-6 py-4 text-white hover:text-blue-200 transition-all duration-300 font-medium rounded-2xl hover:bg-white/10 active:bg-white/20 backdrop-blur-sm active:scale-95 group focus:outline-none focus:ring-2 focus:ring-white/30"
                       style={{
                         touchAction: 'manipulation',
@@ -369,7 +409,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                    </Link>
+                    </a>
                   )}
                 </div>
               ))}
@@ -401,9 +441,9 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                   <span className="text-white/60 text-xs">{cartCount} items</span>
                 </button>
                 
-                <Link
+                <a
                   href="/account"
-                  onClick={handleLinkClick}
+                  onClick={(e) => handleLinkClick(e, '/account')}
                   className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
                   style={{
                     touchAction: 'manipulation',
@@ -415,7 +455,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                   </svg>
                   <span className="text-white text-sm font-medium">Account</span>
                   <span className="text-white/60 text-xs">Profile</span>
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -424,10 +464,10 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
               <h3 className="text-white/80 text-sm font-semibold mb-4 px-2">Featured Categories</h3>
               <div className="grid grid-cols-2 gap-3">
                 {categories.slice(0, 4).map((category) => (
-                  <Link
+                  <a
                     key={category.slug}
                     href={`/categories/${category.slug}`}
-                    onClick={handleLinkClick}
+                    onClick={(e) => handleLinkClick(e, `/categories/${category.slug}`)}
                     className="flex flex-col items-center p-4 bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 active:from-white/30 active:to-white/15 rounded-2xl transition-all duration-300 group border border-white/10 hover:border-white/20 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white/30"
                     style={{
                       touchAction: 'manipulation',
@@ -443,7 +483,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                     <span className="text-white/60 text-xs mt-1">
                       ${category.priceRange.min}+
                     </span>
-                  </Link>
+                  </a>
                 ))}
               </div>
             </div>

@@ -23,6 +23,19 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+  
+  // OneDrive compatibility settings
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000, // Check for changes every 1 second instead of using file system events
+        aggregateTimeout: 300, // Delay before rebuilding after changes
+        ignored: /node_modules/, // Don't watch node_modules
+      }
+    }
+    return config
+  },
+  
   // Optional: Add if you need to handle CORS or other issues
   async headers() {
     return [
