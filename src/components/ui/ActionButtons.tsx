@@ -1,4 +1,4 @@
-// components/ui/Header/ActionButtons.tsx
+// components/ui/ActionButtons.tsx - Updated with Animated Menu Button
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import SearchDropdown from './SearchDropdown';
@@ -9,6 +9,67 @@ interface ActionButtonsProps {
   isMenuOpen: boolean;
   openMenu: () => void;
 }
+
+// Animated Menu Button Component
+const AnimatedMenuButton = ({ 
+  isOpen, 
+  onClick, 
+  isScrolled 
+}: { 
+  isOpen: boolean; 
+  onClick: () => void; 
+  isScrolled: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    className={`
+      lg:hidden p-2.5 rounded-xl transition-all duration-300 
+      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 
+      active:scale-95 flex-shrink-0 ${
+        isScrolled 
+          ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
+          : 'hover:bg-white/10'
+      }
+    `}
+    aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+    aria-expanded={isOpen}
+  >
+    <div className="w-5 h-5 relative">
+      {/* Top bar */}
+      <span className={`
+        absolute left-0 w-full h-0.5 rounded-full 
+        transition-all duration-300 ease-out origin-center
+        ${isScrolled ? 'bg-gray-600' : 'bg-white'}
+        ${isOpen 
+          ? 'top-[9.5px] rotate-45' 
+          : 'top-[3px]'
+        }
+      `} />
+      
+      {/* Middle bar */}
+      <span className={`
+        absolute left-0 top-[9.5px] w-full h-0.5 rounded-full 
+        transition-all duration-300 ease-out
+        ${isScrolled ? 'bg-gray-600' : 'bg-white'}
+        ${isOpen 
+          ? 'opacity-0 scale-0' 
+          : 'opacity-100 scale-100'
+        }
+      `} />
+      
+      {/* Bottom bar */}
+      <span className={`
+        absolute left-0 w-full h-0.5 rounded-full 
+        transition-all duration-300 ease-out origin-center
+        ${isScrolled ? 'bg-gray-600' : 'bg-white'}
+        ${isOpen 
+          ? 'top-[9.5px] -rotate-45' 
+          : 'top-[16px]'
+        }
+      `} />
+    </div>
+  </button>
+);
 
 export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: ActionButtonsProps) {
   const { toggleCart, getCartCount } = useCart();
@@ -50,7 +111,7 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
             viewBox="0 0 24 24" 
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </button>
 
@@ -77,44 +138,35 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
           fill="none" 
           viewBox="0 0 24 24" 
           stroke="currentColor"
+          strokeWidth={1.5}
         >
           <path 
             strokeLinecap="round" 
             strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" 
+            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" 
           />
         </svg>
         {cartCount > 0 && (
-          <span className={`absolute -top-1 -right-1 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center transform transition-all duration-300 shadow-lg z-10 ${
-            isScrolled 
-              ? 'bg-gradient-to-r from-red-500 to-pink-500 animate-pulse' 
-              : 'bg-red-500 animate-pulse'
-          }`}>
+          <span className={`
+            absolute -top-1 -right-1 text-white text-xs font-bold rounded-full 
+            h-5 w-5 flex items-center justify-center transform transition-all duration-300 
+            shadow-lg z-10 animate-pulse
+            ${isScrolled 
+              ? 'bg-gradient-to-r from-red-500 to-pink-500' 
+              : 'bg-red-500'
+            }
+          `}>
             {cartCount > 99 ? '99+' : cartCount}
           </span>
         )}
       </button>
       
-      {/* Mobile Menu Button */}
-      <button 
+      {/* Mobile Menu Button with Animated Icon */}
+      <AnimatedMenuButton 
+        isOpen={isMenuOpen}
         onClick={openMenu}
-        className={`lg:hidden ${buttonClasses} flex items-center justify-center`}
-        aria-label="Toggle navigation menu"
-        aria-expanded={isMenuOpen}
-      >
-        <div className="relative w-5 h-5 flex items-center justify-center">
-          <span className={`absolute h-0.5 w-full transform transition-all duration-300 ease-in-out ${
-            isMenuOpen ? 'rotate-45 translate-y-0' : '-translate-y-2'
-          } ${isScrolled ? 'bg-gray-600' : 'bg-white'}`} />
-          <span className={`absolute h-0.5 w-full transform transition-all duration-300 ease-in-out ${
-            isMenuOpen ? 'opacity-0' : 'opacity-100'
-          } ${isScrolled ? 'bg-gray-600' : 'bg-white'}`} />
-          <span className={`absolute h-0.5 w-full transform transition-all duration-300 ease-in-out ${
-            isMenuOpen ? '-rotate-45 translate-y-0' : 'translate-y-2'
-          } ${isScrolled ? 'bg-gray-600' : 'bg-white'}`} />
-        </div>
-      </button>
+        isScrolled={isScrolled}
+      />
     </div>
   );
 }
