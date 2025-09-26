@@ -35,16 +35,36 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
         const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
         setSavedScrollPosition(currentScrollY);
         
-        // Smooth scroll to top
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
+        console.log('Saving scroll position:', currentScrollY);
         
-        // Small delay to let scroll finish before showing dropdown
+        // INSTANT scroll to absolute top (0, 0)
+        window.scrollTo(0, 0);
+        
+        // Force scroll to top using multiple methods
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        
+        // Wait a bit longer and verify we're at the top before showing dropdown
         setTimeout(() => {
-          setIsCategoriesOpen(true);
-        }, 300);
+          const finalScrollY = window.pageYOffset || document.documentElement.scrollTop;
+          console.log('Final scroll position after forced scroll:', finalScrollY);
+          
+          if (finalScrollY === 0) {
+            console.log('Successfully at top, showing dropdown');
+            setIsCategoriesOpen(true);
+          } else {
+            console.log('Not at top yet, trying again...');
+            // Try one more time
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            
+            setTimeout(() => {
+              console.log('Second attempt, showing dropdown anyway');
+              setIsCategoriesOpen(true);
+            }, 200);
+          }
+        }, 100);
       } else {
         // Desktop - open immediately
         setIsCategoriesOpen(true);
