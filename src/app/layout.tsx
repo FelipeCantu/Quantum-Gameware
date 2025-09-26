@@ -5,8 +5,8 @@ import { CartProvider } from '@/context/CartContext';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import Cart from '@/components/Cart';
-import ScrollBehavior from '@/components/ui/ScrollBehavior';
 import './globals.css';
+import ScrollBehavior from '@/components/ui/ScrollBehavior';
 
 const inter = Inter({ subsets: ['latin'] });
 
