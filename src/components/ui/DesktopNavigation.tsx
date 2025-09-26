@@ -1,4 +1,4 @@
-// components/ui/Header/DesktopNavigation.tsx - Scroll Position Workaround
+// components/ui/Header/DesktopNavigation.tsx - Full Screen Overlay Approach
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { categories } from '@/data/categories';
@@ -10,8 +10,6 @@ interface DesktopNavigationProps {
 export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps) {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [savedScrollPosition, setSavedScrollPosition] = useState(0);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Mobile detection
@@ -28,110 +26,40 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
   }, []);
 
   const handleCategoriesToggle = () => {
-    if (!isCategoriesOpen) {
-      // Opening dropdown
-      if (isMobile) {
-        // Save current scroll position
-        const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
-        setSavedScrollPosition(currentScrollY);
-        
-        console.log('Saving scroll position:', currentScrollY);
-        
-        // INSTANT scroll to absolute top (0, 0)
-        window.scrollTo(0, 0);
-        
-        // Force scroll to top using multiple methods
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-        
-        // Wait a bit longer and verify we're at the top before showing dropdown
-        setTimeout(() => {
-          const finalScrollY = window.pageYOffset || document.documentElement.scrollTop;
-          console.log('Final scroll position after forced scroll:', finalScrollY);
-          
-          if (finalScrollY === 0) {
-            console.log('Successfully at top, showing dropdown');
-            setIsCategoriesOpen(true);
-          } else {
-            console.log('Not at top yet, trying again...');
-            // Try one more time
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-            
-            setTimeout(() => {
-              console.log('Second attempt, showing dropdown anyway');
-              setIsCategoriesOpen(true);
-            }, 200);
-          }
-        }, 100);
-      } else {
-        // Desktop - open immediately
-        setIsCategoriesOpen(true);
-      }
-    } else {
-      // Closing dropdown
-      handleCategoriesClose();
-    }
+    console.log('Categories button clicked, current state:', isCategoriesOpen);
+    setIsCategoriesOpen(prev => !prev);
   };
 
   const handleCategoriesClose = () => {
+    console.log('Categories close called');
     setIsCategoriesOpen(false);
-    
-    // On mobile, restore scroll position after closing
-    if (isMobile && savedScrollPosition > 0) {
-      setTimeout(() => {
-        window.scrollTo({
-          top: savedScrollPosition,
-          behavior: 'smooth'
-        });
-        setSavedScrollPosition(0);
-      }, 100);
-    }
   };
 
-  const handleCategoryLinkClick = (href: string) => {
-    // When clicking a category link, don't restore scroll position
-    // because we're navigating to a new page
-    setSavedScrollPosition(0);
-    setIsCategoriesOpen(false);
-    
-    // Navigate to the category page
-    window.location.href = href;
+  const handleCategoryClick = (categorySlug: string) => {
+    console.log('Category clicked:', categorySlug);
+    handleCategoriesClose();
+    // Navigate to category page
+    window.location.href = `/categories/${categorySlug}`;
   };
 
-  // Handle outside clicks
+  const handleViewAllClick = () => {
+    console.log('View all categories clicked');
+    handleCategoriesClose();
+    window.location.href = '/categories';
+  };
+
+  // Handle escape key
   useEffect(() => {
     if (!isCategoriesOpen) return;
 
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node;
-      
-      if (
-        dropdownRef.current &&
-        buttonRef.current &&
-        !dropdownRef.current.contains(target) &&
-        !buttonRef.current.contains(target)
-      ) {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
         handleCategoriesClose();
       }
     };
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleCategoriesClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside, { passive: true });
-    document.addEventListener('touchstart', handleClickOutside, { passive: true });
-    document.addEventListener('keydown', handleEscape, { passive: true });
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [isCategoriesOpen]);
 
   const navLinkClasses = `relative px-4 py-2.5 transition-all duration-300 font-medium rounded-xl group overflow-hidden text-center whitespace-nowrap ${
@@ -147,14 +75,14 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
   }`;
 
   return (
-    <nav className="hidden lg:flex items-center space-x-1">
-      <Link href="/" className={navLinkClasses}>
-        <span className="relative z-10">Home</span>
-        <div className={underlineClasses} />
-      </Link>
+    <>
+      <nav className="hidden lg:flex items-center space-x-1">
+        <Link href="/" className={navLinkClasses}>
+          <span className="relative z-10">Home</span>
+          <div className={underlineClasses} />
+        </Link>
 
-      {/* Categories Button */}
-      <div className="relative">
+        {/* Categories Button */}
         <button
           ref={buttonRef}
           onClick={handleCategoriesToggle}
@@ -165,7 +93,9 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
             touchAction: 'manipulation',
             WebkitTapHighlightColor: 'transparent',
             userSelect: 'none',
-            WebkitUserSelect: 'none'
+            WebkitUserSelect: 'none',
+            // Visual indicator
+            backgroundColor: isCategoriesOpen ? 'rgba(59, 130, 246, 0.2)' : 'transparent'
           }}
         >
           <span className="relative z-10">Categories</span>
@@ -180,143 +110,135 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
           <div className={underlineClasses} />
         </button>
 
-        {/* Categories Dropdown */}
-        {isCategoriesOpen && (
+        <Link href="/products" className={navLinkClasses}>
+          <span className="relative z-10">Products</span>
+          <div className={underlineClasses} />
+        </Link>
+
+        <Link href="/about" className={navLinkClasses}>
+          <span className="relative z-10">About</span>
+          <div className={underlineClasses} />
+        </Link>
+
+        <Link href="/contact" className={navLinkClasses}>
+          <span className="relative z-10">Contact</span>
+          <div className={underlineClasses} />
+        </Link>
+      </nav>
+
+      {/* Full-Screen Categories Overlay - Rendered outside nav */}
+      {isCategoriesOpen && (
+        <div 
+          className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center p-4"
+          onClick={(e) => {
+            // Only close if clicking the backdrop
+            if (e.target === e.currentTarget) {
+              handleCategoriesClose();
+            }
+          }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)'
+          }}
+        >
           <div 
-            ref={dropdownRef}
-            className={`
-              bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50
-              ${isMobile 
-                ? 'fixed top-20 left-4 right-4 max-h-[calc(100vh-6rem)]' 
-                : 'absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-80 max-h-96'
-              }
-            `}
+            className="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
             style={{
-              animation: isMobile ? 'slideDown 0.3s ease-out' : 'fadeIn 0.2s ease-out'
+              maxHeight: '90vh',
+              animation: 'modalSlideIn 0.3s ease-out'
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+            <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Shop by Category</h3>
-                  <p className="text-sm text-gray-600">Find exactly what you need</p>
-                  {isMobile && savedScrollPosition > 0 && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      💡 Close to return to your previous position
-                    </p>
-                  )}
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">Categories</h2>
+                  <p className="text-gray-600">Browse our gaming gear</p>
                 </div>
-                {isMobile && (
-                  <button
-                    onClick={handleCategoriesClose}
-                    className="p-2 hover:bg-white/50 rounded-full transition-colors"
-                    aria-label="Close categories"
-                  >
-                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
+                <button
+                  onClick={handleCategoriesClose}
+                  className="p-3 hover:bg-white/50 rounded-full transition-colors"
+                  aria-label="Close categories"
+                  style={{
+                    minWidth: '48px',
+                    minHeight: '48px'
+                  }}
+                >
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            {/* Categories Grid/List */}
-            <div className="max-h-96 overflow-y-auto scrollbar-thin">
-              <div className={`gap-1 p-2 ${isMobile ? 'grid grid-cols-1' : 'grid grid-cols-2'}`}>
+            {/* Categories List */}
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
+              <div className="p-6 space-y-3">
                 {categories.slice(0, 8).map((category) => (
                   <button
                     key={category.slug}
-                    onClick={() => handleCategoryLinkClick(`/categories/${category.slug}`)}
-                    className={`flex items-center p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group text-left w-full ${
-                      isMobile ? 'py-4' : ''
-                    }`}
+                    onClick={() => handleCategoryClick(category.slug)}
+                    className="w-full flex items-center p-4 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition-colors border border-gray-100 group text-left"
                     style={{
-                      touchAction: 'manipulation'
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      minHeight: '80px'
                     }}
                   >
-                    <span className={`mr-3 group-hover:scale-110 transition-transform ${
-                      isMobile ? 'text-3xl' : 'text-2xl'
-                    }`}>
+                    <span className="text-4xl mr-5 group-hover:scale-110 transition-transform">
                       {category.icon}
                     </span>
                     <div className="flex-1">
-                      <div className={`font-medium text-gray-900 ${isMobile ? 'text-base' : 'text-sm'}`}>
-                        {category.name.split(' ')[1] || category.name}
-                      </div>
-                      <div className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>
-                        From ${category.priceRange.min}
-                      </div>
+                      <div className="font-bold text-gray-900 text-lg mb-1">{category.name}</div>
+                      <div className="text-gray-500">Starting from ${category.priceRange.min}</div>
                     </div>
-                    {isMobile && (
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    )}
+                    <svg className="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </button>
                 ))}
               </div>
               
-              <div className="p-3 border-t border-gray-100">
+              {/* View All Button */}
+              <div className="p-6 border-t border-gray-100">
                 <button
-                  onClick={() => handleCategoryLinkClick('/categories')}
-                  className={`flex items-center justify-center w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 transition-colors font-medium ${
-                    isMobile ? 'py-3 text-base' : ''
-                  }`}
+                  onClick={handleViewAllClick}
+                  className="w-full flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-colors font-bold text-lg"
                   style={{
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    minHeight: '64px'
                   }}
                 >
                   View All Categories
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="ml-3 w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </button>
               </div>
             </div>
           </div>
-        )}
-      </div>
 
-      <Link href="/products" className={navLinkClasses}>
-        <span className="relative z-10">Products</span>
-        <div className={underlineClasses} />
-      </Link>
-
-      <Link href="/about" className={navLinkClasses}>
-        <span className="relative z-10">About</span>
-        <div className={underlineClasses} />
-      </Link>
-
-      <Link href="/contact" className={navLinkClasses}>
-        <span className="relative z-10">Contact</span>
-        <div className={underlineClasses} />
-      </Link>
-
-      {/* CSS for animations */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translateY(-20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-    </nav>
+          {/* CSS for modal animation */}
+          <style jsx>{`
+            @keyframes modalSlideIn {
+              from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+              }
+              to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+              }
+            }
+          `}</style>
+        </div>
+      )}
+    </>
   );
 }
