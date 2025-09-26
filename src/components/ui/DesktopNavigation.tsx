@@ -1,7 +1,8 @@
-// components/ui/Header/DesktopNavigation.tsx - Original Version (Should Work Now)
+// components/ui/Header/DesktopNavigation.tsx - Mobile Aware Version
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { categories } from '@/data/categories';
+import PortalDropdown from './PortalDropdown';
 
 interface DesktopNavigationProps {
   isScrolled: boolean;
@@ -10,8 +11,6 @@ interface DesktopNavigationProps {
 export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps) {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Better mobile detection
   useEffect(() => {
@@ -28,48 +27,6 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  const handleCategoriesToggle = () => {
-    setIsCategoriesOpen(!isCategoriesOpen);
-  };
-
-  const handleCategoriesClose = () => {
-    setIsCategoriesOpen(false);
-  };
-
-  // Handle outside clicks
-  useEffect(() => {
-    if (!isCategoriesOpen) return;
-
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node;
-      
-      if (
-        dropdownRef.current &&
-        buttonRef.current &&
-        !dropdownRef.current.contains(target) &&
-        !buttonRef.current.contains(target)
-      ) {
-        handleCategoriesClose();
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleCategoriesClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside, { passive: true });
-    document.addEventListener('touchstart', handleClickOutside, { passive: true });
-    document.addEventListener('keydown', handleEscape, { passive: true });
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isCategoriesOpen]);
-
   const navLinkClasses = `relative px-4 py-2.5 transition-all duration-300 font-medium rounded-xl group overflow-hidden text-center whitespace-nowrap ${
     isScrolled 
       ? 'text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
@@ -82,6 +39,113 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
       : 'bg-white'
   }`;
 
+  const handleCategoriesToggle = () => {
+    setIsCategoriesOpen(!isCategoriesOpen);
+  };
+
+  const handleCategoriesClose = () => {
+    setIsCategoriesOpen(false);
+  };
+
+  // Categories dropdown trigger
+  const categoriesTrigger = (
+    <button
+      className={`${navLinkClasses} flex items-center ${isMobile ? 'active:bg-white/20' : ''}`}
+      aria-expanded={isCategoriesOpen}
+      aria-haspopup="true"
+    >
+      <span className="relative z-10">Categories</span>
+      <svg 
+        className={`ml-1 w-4 h-4 transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`} 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+      <div className={underlineClasses} />
+    </button>
+  );
+
+  // Categories dropdown content - mobile optimized
+  const categoriesContent = (
+    <div className={`bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden ${
+      isMobile ? 'w-full' : 'w-80'
+    }`}>
+      {/* Header */}
+      <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-1">Shop by Category</h3>
+            <p className="text-sm text-gray-600">Find exactly what you need</p>
+          </div>
+          {isMobile && (
+            <button
+              onClick={handleCategoriesClose}
+              className="p-2 hover:bg-white/50 rounded-full transition-colors"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Categories Grid */}
+      <div className="max-h-96 overflow-y-auto scrollbar-thin">
+        <div className={`gap-1 p-2 ${isMobile ? 'grid grid-cols-1' : 'grid grid-cols-2'}`}>
+          {categories.slice(0, 8).map((category) => (
+            <Link
+              key={category.slug}
+              href={`/categories/${category.slug}`}
+              onClick={handleCategoriesClose}
+              className={`flex items-center p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group ${
+                isMobile ? 'py-4' : ''
+              }`}
+              role="menuitem"
+            >
+              <span className={`mr-3 group-hover:scale-110 transition-transform ${
+                isMobile ? 'text-3xl' : 'text-2xl'
+              }`}>
+                {category.icon}
+              </span>
+              <div className="flex-1">
+                <div className={`font-medium text-gray-900 ${isMobile ? 'text-base' : 'text-sm'}`}>
+                  {category.name.split(' ')[1] || category.name}
+                </div>
+                <div className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>
+                  From ${category.priceRange.min}
+                </div>
+              </div>
+              {isMobile && (
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+            </Link>
+          ))}
+        </div>
+        <div className="p-3 border-t border-gray-100">
+          <Link
+            href="/categories"
+            onClick={handleCategoriesClose}
+            className={`flex items-center justify-center w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 transition-colors font-medium ${
+              isMobile ? 'py-3 text-base' : ''
+            }`}
+            role="menuitem"
+          >
+            View All Categories
+            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <nav className="hidden lg:flex items-center space-x-1">
       <Link href="/" className={navLinkClasses}>
@@ -89,124 +153,17 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
         <div className={underlineClasses} />
       </Link>
 
-      {/* Categories Button */}
-      <div className="relative">
-        <button
-          ref={buttonRef}
-          onClick={handleCategoriesToggle}
-          className={`${navLinkClasses} flex items-center`}
-          aria-expanded={isCategoriesOpen}
-          aria-haspopup="true"
-          style={{
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent',
-            userSelect: 'none',
-            WebkitUserSelect: 'none'
-          }}
-        >
-          <span className="relative z-10">Categories</span>
-          <svg 
-            className={`ml-1 w-4 h-4 transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-          <div className={underlineClasses} />
-        </button>
-
-        {/* Categories dropdown - Mobile optimized */}
-        {isCategoriesOpen && (
-          <div 
-            ref={dropdownRef}
-            className={`
-              bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50
-              ${isMobile 
-                ? 'fixed inset-x-4 top-20 max-h-[calc(100vh-6rem)]' 
-                : 'absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-80 max-h-96'
-              }
-            `}
-          >
-            {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Shop by Category</h3>
-                  <p className="text-sm text-gray-600">Find exactly what you need</p>
-                </div>
-                {isMobile && (
-                  <button
-                    onClick={handleCategoriesClose}
-                    className="p-2 hover:bg-white/50 rounded-full transition-colors"
-                    aria-label="Close"
-                  >
-                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Categories Grid */}
-            <div className="max-h-96 overflow-y-auto scrollbar-thin">
-              <div className={`gap-1 p-2 ${isMobile ? 'grid grid-cols-1' : 'grid grid-cols-2'}`}>
-                {categories.slice(0, 8).map((category) => (
-                  <Link
-                    key={category.slug}
-                    href={`/categories/${category.slug}`}
-                    onClick={handleCategoriesClose}
-                    className={`flex items-center p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors group ${
-                      isMobile ? 'py-4' : ''
-                    }`}
-                    style={{
-                      touchAction: 'manipulation'
-                    }}
-                  >
-                    <span className={`mr-3 group-hover:scale-110 transition-transform ${
-                      isMobile ? 'text-3xl' : 'text-2xl'
-                    }`}>
-                      {category.icon}
-                    </span>
-                    <div className="flex-1">
-                      <div className={`font-medium text-gray-900 ${isMobile ? 'text-base' : 'text-sm'}`}>
-                        {category.name.split(' ')[1] || category.name}
-                      </div>
-                      <div className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-xs'}`}>
-                        From ${category.priceRange.min}
-                      </div>
-                    </div>
-                    {isMobile && (
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    )}
-                  </Link>
-                ))}
-              </div>
-              
-              <div className="p-3 border-t border-gray-100">
-                <Link
-                  href="/categories"
-                  onClick={handleCategoriesClose}
-                  className={`flex items-center justify-center w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 transition-colors font-medium ${
-                    isMobile ? 'py-3 text-base' : ''
-                  }`}
-                  style={{
-                    touchAction: 'manipulation'
-                  }}
-                >
-                  View All Categories
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Categories Portal Dropdown */}
+      <PortalDropdown
+        trigger={categoriesTrigger}
+        isOpen={isCategoriesOpen}
+        onToggle={handleCategoriesToggle}
+        onClose={handleCategoriesClose}
+        position="bottom-left"
+        isMobile={isMobile}
+      >
+        {categoriesContent}
+      </PortalDropdown>
 
       <Link href="/products" className={navLinkClasses}>
         <span className="relative z-10">Products</span>
