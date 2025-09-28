@@ -75,22 +75,22 @@ function HeadphonesModel({ isVisible }: { isVisible: boolean }) {
   useFrame((state) => {
     if (modelRef.current) {
       if (isVisible && !hasSlideAnimated) {
-        // Smooth slide up animation
+        // Smooth slide up animation from top
         const slideProgress = Math.min((state.clock.elapsedTime - 2) / 2, 1);
         if (slideProgress > 0) {
           const easeOutCubic = 1 - Math.pow(1 - slideProgress, 3);
-          modelRef.current.position.y = THREE.MathUtils.lerp(-5, 0, easeOutCubic) + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+          modelRef.current.position.y = THREE.MathUtils.lerp(5, 1, easeOutCubic) + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
           modelRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.15 + state.clock.elapsedTime * 0.1;
           
           if (slideProgress >= 1) {
             setHasSlideAnimated(true);
           }
         } else {
-          modelRef.current.position.y = -5;
+          modelRef.current.position.y = 5;
         }
       } else if (hasSlideAnimated) {
         modelRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.15 + state.clock.elapsedTime * 0.1;
-        modelRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+        modelRef.current.position.y = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
       }
     }
   });
@@ -245,9 +245,22 @@ export default function Hero() {
         .animate-scroll-bounce {
           animation: scroll-bounce 2s ease-in-out infinite;
         }
+        @keyframes counter-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-counter-up {
+          animation: counter-up 0.8s ease-out forwards;
+        }
       `}</style>
       
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative overflow-hidden">
         {/* Animated moving gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 animate-gradient-xy">
           
@@ -427,10 +440,10 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="relative z-10 w-full h-full pointer-events-auto">
+        {/* Main Content Container */}
+        <div className="relative z-10 w-full min-h-screen pointer-events-auto">
           {/* Mobile & Tablet: Vertical Layout */}
-          <div className="lg:hidden flex flex-col items-center justify-center px-6 text-center space-y-6 py-20">
+          <div className="lg:hidden flex flex-col items-center justify-center px-6 text-center space-y-6 py-20 min-h-screen">
             {/* Badge */}
             <div 
               className={`inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm font-medium transition-all duration-800 ${
@@ -495,7 +508,7 @@ export default function Hero() {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden lg:block w-full h-full">
+          <div className="hidden lg:block w-full h-full min-h-screen">
             {/* Left Side - Main Content */}
             <div className="absolute left-12 top-1/2 transform -translate-y-1/2 max-w-lg z-20">
               <h1 
@@ -586,14 +599,151 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Statistics Section */}
         <div 
-          className={`absolute left-1/2 transform -translate-x-1/2 z-20 transition-all duration-1000 ${
+          className={`relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10 transition-all duration-1000 ${
             animationStarted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-          } lg:bottom-8 bottom-4`}
-          style={{ transitionDelay: '3200ms' } as CustomCSSProperties}
+          }`}
+          style={{ transitionDelay: '3300ms' } as CustomCSSProperties}
         >
-          <div className="flex flex-col items-center">
+          <div className="max-w-6xl mx-auto px-4 py-8 lg:px-6 lg:py-16">
+            {/* Mobile: Stacked Layout */}
+            <div className="block lg:hidden space-y-4">
+              {/* 10K+ Happy Gamers */}
+              <div 
+                className={`group transition-all duration-800 hover:scale-105 ${
+                  animationStarted ? 'animate-counter-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: '3400ms' } as CSSProperties}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-3xl font-bold text-white mb-1">10K+</div>
+                        <div className="text-sm text-white/80 font-medium">Happy Gamers</div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 99.9% Uptime */}
+              <div 
+                className={`group transition-all duration-800 hover:scale-105 ${
+                  animationStarted ? 'animate-counter-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: '3500ms' } as CSSProperties}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-3xl font-bold text-white mb-1">99.9%</div>
+                        <div className="text-sm text-white/80 font-medium">Uptime</div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 24/7 Support */}
+              <div 
+                className={`group transition-all duration-800 hover:scale-105 ${
+                  animationStarted ? 'animate-counter-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: '3600ms' } as CSSProperties}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-3xl font-bold text-white mb-1">24/7</div>
+                        <div className="text-sm text-white/80 font-medium">Support</div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 11-6.364 15.364M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop: Grid Layout */}
+            <div className="hidden lg:grid grid-cols-3 gap-12 text-center">
+              {/* 10K+ Happy Gamers */}
+              <div 
+                className={`group transition-all duration-800 hover:scale-105 ${
+                  animationStarted ? 'animate-counter-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: '3400ms' } as CSSProperties}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
+                    <div className="text-4xl font-bold text-white mb-2">10K+</div>
+                    <div className="text-sm text-white/80 font-medium">Happy Gamers</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 99.9% Uptime */}
+              <div 
+                className={`group transition-all duration-800 hover:scale-105 ${
+                  animationStarted ? 'animate-counter-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: '3500ms' } as CSSProperties}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
+                    <div className="text-4xl font-bold text-white mb-2">99.9%</div>
+                    <div className="text-sm text-white/80 font-medium">Uptime</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 24/7 Support */}
+              <div 
+                className={`group transition-all duration-800 hover:scale-105 ${
+                  animationStarted ? 'animate-counter-up' : 'opacity-0'
+                }`}
+                style={{ animationDelay: '3600ms' } as CSSProperties}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
+                    <div className="text-4xl font-bold text-white mb-2">24/7</div>
+                    <div className="text-sm text-white/80 font-medium">Support</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll indicator - moved inside statistics section */}
+          <div 
+            className={`flex flex-col items-center pb-8 transition-all duration-1000 ${
+              animationStarted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            }`}
+            style={{ transitionDelay: '3700ms' } as CustomCSSProperties}
+          >
             <span className="text-white/70 text-xs font-medium mb-2">Scroll to explore</span>
             <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center p-1">
               <div className="w-1 h-3 bg-white/70 rounded-full animate-scroll-bounce"></div>
