@@ -6,3 +6,4 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
 }
+

@@ -1,7 +1,8 @@
-// src/app/page.tsx
+// src/app/page.tsx - Updated with 3D Hero
 import { getProducts, getFeaturedProducts } from '../sanity/lib/queries'
 import ProductGrid from '@/components/ProductGrid';
-import Hero from '@/components/ui/Hero';
+import Hero3D from '@/components/ui/Hero3D'; // New 3D Hero component
+// import Hero from '@/components/ui/Hero'; // Old hero (commented out)
 
 // Add revalidation
 export const revalidate = 60; // Revalidate every 60 seconds
@@ -15,7 +16,11 @@ export default async function Home() {
 
     return (
       <div>
-        <Hero />
+        {/* NEW: 3D Hero Section */}
+        <Hero3D />
+        
+        {/* OLD: Replace this line with the above */}
+        {/* <Hero /> */}
         
         {/* Featured Products Section with proper background */}
         <section className="bg-gray-50 py-20">
@@ -50,7 +55,8 @@ export default async function Home() {
     
     return (
       <div>
-        <Hero />
+        {/* Even in error state, show the 3D Hero */}
+        <Hero3D />
         <div className="bg-gray-50 py-20">
           <div className="container mx-auto px-4 text-center">
             <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
