@@ -390,6 +390,22 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                         </svg>
                       </Link>
                     ))}
+                    
+                    {/* View All Categories Button */}
+                    <Link
+                      href="/categories"
+                      onClick={handleClose}
+                      className="flex items-center justify-center p-3 mt-2 bg-gradient-to-r from-blue-500 to-purple-500 
+                               hover:from-blue-600 hover:to-purple-600 rounded-xl transition-all duration-200 group"
+                    >
+                      <span className="text-white text-sm font-medium">
+                        View All Categories
+                      </span>
+                      <svg className="ml-2 w-4 h-4 text-white transition-transform group-hover:translate-x-1" 
+                           fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </Link>
                   </div>
                 </div>
 
