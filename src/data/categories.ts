@@ -5,6 +5,7 @@ export interface CategoryData {
   description: string;
   icon: string;
   image: string;
+  video?: string; // Add this field
   features: string[];
   popularBrands: string[];
   priceRange: {
@@ -36,6 +37,7 @@ export const categories: CategoryData[] = [
     description: "Mechanical and membrane keyboards designed for competitive gaming with RGB lighting, macro keys, and ultra-fast response times.",
     icon: "⌨️",
     image: "/images/categories/keyboards.jpg",
+    video: "/videos/keyboard.mp4", // Add your video here
     features: [
       "Mechanical switches for tactile feedback",
       "RGB backlighting with customizable effects",
@@ -109,6 +111,7 @@ export const categories: CategoryData[] = [
     description: "High-precision gaming mice with customizable DPI, ergonomic designs, and programmable buttons for FPS, MOBA, and MMO gaming.",
     icon: "🖱️",
     image: "/images/categories/mice.jpg",
+    video: "/videos/mouse.mp4", // Add your video here
     features: [
       "High-precision optical sensors",
       "Adjustable DPI up to 20,000+",
@@ -182,6 +185,7 @@ export const categories: CategoryData[] = [
     description: "Immersive gaming headsets with surround sound, noise cancellation, and crystal-clear microphones for team communication.",
     icon: "🎧",
     image: "/images/categories/headsets.jpg",
+    video: "/videos/headset.mp4", // Add your video here
     features: [
       "7.1 surround sound",
       "Noise-canceling microphone",
@@ -255,6 +259,7 @@ export const categories: CategoryData[] = [
     description: "High-refresh rate gaming monitors with low input lag, adaptive sync technology, and stunning visual quality for competitive gaming.",
     icon: "🖥️",
     image: "/images/categories/monitors.jpg",
+    video: "/videos/monitor.mp4", // Add your video here
     features: [
       "High refresh rates (144Hz-360Hz)",
       "Low input lag (<1ms)",
@@ -329,6 +334,7 @@ export const categories: CategoryData[] = [
     description: "Professional gaming controllers with customizable buttons, adjustable triggers, and enhanced grip for console and PC gaming.",
     icon: "🎮",
     image: "/images/categories/controllers.jpg",
+    video: "/videos/controller.mp4", // Add your video here
     features: [
       "Customizable button mapping",
       "Adjustable trigger stops",
@@ -401,6 +407,7 @@ export const categories: CategoryData[] = [
     description: "Ergonomic gaming chairs designed for long gaming sessions with lumbar support, adjustable armrests, and premium materials.",
     icon: "💺",
     image: "/images/categories/chairs.jpg",
+    video: "/videos/chair.mp4", // Add your video here
     features: [
       "Ergonomic design",
       "Lumbar support",
@@ -474,6 +481,7 @@ export const categories: CategoryData[] = [
     description: "Premium gaming mouse pads with optimized surfaces for different gaming styles, RGB lighting, and extended sizes.",
     icon: "🔲",
     image: "/images/categories/mousepads.jpg",
+    video: "/videos/pad.mp4", // Add your video here
     features: [
       "Optimized surface textures",
       "RGB lighting integration",
@@ -544,8 +552,9 @@ export const categories: CategoryData[] = [
     name: "Gaming Microphones",
     slug: "microphones",
     description: "Professional streaming and gaming microphones with studio-quality audio, noise cancellation, and easy setup.",
-    icon: "🎤",
+    icon: "🎙️",
     image: "/images/categories/microphones.jpg",
+    video: "/videos/microphone.mp4", // Add your video here
     features: [
       "Studio-quality audio",
       "Noise cancellation",
@@ -618,6 +627,7 @@ export const categories: CategoryData[] = [
     description: "High-quality gaming speakers with immersive sound, RGB lighting, and powerful bass for an enhanced gaming experience.",
     icon: "🔊",
     image: "/images/categories/speakers.jpg",
+    video: "/videos/speaker.mp4", // Add your video here
     features: [
       "Immersive surround sound",
       "Powerful subwoofers",
@@ -691,6 +701,7 @@ export const categories: CategoryData[] = [
     description: "Essential gaming accessories including cable management, lighting, cooling solutions, and desk organizers.",
     icon: "🔧",
     image: "/images/categories/accessories.jpg",
+    video: "/videos/accessories.mp4", // Add your video here
     features: [
       "Cable management solutions",
       "RGB lighting strips",
@@ -714,8 +725,7 @@ export const categories: CategoryData[] = [
         isFeatured: true,
         shortDescription: "Smart RGB lighting strips for monitor backlighting"
       },
-      {
-        name: "Elgato Stream Deck MK.2",
+      {name: "Elgato Stream Deck MK.2",
         price: 149.99,
         brand: "Elgato",
         rating: 4.8,
@@ -779,6 +789,7 @@ export const categories: CategoryData[] = [
     description: "High-definition streaming webcams with auto-focus, low-light correction, and professional features for content creation.",
     icon: "📹",
     image: "/images/categories/webcams.jpg",
+    video: "/videos/webcam.mp4", // Add your video here
     features: [
       "4K video recording",
       "Auto-focus technology",
@@ -852,6 +863,7 @@ export const categories: CategoryData[] = [
     description: "Immersive virtual reality headsets for gaming, featuring high-resolution displays, precise tracking, and comfortable ergonomics.",
     icon: "🥽",
     image: "/images/categories/vr-headsets.jpg",
+    video: "/videos/vr.mp4", // Add your video here
     features: [
       "High-resolution displays",
       "6DOF tracking",
@@ -922,6 +934,7 @@ export const categories: CategoryData[] = [
   }
 ];
 
+// Rest of your helper functions remain the same...
 export const getCategoryBySlug = (slug: string): CategoryData | undefined => {
   return categories.find(category => category.slug === slug);
 };
@@ -1010,7 +1023,6 @@ export const searchProducts = (query: string): SampleProduct[] => {
   return products;
 };
 
-// Helper function to get all brands across categories
 export const getAllBrands = (): string[] => {
   const brands = new Set<string>();
   
@@ -1024,7 +1036,6 @@ export const getAllBrands = (): string[] => {
   return Array.from(brands).sort();
 };
 
-// Helper function to get price statistics
 export const getPriceStats = () => {
   let minPrice = Infinity;
   let maxPrice = 0;
