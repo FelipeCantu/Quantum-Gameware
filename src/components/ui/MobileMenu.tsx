@@ -364,16 +364,17 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                                 ${activeSubmenu === 'categories' ? 'rotate-180' : ''}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   
                   {/* Category List - Clean, No Icons, No Prices */}
                   <div className={`
                     space-y-1 px-4 mt-2 overflow-hidden transition-all duration-300
-                    ${activeSubmenu === 'categories' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+                    ${activeSubmenu === 'categories' ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}
                   `}>
-                    {categories.slice(0, 12).map((cat) => (
+                    {/* Individual Categories */}
+                    {categories.slice(0, 8).map((cat) => (
                       <Link
                         key={cat.slug}
                         href={`/categories/${cat.slug}`}
@@ -391,7 +392,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                       </Link>
                     ))}
                     
-                    {/* View All Categories Button */}
+                    {/* View All Categories Button - At the bottom like desktop */}
                     <Link
                       href="/categories"
                       onClick={handleClose}
