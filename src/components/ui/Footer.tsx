@@ -51,7 +51,6 @@ export default function Footer() {
                       className="object-contain p-1 transition-transform group-hover:scale-110"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
-                        // Show fallback text
                         const parent = e.currentTarget.parentElement;
                         if (parent) {
                           parent.innerHTML = '<div class="text-xl font-bold text-blue-600">QG</div>';
@@ -68,7 +67,7 @@ export default function Footer() {
                 </div>
               </Link>
               <p className="text-gray-300 leading-relaxed mb-6">
-                Premium gaming accessories designed for competitive gamers who demand excellence. Level up your performance with our cutting-edge gear.
+                Quality gaming and streaming gear at prices that make sense. We believe everyone deserves great equipment without breaking the bank.
               </p>
               
               {/* Social Links */}
@@ -208,7 +207,7 @@ export default function Footer() {
               {/* Newsletter Signup */}
               <div className="mb-6">
                 <p className="text-gray-300 text-sm mb-4">
-                  Get the latest gaming gear updates and exclusive offers.
+                  Get exclusive deals, new arrivals, and budget-friendly bundles delivered to your inbox.
                 </p>
                 <form onSubmit={handleNewsletterSubmit} className="space-y-3">
                   <div className="relative">
@@ -245,8 +244,8 @@ export default function Footer() {
                   <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <a href="tel:+11234567890" className="hover:text-white transition-colors">
-                    (123) 456-7890
+                  <a href="tel:+18179997951" className="hover:text-white transition-colors">
+                    (817) 999-7951
                   </a>
                 </div>
                 <div className="flex items-start space-x-3 text-gray-300">

@@ -435,7 +435,7 @@ export default function Hero() {
             <div className="relative w-24 h-1 mx-auto mt-4 mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full"></div>
 
             <p className="text-white/80 text-base font-light tracking-wide">
-              Next-Gen Gaming Technology
+              Quality Gaming Gear at Great Prices
             </p>
           </div>
         </div>
@@ -452,7 +452,7 @@ export default function Hero() {
               style={{ transitionDelay: '2200ms' } as CustomCSSProperties}
             >
               <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-              New Gaming Gear Available
+              Free Shipping Over $50
             </div>
 
             {/* Main heading */}
@@ -462,9 +462,9 @@ export default function Hero() {
               }`}
               style={{ transitionDelay: '2400ms' } as CustomCSSProperties}
             >
-              Level Up Your
+              Quality Gaming Gear
               <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Gaming Experience
+                Without the Premium Price
               </span>
             </h1>
 
@@ -475,7 +475,7 @@ export default function Hero() {
               }`}
               style={{ transitionDelay: '2600ms' } as CustomCSSProperties}
             >
-              Premium gaming accessories designed for competitive gamers who demand excellence.
+              Affordable accessories for gamers and streamers who want great performance without breaking the bank.
             </p>
 
             {/* CTA Buttons */}
@@ -488,7 +488,7 @@ export default function Hero() {
                 style={{ transitionDelay: '2800ms' } as CustomCSSProperties}
               >
                 <span className="relative z-10 flex items-center">
-                  Shop Now
+                  Shop Affordable Gear
                   <svg className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -517,9 +517,9 @@ export default function Hero() {
                 }`}
                 style={{ transitionDelay: '2400ms' } as CustomCSSProperties}
               >
-                Level Up Your
+                Quality Gaming Gear
                 <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Gaming Experience
+                  Without the Premium Price
                 </span>
               </h1>
 
@@ -529,7 +529,7 @@ export default function Hero() {
                 }`}
                 style={{ transitionDelay: '2600ms' } as CustomCSSProperties}
               >
-                Premium gaming accessories designed for competitive gamers who demand excellence.
+                Affordable accessories for gamers and streamers who want great performance without breaking the bank.
               </p>
 
               <div className="flex space-x-4">
@@ -571,12 +571,12 @@ export default function Hero() {
                 <div className="flex items-center mb-2">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-semibold text-white">Pro Performance</h3>
+                  <h3 className="text-base font-semibold text-white">Budget-Friendly</h3>
                 </div>
-                <p className="text-white/70 text-sm">Tournament-grade equipment trusted by champions.</p>
+                <p className="text-white/70 text-sm">Quality gear at prices that won't empty your wallet.</p>
               </div>
 
               <div 
@@ -588,12 +588,12 @@ export default function Hero() {
                 <div className="flex items-center mb-2">
                   <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-base font-semibold text-white">Quality Assured</h3>
+                  <h3 className="text-base font-semibold text-white">Streamer Ready</h3>
                 </div>
-                <p className="text-white/70 text-sm">Premium materials with lasting performance.</p>
+                <p className="text-white/70 text-sm">Perfect for content creators building their setup.</p>
               </div>
             </div>
           </div>
@@ -609,7 +609,7 @@ export default function Hero() {
           <div className="max-w-6xl mx-auto px-4 py-8 lg:px-6 lg:py-16">
             {/* Mobile: Stacked Layout */}
             <div className="block lg:hidden space-y-4">
-              {/* 10K+ Happy Gamers */}
+              {/* 15K+ Happy Customers */}
               <div 
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
@@ -621,8 +621,8 @@ export default function Hero() {
                   <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-3xl font-bold text-white mb-1">10K+</div>
-                        <div className="text-sm text-white/80 font-medium">Happy Gamers</div>
+                        <div className="text-3xl font-bold text-white mb-1">15K+</div>
+                        <div className="text-sm text-white/80 font-medium">Happy Customers</div>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -634,7 +634,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* 99.9% Uptime */}
+              {/* 4.8★ Average Rating */}
               <div 
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
@@ -642,16 +642,16 @@ export default function Hero() {
                 style={{ animationDelay: '3500ms' } as CSSProperties}
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-3xl font-bold text-white mb-1">99.9%</div>
-                        <div className="text-sm text-white/80 font-medium">Uptime</div>
+                        <div className="text-3xl font-bold text-white mb-1">4.8★</div>
+                        <div className="text-sm text-white/80 font-medium">Average Rating</div>
                       </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                         </svg>
                       </div>
                     </div>
@@ -659,7 +659,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* 24/7 Support */}
+              {/* Free Shipping $50+ */}
               <div 
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
@@ -667,16 +667,16 @@ export default function Hero() {
                 style={{ animationDelay: '3600ms' } as CSSProperties}
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-3xl font-bold text-white mb-1">24/7</div>
-                        <div className="text-sm text-white/80 font-medium">Support</div>
+                        <div className="text-3xl font-bold text-white mb-1">$50+</div>
+                        <div className="text-sm text-white/80 font-medium">Free Shipping</div>
                       </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 11-6.364 15.364M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                         </svg>
                       </div>
                     </div>
@@ -687,7 +687,7 @@ export default function Hero() {
 
             {/* Desktop: Grid Layout */}
             <div className="hidden lg:grid grid-cols-3 gap-12 text-center">
-              {/* 10K+ Happy Gamers */}
+              {/* 15K+ Happy Customers */}
               <div 
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
@@ -697,13 +697,13 @@ export default function Hero() {
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
-                    <div className="text-4xl font-bold text-white mb-2">10K+</div>
-                    <div className="text-sm text-white/80 font-medium">Happy Gamers</div>
+                    <div className="text-4xl font-bold text-white mb-2">15K+</div>
+                    <div className="text-sm text-white/80 font-medium">Happy Customers</div>
                   </div>
                 </div>
               </div>
 
-              {/* 99.9% Uptime */}
+              {/* 4.8★ Average Rating */}
               <div 
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
@@ -711,15 +711,15 @@ export default function Hero() {
                 style={{ animationDelay: '3500ms' } as CSSProperties}
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
-                    <div className="text-4xl font-bold text-white mb-2">99.9%</div>
-                    <div className="text-sm text-white/80 font-medium">Uptime</div>
+                    <div className="text-4xl font-bold text-white mb-2">4.8★</div>
+                    <div className="text-sm text-white/80 font-medium">Average Rating</div>
                   </div>
                 </div>
               </div>
 
-              {/* 24/7 Support */}
+              {/* Free Shipping $50+ */}
               <div 
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
@@ -727,10 +727,10 @@ export default function Hero() {
                 style={{ animationDelay: '3600ms' } as CSSProperties}
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
-                    <div className="text-4xl font-bold text-white mb-2">24/7</div>
-                    <div className="text-sm text-white/80 font-medium">Support</div>
+                    <div className="text-4xl font-bold text-white mb-2">$50+</div>
+                    <div className="text-sm text-white/80 font-medium">Free Shipping</div>
                   </div>
                 </div>
               </div>
