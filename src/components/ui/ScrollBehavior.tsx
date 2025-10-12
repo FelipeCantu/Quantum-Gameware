@@ -9,9 +9,18 @@ export default function ScrollBehavior() {
 
   useEffect(() => {
     // Scroll to top immediately when route changes
-    window.scrollTo(0, 0);
+    // Using scrollTo with 'instant' behavior to override any smooth scroll CSS
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant' as ScrollBehavior
+    });
+
+    // Also set scroll position directly as a backup
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
   }, [pathname]);
 
-  // This component renders nothing but handles the scroll behavior
   return null;
 }

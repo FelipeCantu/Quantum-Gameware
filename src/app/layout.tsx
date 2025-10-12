@@ -1,5 +1,7 @@
+// src/app/layout.tsx
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import Header from '@/components/ui/Header';
@@ -10,13 +12,20 @@ import ScrollBehavior from '@/components/ui/ScrollBehavior';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Custom brand font - Ethnocentric
+const brandFont = localFont({
+  src: '../../public/fonts/ethnocentric.regular.woff2',
+  variable: '--font-brand',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: 'Quantum Gameware - Premium Gaming Accessories',
   description: 'High-quality gaming accessories for professional gamers',
   manifest: '/site.webmanifest',
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' }, // SVG first for modern browsers
+      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -34,8 +43,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // Start with gradient color, will be dynamically updated
-  themeColor: '#23378e', // Indigo from your gradient as default
+  themeColor: '#23378e',
 };
 
 export default function RootLayout({
@@ -44,9 +52,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={brandFont.variable}>
+      {/* REMOVED scroll-smooth class - this was preventing instant scroll to top */}
       <head>
-        {/* SVG favicon for scalable, larger display */}
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -57,7 +65,6 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
           <CartProvider>
-            {/* Global scroll behavior - ensures all page navigations start from top */}
             <ScrollBehavior />
             <div className="min-h-screen flex flex-col bg-gray-50">
               <Header />

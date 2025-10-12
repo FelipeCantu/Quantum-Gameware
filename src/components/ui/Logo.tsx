@@ -35,18 +35,18 @@ export default function Logo({ isScrolled }: LogoProps) {
           </div>
         </div>
         <div className="hidden sm:block">
-          <span className={`text-lg sm:text-xl md:text-2xl font-bold leading-none ${
+          <span className={`font-brand text-lg sm:text-xl md:text-2xl font-bold leading-none ${
             isScrolled 
               ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'
               : 'text-white'
           }`}>
             Quantum
           </span>
-          <div className={`text-xs sm:text-sm font-medium leading-none ${
-            isScrolled ? 'text-gray-600' : 'text-white/80'
-          }`}>
-            Gameware
-          </div>
+          <div className={`font-brand text-xs sm:text-sm font-medium leading-none ${
+    isScrolled ? 'text-gray-600' : 'text-white/80'
+  }`}>
+    Gameware
+  </div>
         </div>
       </Link>
     </div>

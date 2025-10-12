@@ -52,7 +52,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* CHANGED: Removed scroll-behavior: smooth to allow instant scroll-to-top on page navigation */
+  scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -66,6 +67,25 @@ body {
   ) rgb(var(--background-start-rgb));
   font-feature-settings: 'rlig' 1, 'calt' 1;
   overflow-x: hidden;
+}
+
+/* ===== SCROLL UTILITIES ===== */
+/* Use this class when you want smooth scrolling for specific elements */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Use this for containers that should scroll smoothly */
+.smooth-scroll-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent scroll when modals/menus are open */
+body.no-scroll {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
 }
 
 /* ===== ENHANCED ANIMATIONS ===== */
@@ -617,4 +637,40 @@ body {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
   }
+}
+
+/* ===== BRAND FONT UTILITIES ===== */
+.font-brand {
+  font-family: var(--font-brand), Arial, sans-serif;
+}
+
+/* Optional: different sizes for convenience */
+.font-brand-sm {
+  font-family: var(--font-brand), Arial, sans-serif;
+  font-size: 0.875rem; /* 14px */
+}
+
+.font-brand-base {
+  font-family: var(--font-brand), Arial, sans-serif;
+  font-size: 1rem; /* 16px */
+}
+
+.font-brand-lg {
+  font-family: var(--font-brand), Arial, sans-serif;
+  font-size: 1.125rem; /* 18px */
+}
+
+.font-brand-xl {
+  font-family: var(--font-brand), Arial, sans-serif;
+  font-size: 1.25rem; /* 20px */
+}
+
+.font-brand-2xl {
+  font-family: var(--font-brand), Arial, sans-serif;
+  font-size: 1.5rem; /* 24px */
+}
+
+.font-brand-3xl {
+  font-family: var(--font-brand), Arial, sans-serif;
+  font-size: 1.875rem; /* 30px */
 }

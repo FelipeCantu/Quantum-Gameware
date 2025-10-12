@@ -425,10 +425,10 @@ export default function Hero() {
               </div>
               
               <div>
-                <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <span className="font-brand text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Quantum
                 </span>
-                <div className="text-xl text-white/80">Gameware</div>
+                <div className="font-brand text-lg text-white/80">Gameware</div>
               </div>
             </div>
 
@@ -457,7 +457,7 @@ export default function Hero() {
 
             {/* Main heading */}
             <h1 
-              className={`text-4xl font-bold text-white leading-tight transition-all duration-1000 ${
+              className={`font-brand text-3xl font-bold text-white leading-tight transition-all duration-1000 ${
                 animationStarted ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
               }`}
               style={{ transitionDelay: '2400ms' } as CustomCSSProperties}
@@ -512,7 +512,7 @@ export default function Hero() {
             {/* Left Side - Main Content */}
             <div className="absolute left-12 top-1/2 transform -translate-y-1/2 max-w-lg z-20">
               <h1 
-                className={`text-6xl font-bold text-white mb-6 leading-tight transition-all duration-1000 ${
+                className={`font-brand text-4xl font-bold text-white mb-6 leading-tight transition-all duration-1000 ${
                   animationStarted ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
                 }`}
                 style={{ transitionDelay: '2400ms' } as CustomCSSProperties}

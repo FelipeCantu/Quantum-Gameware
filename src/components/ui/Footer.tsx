@@ -60,10 +60,10 @@ export default function Footer() {
                   </div>
                 </div>
                 <div>
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  <span className="font-brand text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                     Quantum
                   </span>
-                  <div className="text-sm text-gray-300 -mt-1">Gameware</div>
+                  <div className="font-brand text-sm text-gray-300 -mt-1">Gameware</div>
                 </div>
               </Link>
               <p className="text-gray-300 leading-relaxed mb-6">

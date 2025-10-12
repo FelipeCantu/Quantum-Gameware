@@ -223,10 +223,10 @@ function SignUpForm() {
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold leading-none bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="brand-font text-lg sm:text-xl md:text-2xl font-bold leading-none bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                     Quantum
                   </span>
-                  <div className="text-xs sm:text-sm font-medium leading-none text-gray-500">
+                  <div className="font-brand text-xs sm:text-sm font-medium leading-none text-gray-500">
                     Gameware
                   </div>
                 </div>
