@@ -148,10 +148,9 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
       document.body.style.paddingRight = '';
       document.body.style.WebkitOverflowScrolling = '';
       document.documentElement.style.WebkitOverflowScrolling = '';
-      
-      if (scrollPositionRef.current > 0) {
-        window.scrollTo(0, scrollPositionRef.current);
-      }
+
+      // Don't restore scroll position - let ScrollBehavior component handle it
+      // This ensures pages always start at the top when navigating
     }
 
     return () => {
