@@ -111,6 +111,27 @@ function AccountPageContent() {
     }
   });
 
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+
+  // Email change state
+  const [emailData, setEmailData] = useState({
+    newEmail: '',
+    password: '',
+    verificationCode: ''
+  });
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [emailMessage, setEmailMessage] = useState('');
+  const [showEmailChange, setShowEmailChange] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [showVerificationInput, setShowVerificationInput] = useState(false);
+
   // Initialize edit data when user loads
   useEffect(() => {
     if (user) {
@@ -241,6 +262,188 @@ function AccountPageContent() {
         [field]: value
       };
     });
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChangingPassword(true);
+    setPasswordMessage('');
+
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordMessage('All password fields are required');
+      setIsChangingPassword(false);
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage('New passwords do not match');
+      setIsChangingPassword(false);
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordMessage('New password must be at least 8 characters long');
+      setIsChangingPassword(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setPasswordMessage('Authentication token not found');
+        setIsChangingPassword(false);
+        return;
+      }
+
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPasswordMessage('Password updated successfully!');
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setTimeout(() => setPasswordMessage(''), 5000);
+      } else {
+        setPasswordMessage(data.message || 'Failed to update password');
+      }
+    } catch (error) {
+      setPasswordMessage('An error occurred while updating your password');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleEmailChangeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChangingEmail(true);
+    setEmailMessage('');
+
+    // Validation
+    if (!emailData.newEmail || !emailData.password) {
+      setEmailMessage('All fields are required');
+      setIsChangingEmail(false);
+      return;
+    }
+
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(emailData.newEmail)) {
+      setEmailMessage('Invalid email format');
+      setIsChangingEmail(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setEmailMessage('Authentication token not found');
+        setIsChangingEmail(false);
+        return;
+      }
+
+      const response = await fetch('/api/auth/change-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          newEmail: emailData.newEmail,
+          password: emailData.password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmailMessage('Verification code sent! Check your new email address.');
+        setPendingEmail(data.pendingEmail || emailData.newEmail);
+        setShowVerificationInput(true);
+        setEmailData(prev => ({ ...prev, password: '' })); // Clear password for security
+      } else {
+        setEmailMessage(data.message || 'Failed to request email change');
+      }
+    } catch (error) {
+      setEmailMessage('An error occurred while requesting email change');
+    } finally {
+      setIsChangingEmail(false);
+    }
+  };
+
+  const handleEmailVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChangingEmail(true);
+    setEmailMessage('');
+
+    // Validation
+    if (!emailData.verificationCode) {
+      setEmailMessage('Verification code is required');
+      setIsChangingEmail(false);
+      return;
+    }
+
+    if (emailData.verificationCode.length !== 6) {
+      setEmailMessage('Verification code must be 6 digits');
+      setIsChangingEmail(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setEmailMessage('Authentication token not found');
+        setIsChangingEmail(false);
+        return;
+      }
+
+      const response = await fetch('/api/auth/change-email', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          verificationCode: emailData.verificationCode
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmailMessage('Email updated successfully!');
+        setEmailData({ newEmail: '', password: '', verificationCode: '' });
+        setShowEmailChange(false);
+        setShowVerificationInput(false);
+        setPendingEmail('');
+
+        // Update user data in context and localStorage
+        if (data.user) {
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          // Refresh the page to update user context
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      } else {
+        setEmailMessage(data.message || 'Failed to verify email');
+      }
+    } catch (error) {
+      setEmailMessage('An error occurred while verifying email');
+    } finally {
+      setIsChangingEmail(false);
+    }
   };
 
   const tabs = [
@@ -553,61 +756,371 @@ function AccountPageContent() {
                       )}
                     </div>
                   </div>
+
+                  {/* Address Section */}
+                  <div className="mt-8 pt-8 border-t border-white/20">
+                    <h3 className="text-xl font-semibold text-white mb-6">Address Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="md:col-span-2">
+                        <label className="block text-white font-medium mb-2">Street Address</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.address.street}
+                            onChange={(e) => handleInputChange('address.street', e.target.value)}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="123 Main Street"
+                          />
+                        ) : (
+                          <div className="text-white p-3">{user.address?.street || 'Not provided'}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-medium mb-2">City</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.address.city}
+                            onChange={(e) => handleInputChange('address.city', e.target.value)}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="New York"
+                          />
+                        ) : (
+                          <div className="text-white p-3">{user.address?.city || 'Not provided'}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-medium mb-2">State/Province</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.address.state}
+                            onChange={(e) => handleInputChange('address.state', e.target.value)}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="NY"
+                          />
+                        ) : (
+                          <div className="text-white p-3">{user.address?.state || 'Not provided'}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-medium mb-2">ZIP/Postal Code</label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editData.address.zipCode}
+                            onChange={(e) => handleInputChange('address.zipCode', e.target.value)}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="10001"
+                          />
+                        ) : (
+                          <div className="text-white p-3">{user.address?.zipCode || 'Not provided'}</div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-white font-medium mb-2">Country</label>
+                        {isEditing ? (
+                          <select
+                            value={editData.address.country}
+                            onChange={(e) => handleInputChange('address.country', e.target.value)}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="US" className="bg-gray-800">United States</option>
+                            <option value="CA" className="bg-gray-800">Canada</option>
+                            <option value="GB" className="bg-gray-800">United Kingdom</option>
+                            <option value="AU" className="bg-gray-800">Australia</option>
+                            <option value="DE" className="bg-gray-800">Germany</option>
+                            <option value="FR" className="bg-gray-800">France</option>
+                            <option value="ES" className="bg-gray-800">Spain</option>
+                            <option value="IT" className="bg-gray-800">Italy</option>
+                            <option value="JP" className="bg-gray-800">Japan</option>
+                            <option value="CN" className="bg-gray-800">China</option>
+                          </select>
+                        ) : (
+                          <div className="text-white p-3">{user.address?.country || 'Not provided'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {activeTab === 'security' && (
                 <div className="space-y-6">
+                  {/* Change Password */}
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
                     <h2 className="text-2xl font-bold text-white mb-6">Security Settings</h2>
-                    
+
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
-                        <div className="space-y-4">
+
+                        {passwordMessage && (
+                          <div className={`mb-4 p-4 rounded-xl ${
+                            passwordMessage.includes('success')
+                              ? 'bg-green-500/20 text-green-200 border border-green-500/30'
+                              : 'bg-red-500/20 text-red-200 border border-red-500/30'
+                          }`}>
+                            {passwordMessage}
+                          </div>
+                        )}
+
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
                           <div>
                             <label className="block text-white font-medium mb-2">Current Password</label>
                             <input
                               type="password"
+                              value={passwordData.currentPassword}
+                              onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter your current password"
+                              required
                             />
                           </div>
-                          
+
                           <div>
                             <label className="block text-white font-medium mb-2">New Password</label>
                             <input
                               type="password"
+                              value={passwordData.newPassword}
+                              onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter new password (min 8 characters)"
+                              required
+                              minLength={8}
                             />
+                            <p className="text-xs text-white/50 mt-1">
+                              Must be at least 8 characters with uppercase, lowercase, and numbers
+                            </p>
                           </div>
-                          
+
                           <div>
                             <label className="block text-white font-medium mb-2">Confirm New Password</label>
                             <input
                               type="password"
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Confirm your new password"
+                              required
                             />
                           </div>
 
                           <button
                             type="submit"
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium"
+                            disabled={isChangingPassword}
+                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Update Password
+                            {isChangingPassword ? 'Updating...' : 'Update Password'}
                           </button>
-                        </div>
+                        </form>
                       </div>
 
+                      {/* Change Email */}
                       <div className="border-t border-white/20 pt-6">
-                        <h3 className="text-lg font-semibold text-white mb-4">Two-Factor Authentication</h3>
-                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                          <div>
-                            <div className="text-white font-medium">SMS Authentication</div>
-                            <div className="text-white/70 text-sm">Receive codes via text message</div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-white">Email Address</h3>
+                          {!showEmailChange && !showVerificationInput && (
+                            <button
+                              onClick={() => setShowEmailChange(true)}
+                              className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors text-sm font-medium"
+                            >
+                              Change Email
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="mb-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-white font-medium">{user.email}</div>
+                              <div className="text-white/70 text-sm flex items-center gap-2">
+                                {user.emailVerified ? (
+                                  <>
+                                    <span className="text-green-400">✓</span>
+                                    Verified
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-yellow-400">!</span>
+                                    Not verified
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium">
-                            Enable
-                          </button>
+                        </div>
+
+                        {emailMessage && (
+                          <div className={`mb-4 p-4 rounded-xl ${
+                            emailMessage.includes('success') || emailMessage.includes('sent')
+                              ? 'bg-green-500/20 text-green-200 border border-green-500/30'
+                              : 'bg-red-500/20 text-red-200 border border-red-500/30'
+                          }`}>
+                            {emailMessage}
+                          </div>
+                        )}
+
+                        {/* Step 1: Request Email Change */}
+                        {showEmailChange && !showVerificationInput && (
+                          <div className="mt-4">
+                            <div className="mb-4 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30">
+                              <p className="text-blue-200 text-sm">
+                                <strong>Step 1 of 2:</strong> Enter your new email and confirm your password. A 6-digit verification code will be sent to your new email address.
+                              </p>
+                            </div>
+
+                            <form onSubmit={handleEmailChangeRequest} className="space-y-4">
+                              <div>
+                                <label className="block text-white font-medium mb-2">New Email Address</label>
+                                <input
+                                  type="email"
+                                  value={emailData.newEmail}
+                                  onChange={(e) => setEmailData(prev => ({ ...prev, newEmail: e.target.value }))}
+                                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter new email address"
+                                  required
+                                  disabled={isChangingEmail}
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-white font-medium mb-2">Confirm Password</label>
+                                <input
+                                  type="password"
+                                  value={emailData.password}
+                                  onChange={(e) => setEmailData(prev => ({ ...prev, password: e.target.value }))}
+                                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Confirm your password"
+                                  required
+                                  disabled={isChangingEmail}
+                                />
+                              </div>
+
+                              <div className="flex gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowEmailChange(false);
+                                    setEmailData({ newEmail: '', password: '', verificationCode: '' });
+                                    setEmailMessage('');
+                                  }}
+                                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                  disabled={isChangingEmail}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="submit"
+                                  disabled={isChangingEmail}
+                                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isChangingEmail ? 'Sending Code...' : 'Send Verification Code'}
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        )}
+
+                        {/* Step 2: Verify with Code */}
+                        {showVerificationInput && (
+                          <div className="mt-4">
+                            <div className="mb-4 p-4 bg-green-500/10 rounded-xl border border-green-500/30">
+                              <p className="text-green-200 text-sm">
+                                <strong>Step 2 of 2:</strong> A 6-digit verification code has been sent to <strong>{pendingEmail}</strong>. Enter the code below to complete the email change.
+                              </p>
+                              <p className="text-green-200/70 text-xs mt-2">
+                                Code expires in 30 minutes. Check your spam folder if you don't see it.
+                              </p>
+                            </div>
+
+                            <form onSubmit={handleEmailVerification} className="space-y-4">
+                              <div>
+                                <label className="block text-white font-medium mb-2">Verification Code</label>
+                                <input
+                                  type="text"
+                                  value={emailData.verificationCode}
+                                  onChange={(e) => setEmailData(prev => ({ ...prev, verificationCode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest font-mono"
+                                  placeholder="000000"
+                                  required
+                                  maxLength={6}
+                                  pattern="[0-9]{6}"
+                                  disabled={isChangingEmail}
+                                />
+                                <p className="text-xs text-white/50 mt-1 text-center">
+                                  Enter the 6-digit code from your email
+                                </p>
+                              </div>
+
+                              <div className="flex gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowVerificationInput(false);
+                                    setShowEmailChange(false);
+                                    setPendingEmail('');
+                                    setEmailData({ newEmail: '', password: '', verificationCode: '' });
+                                    setEmailMessage('');
+                                  }}
+                                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                  disabled={isChangingEmail}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="submit"
+                                  disabled={isChangingEmail || emailData.verificationCode.length !== 6}
+                                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl hover:from-green-700 hover:to-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isChangingEmail ? 'Verifying...' : 'Verify & Update Email'}
+                                </button>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowVerificationInput(false);
+                                  setShowEmailChange(true);
+                                  setEmailMessage('');
+                                }}
+                                className="w-full text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                                disabled={isChangingEmail}
+                              >
+                                Didn't receive the code? Try again
+                              </button>
+                            </form>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Account Actions */}
+                      <div className="border-t border-white/20 pt-6">
+                        <h3 className="text-lg font-semibold text-white mb-4">Account Actions</h3>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                            <div>
+                              <div className="text-white font-medium">Active Sessions</div>
+                              <div className="text-white/70 text-sm">Manage your active login sessions</div>
+                            </div>
+                            <button className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors font-medium">
+                              View
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                            <div>
+                              <div className="text-red-200 font-medium">Delete Account</div>
+                              <div className="text-red-300/70 text-sm">Permanently delete your account and all data</div>
+                            </div>
+                            <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium">
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

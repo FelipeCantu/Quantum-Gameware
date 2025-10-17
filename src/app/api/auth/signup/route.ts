@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
+import { EmailService } from '@/services/emailService';
 
 interface SignUpRequest {
   name: string;
@@ -171,6 +172,22 @@ export async function POST(request: NextRequest) {
 
       const savedUser = await newUser.save();
       console.log('✅ User created successfully:', savedUser.email);
+
+      // Generate and send email verification code
+      try {
+        const verificationCode = savedUser.generateEmailVerificationCode();
+        await savedUser.save(); // Save the verification code
+
+        await EmailService.sendEmailVerificationCode(
+          savedUser.email,
+          savedUser.name || savedUser.firstName || 'User',
+          verificationCode
+        );
+        console.log('✅ Verification email sent to:', savedUser.email);
+      } catch (emailError) {
+        console.error('⚠️ Failed to send verification email:', emailError);
+        // Don't fail signup if email fails - user can request resend
+      }
     } catch (saveError) {
       console.error('❌ User creation failed:', saveError);
       

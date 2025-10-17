@@ -707,28 +707,979 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
   }
 
   /**
-   * Send email (placeholder for actual email service integration)
+   * Send email via Resend
+   */
+  private static async sendEmail(
+    to: string,
+    subject: string,
+    html: string,
+    text: string
+  ): Promise<boolean> {
+    try {
+      const resendApiKey = process.env.RESEND_API_KEY;
+
+      if (!resendApiKey) {
+        console.error('⚠️  RESEND_API_KEY not configured, logging email instead');
+        console.log('📧 Email would be sent to:', to);
+        console.log('Subject:', subject);
+        console.log('HTML length:', html.length);
+        return true; // Return true for dev mode
+      }
+
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `${this.COMPANY_INFO.name} <${this.COMPANY_INFO.email}>`,
+          to: [to],
+          subject: subject,
+          html: html,
+          text: text,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('❌ Resend API error:', error);
+        return false;
+      }
+
+      const data = await response.json();
+      console.log('✅ Email sent successfully via Resend:', data.id);
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to send email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send order confirmation email
    */
   static async sendOrderConfirmationEmail(order: EmailOrder): Promise<boolean> {
     try {
       const htmlContent = this.generateOrderConfirmationEmail(order);
       const textContent = this.generatePlainTextEmail(order);
-      
-      // Here you would integrate with your email service (SendGrid, Mailgun, etc.)
-      console.log('📧 Sending order confirmation email to:', order.shipping.email);
-      console.log('Subject: Your GameGear Order Confirmation - Order #' + order.id);
-      
-      // For development, you could save to localStorage or log
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`email_${order.id}`, htmlContent);
-      }
-      
-      // Simulate email sending delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return true;
+
+      return await this.sendEmail(
+        order.shipping.email,
+        `Your Quantum Gameware Order Confirmation - Order #${order.id}`,
+        htmlContent,
+        textContent
+      );
     } catch (error) {
-      console.error('Failed to send email:', error);
+      console.error('Failed to send order confirmation email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate email verification email with 6-digit code
+   */
+  static generateEmailVerificationEmail(userName: string, verificationCode: string): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Quantum Gameware</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 12px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 12px;">
+                                            <tr>
+                                                <td style="padding: 6px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: white; font-size: 24px; font-weight: bold; line-height: 1; margin-bottom: 2px;">
+                                            Quantum
+                                        </div>
+                                        <div style="color: rgba(255, 255, 255, 0.8); font-size: 12px;">
+                                            Gameware
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="font-size: 48px; margin-bottom: 10px;">✉️</div>
+                            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Verify Your Email</h1>
+                            <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">Welcome to Quantum Gameware!</p>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 20px 0;">Hi ${userName},</p>
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 30px 0; line-height: 1.6;">
+                                Thanks for signing up! We're excited to have you join the Quantum Gameware community. Please verify your email address by entering the verification code below:
+                            </p>
+                            <!-- Verification Code Box -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                        <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                            Your Verification Code
+                                        </p>
+                                        <div style="font-size: 42px; font-weight: bold; color: white; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                                            ${verificationCode}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="font-size: 14px; color: #718096; margin: 20px 0; text-align: center; font-weight: 500;">
+                                ⏱️ This code will expire in <strong style="color: #4a5568;">30 minutes</strong>
+                            </p>
+
+                            <!-- Welcome Section -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #2d3748;">
+                                            🎮 What's next?
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                                                1
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td style="vertical-align: top; padding-bottom: 15px;">
+                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Enter your verification code</p>
+                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Copy the 6-digit code above and paste it on the verification page</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                                                2
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td style="vertical-align: top;">
+                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Start shopping for gaming gear</p>
+                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Browse our collection of premium gaming accessories</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Security Notice -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                                            <strong>ℹ️ Didn't sign up?</strong> If you didn't create an account with Quantum Gameware, you can safely ignore this email. No account will be created without verification.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Support CTA -->
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
+                                <tr>
+                                    <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
+                                        <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                            Need Help? Contact Support →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 8px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 4px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: bold;">Quantum Gameware</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="color: #718096; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                                <strong>${this.COMPANY_INFO.name}</strong><br>
+                                ${this.COMPANY_INFO.address.street}<br>
+                                ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
+                            </div>
+                            <p style="margin: 0; color: #718096; font-size: 12px;">
+                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+  }
+
+  /**
+   * Generate password change confirmation email
+   */
+  static generatePasswordChangeEmail(userName: string, userEmail: string): string {
+    const formattedDate = new Date().toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    });
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Changed Successfully</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 12px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 12px;">
+                                            <tr>
+                                                <td style="padding: 6px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: white; font-size: 24px; font-weight: bold; line-height: 1; margin-bottom: 2px;">
+                                            Quantum
+                                        </div>
+                                        <div style="color: rgba(255, 255, 255, 0.8); font-size: 12px;">
+                                            Gameware
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="width: 64px; height: 64px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                                <div style="font-size: 36px;">✓</div>
+                            </div>
+                            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Password Changed</h1>
+                            <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">Your account is now more secure</p>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 20px 0;">Hi ${userName},</p>
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 30px 0; line-height: 1.6;">
+                                This is a confirmation that your password for your Quantum Gameware account (<strong>${userEmail}</strong>) has been successfully changed.
+                            </p>
+
+                            <!-- Change Details -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #f0fff4; border-left: 4px solid #48bb78; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding-bottom: 10px;">
+                                                    <p style="margin: 0; color: #2f855a; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                        Security Update Details
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px solid #c6f6d5;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td style="color: #2f855a; font-size: 14px; font-weight: 600;">Account:</td>
+                                                            <td align="right" style="color: #276749; font-size: 14px;">${userEmail}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td style="color: #2f855a; font-size: 14px; font-weight: 600;">Changed On:</td>
+                                                            <td align="right" style="color: #276749; font-size: 14px;">${formattedDate}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Security Tips Section -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #2d3748;">
+                                            🔒 Keep Your Account Secure
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <p style="margin: 0; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                                                        • Use a unique password that you don't use elsewhere
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <p style="margin: 0; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                                                        • Never share your password with anyone
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <p style="margin: 0; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                                                        • Update your password regularly for added security
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Security Warning -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 10px 0; color: #991b1b; font-size: 14px; font-weight: 600;">
+                                            ⚠️ Didn't make this change?
+                                        </p>
+                                        <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
+                                            If you did not change your password, please contact our support team immediately to secure your account.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Support CTA -->
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
+                                <tr>
+                                    <td style="padding-right: 10px;">
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 15px 30px;">
+                                                    <a href="mailto:${this.COMPANY_INFO.email}" style="color: white; text-decoration: none; font-weight: 600; font-size: 14px; display: block;">
+                                                        Contact Support
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px;">
+                                                    <a href="${this.COMPANY_INFO.website}/account" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px; display: block;">
+                                                        View Account
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 8px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 4px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: bold;">Quantum Gameware</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="color: #718096; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                                <strong>${this.COMPANY_INFO.name}</strong><br>
+                                ${this.COMPANY_INFO.address.street}<br>
+                                ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
+                            </div>
+                            <p style="margin: 0; color: #718096; font-size: 12px;">
+                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+  }
+
+  /**
+   * Generate email change verification email with 6-digit code
+   */
+  static generateEmailChangeVerificationEmail(
+    userName: string,
+    newEmail: string,
+    verificationCode: string
+  ): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your New Email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 12px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 12px;">
+                                            <tr>
+                                                <td style="padding: 6px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: white; font-size: 24px; font-weight: bold; line-height: 1; margin-bottom: 2px;">
+                                            Quantum
+                                        </div>
+                                        <div style="color: rgba(255, 255, 255, 0.8); font-size: 12px;">
+                                            Gameware
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="font-size: 48px; margin-bottom: 10px;">📧</div>
+                            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Verify New Email</h1>
+                            <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">Confirm your email change</p>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 20px 0;">Hi ${userName},</p>
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 30px 0; line-height: 1.6;">
+                                You requested to change your email address to <strong>${newEmail}</strong>. Please verify this new email address by entering the verification code below:
+                            </p>
+                            <!-- Verification Code Box -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                        <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                            Your Verification Code
+                                        </p>
+                                        <div style="font-size: 42px; font-weight: bold; color: white; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                                            ${verificationCode}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="font-size: 14px; color: #718096; margin: 20px 0; text-align: center; font-weight: 500;">
+                                ⏱️ This code will expire in <strong style="color: #4a5568;">30 minutes</strong>
+                            </p>
+
+                            <!-- New Email Info -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px; font-weight: 600;">
+                                            📬 New Email Address
+                                        </p>
+                                        <p style="margin: 0; color: #1e3a8a; font-size: 16px; font-weight: 600; font-family: 'Courier New', monospace;">
+                                            ${newEmail}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- What's Next Section -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #2d3748;">
+                                            What happens next?
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                                                1
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td style="vertical-align: top; padding-bottom: 15px;">
+                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Enter the verification code</p>
+                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Copy the 6-digit code above and enter it on the verification page</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                                                2
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td style="vertical-align: top;">
+                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Your email will be updated</p>
+                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">You'll use this new email to sign in to your account</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Security Warning -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 8px 0; color: #92400e; font-size: 14px; font-weight: 600;">
+                                            ⚠️ Security Notice
+                                        </p>
+                                        <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+                                            If you did not request this email change, please ignore this email and contact our support team immediately to secure your account.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Support CTA -->
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
+                                <tr>
+                                    <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
+                                        <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                            Need Help? Contact Support →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 8px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 4px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: bold;">Quantum Gameware</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="color: #718096; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                                <strong>${this.COMPANY_INFO.name}</strong><br>
+                                ${this.COMPANY_INFO.address.street}<br>
+                                ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
+                            </div>
+                            <p style="margin: 0; color: #718096; font-size: 12px;">
+                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+  }
+
+  /**
+   * Send email verification code
+   */
+  static async sendEmailVerificationCode(
+    userEmail: string,
+    userName: string,
+    verificationCode: string
+  ): Promise<boolean> {
+    try {
+      const htmlContent = this.generateEmailVerificationEmail(userName, verificationCode);
+      const textContent = `Hi ${userName},\n\nThanks for signing up! Please verify your email address by entering this code:\n\n${verificationCode}\n\nThis code will expire in 30 minutes.\n\nIf you didn't create an account with Quantum Gameware, you can safely ignore this email.\n\nBest regards,\nQuantum Gameware Team`;
+
+      return await this.sendEmail(
+        userEmail,
+        'Verify Your Email - Quantum Gameware',
+        htmlContent,
+        textContent
+      );
+    } catch (error) {
+      console.error('Failed to send email verification:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send password change confirmation
+   */
+  static async sendPasswordChangeConfirmation(
+    userEmail: string,
+    userName: string
+  ): Promise<boolean> {
+    try {
+      const htmlContent = this.generatePasswordChangeEmail(userName, userEmail);
+      const textContent = `Hi ${userName},\n\nThis is a confirmation that your password for your Quantum Gameware account (${userEmail}) has been successfully changed.\n\nChanged on: ${new Date().toLocaleString()}\n\nIf you did not make this change, please contact our support team immediately at ${this.COMPANY_INFO.email}.\n\nBest regards,\nQuantum Gameware Team`;
+
+      return await this.sendEmail(
+        userEmail,
+        'Password Changed - Quantum Gameware',
+        htmlContent,
+        textContent
+      );
+    } catch (error) {
+      console.error('Failed to send password change confirmation:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send email change verification code
+   */
+  static async sendEmailChangeVerificationCode(
+    newEmail: string,
+    userName: string,
+    verificationCode: string
+  ): Promise<boolean> {
+    try {
+      const htmlContent = this.generateEmailChangeVerificationEmail(userName, newEmail, verificationCode);
+      const textContent = `Hi ${userName},\n\nYou requested to change your email address to ${newEmail}. Please verify this new email address by entering this code:\n\n${verificationCode}\n\nThis code will expire in 30 minutes.\n\nIf you did not request this email change, please ignore this email and contact our support team immediately.\n\nBest regards,\nQuantum Gameware Team`;
+
+      return await this.sendEmail(
+        newEmail,
+        'Verify Your New Email - Quantum Gameware',
+        htmlContent,
+        textContent
+      );
+    } catch (error) {
+      console.error('Failed to send email change verification:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate password reset email with 6-digit code
+   */
+  static generatePasswordResetEmail(userName: string, resetCode: string): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 12px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 12px;">
+                                            <tr>
+                                                <td style="padding: 6px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: white; font-size: 24px; font-weight: bold; line-height: 1; margin-bottom: 2px;">
+                                            Quantum
+                                        </div>
+                                        <div style="color: rgba(255, 255, 255, 0.8); font-size: 12px;">
+                                            Gameware
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="font-size: 48px; margin-bottom: 10px;">🔐</div>
+                            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Reset Your Password</h1>
+                            <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">Secure password reset request</p>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 20px 0;">Hi ${userName},</p>
+                            <p style="font-size: 16px; color: #2d3748; margin: 0 0 30px 0; line-height: 1.6;">
+                                We received a request to reset your password. Enter the verification code below to create a new password for your account:
+                            </p>
+                            <!-- Reset Code Box -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                        <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                            Your Verification Code
+                                        </p>
+                                        <div style="font-size: 42px; font-weight: bold; color: white; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                                            ${resetCode}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="font-size: 14px; color: #718096; margin: 20px 0; text-align: center; font-weight: 500;">
+                                ⏱️ This code will expire in <strong style="color: #4a5568;">15 minutes</strong>
+                            </p>
+
+                            <!-- What's Next Section -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #2d3748;">
+                                            What happens next?
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                                                1
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td style="vertical-align: top; padding-bottom: 15px;">
+                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Enter the verification code</p>
+                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Copy the 6-digit code above and paste it on the password reset page</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width: 36px; vertical-align: top; padding-right: 12px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
+                                                                2
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td style="vertical-align: top;">
+                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Create your new password</p>
+                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Choose a strong, unique password to secure your account</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Security Warning -->
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
+                                            <strong>⚠️ Security Notice:</strong> If you didn't request a password reset, please ignore this email and ensure your account is secure. Consider changing your password if you suspect unauthorized access attempts.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Support CTA -->
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
+                                <tr>
+                                    <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
+                                        <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                            Need Help? Contact Support →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
+                                <tr>
+                                    <td style="vertical-align: middle; padding-right: 8px;">
+                                        <table cellpadding="0" cellspacing="0" border="0" style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%); border-radius: 8px;">
+                                            <tr>
+                                                <td style="padding: 4px;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
+                                                        <tr>
+                                                            <td style="text-align: center; vertical-align: middle;">
+                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <div style="color: #4a5568; font-size: 16px; font-weight: bold;">Quantum Gameware</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="color: #718096; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                                <strong>${this.COMPANY_INFO.name}</strong><br>
+                                ${this.COMPANY_INFO.address.street}<br>
+                                ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
+                            </div>
+                            <p style="margin: 0; color: #718096; font-size: 12px;">
+                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+  }
+
+  /**
+   * Send password reset code
+   */
+  static async sendPasswordResetCode(
+    userEmail: string,
+    userName: string,
+    resetCode: string
+  ): Promise<boolean> {
+    try {
+      const htmlContent = this.generatePasswordResetEmail(userName, resetCode);
+      const textContent = `Hi ${userName},\n\nWe received a request to reset your password. Enter this code to create a new password:\n\n${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you didn't request a password reset, please ignore this email and ensure your account is secure.\n\nBest regards,\nQuantum Gameware Team`;
+
+      return await this.sendEmail(
+        userEmail,
+        'Reset Your Password - Quantum Gameware',
+        htmlContent,
+        textContent
+      );
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
       return false;
     }
   }

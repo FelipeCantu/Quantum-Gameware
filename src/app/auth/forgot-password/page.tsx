@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,12 +36,21 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         setIsSuccess(true);
-        setMessage('If an account with that email exists, a password reset link has been sent.');
+        setMessage(data.message);
+        // Store email for the reset password page
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('resetEmail', email);
+        }
+        // Redirect to reset password page after 2 seconds
+        setTimeout(() => {
+          window.location.href = '/auth/reset-password';
+        }, 2000);
       } else {
-        const data = await response.json();
-        setMessage(data.message || 'Failed to send reset email');
+        setMessage(data.message || 'Failed to send reset code');
       }
     } catch (error) {
       setMessage('Network error. Please try again.');
@@ -96,8 +105,8 @@ export default function ForgotPasswordPage() {
                 </div>
               </Link>
               
-              <h1 className="text-3xl font-bold text-white mb-2">Reset Password</h1>
-              <p className="text-white/70">Enter your email to receive a password reset link</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Forgot Password?</h1>
+              <p className="text-white/70">Enter your email to receive a 6-digit reset code</p>
             </div>
 
             {!isSuccess ? (
@@ -139,10 +148,10 @@ export default function ForgotPasswordPage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Sending Reset Link...
+                        Sending Reset Code...
                       </div>
                     ) : (
-                      'Send Reset Link'
+                      'Send Reset Code'
                     )}
                   </button>
                 </form>
@@ -157,7 +166,7 @@ export default function ForgotPasswordPage() {
                     </svg>
                   </div>
                   <p className="font-medium">{message}</p>
-                  <p className="mt-2 text-green-300 text-xs">Check your email inbox and spam folder</p>
+                  <p className="mt-2 text-green-300 text-xs">Check your email inbox and spam folder. Redirecting to reset password page...</p>
                 </div>
 
                 <div className="space-y-4">

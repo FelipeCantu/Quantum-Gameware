@@ -34,16 +34,26 @@ export interface IUser extends Document {
   isActive: boolean;
   emailVerified: boolean;
   emailVerificationToken?: string;
+  emailVerificationCode?: string;
+  emailVerificationExpires?: Date;
+  pendingEmail?: string;
+  emailChangeToken?: string;
+  emailChangeCode?: string;
+  emailChangeExpires?: Date;
   passwordResetToken?: string;
+  passwordResetCode?: string;
   passwordResetExpires?: Date;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Instance methods
   comparePassword(candidatePassword: string): Promise<boolean>;
   updateLastLogin(): Promise<void>;
   generatePasswordResetToken(): string;
+  generatePasswordResetCode(): string;
+  generateEmailVerificationCode(): string;
+  generateEmailChangeCode(): string;
 }
 
 export interface IUserModel extends mongoose.Model<IUser> {
@@ -130,7 +140,37 @@ const userSchema = new Schema<IUser>({
     type: String,
     select: false
   },
+  emailVerificationCode: {
+    type: String,
+    select: false
+  },
+  emailVerificationExpires: {
+    type: Date,
+    select: false
+  },
+  pendingEmail: {
+    type: String,
+    lowercase: true,
+    trim: true,
+    select: false
+  },
+  emailChangeToken: {
+    type: String,
+    select: false
+  },
+  emailChangeCode: {
+    type: String,
+    select: false
+  },
+  emailChangeExpires: {
+    type: Date,
+    select: false
+  },
   passwordResetToken: {
+    type: String,
+    select: false
+  },
+  passwordResetCode: {
     type: String,
     select: false
   },
@@ -149,7 +189,14 @@ const userSchema = new Schema<IUser>({
     transform: function(doc, ret) {
       delete ret.password;
       delete ret.emailVerificationToken;
+      delete ret.emailVerificationCode;
+      delete ret.emailVerificationExpires;
+      delete ret.pendingEmail;
+      delete ret.emailChangeToken;
+      delete ret.emailChangeCode;
+      delete ret.emailChangeExpires;
       delete ret.passwordResetToken;
+      delete ret.passwordResetCode;
       delete ret.passwordResetExpires;
       delete ret.__v;
       return ret;
@@ -218,16 +265,85 @@ userSchema.methods.updateLastLogin = async function(this: IUser): Promise<void> 
 userSchema.methods.generatePasswordResetToken = function(this: IUser): string {
   const crypto = require('crypto');
   const resetToken = crypto.randomBytes(32).toString('hex');
-  
+
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
-  
+
   // Token expires in 10 minutes
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
-  
+
   return resetToken;
+};
+
+// Instance method to generate password reset code
+userSchema.methods.generatePasswordResetCode = function(this: IUser): string {
+  const crypto = require('crypto');
+
+  // Generate 6-digit reset code
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Generate random token for URL (optional fallback)
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.passwordResetCode = resetCode;
+
+  // Code expires in 15 minutes (shorter for security)
+  this.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+  return resetCode;
+};
+
+// Instance method to generate email verification code
+userSchema.methods.generateEmailVerificationCode = function(this: IUser): string {
+  const crypto = require('crypto');
+
+  // Generate 6-digit verification code
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Generate random token for URL
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  this.emailVerificationCode = verificationCode;
+
+  // Code expires in 30 minutes
+  this.emailVerificationExpires = new Date(Date.now() + 30 * 60 * 1000);
+
+  return verificationCode;
+};
+
+// Instance method to generate email change code
+userSchema.methods.generateEmailChangeCode = function(this: IUser): string {
+  const crypto = require('crypto');
+
+  // Generate 6-digit verification code
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Generate random token for URL
+  const changeToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailChangeToken = crypto
+    .createHash('sha256')
+    .update(changeToken)
+    .digest('hex');
+
+  this.emailChangeCode = verificationCode;
+
+  // Code expires in 30 minutes
+  this.emailChangeExpires = new Date(Date.now() + 30 * 60 * 1000);
+
+  return verificationCode;
 };
 
 // Static method to find user by email
@@ -260,5 +376,9 @@ userSchema.index({ email: 1, isActive: 1 });
 userSchema.index({ passwordResetToken: 1, passwordResetExpires: 1 });
 
 // Ensure the model is only compiled once
-export const User = (mongoose.models.User as IUserModel) || 
-  mongoose.model<IUser, IUserModel>('User', userSchema);
+// Delete the cached model if it exists to ensure new methods are loaded
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+export const User = mongoose.model<IUser, IUserModel>('User', userSchema);
