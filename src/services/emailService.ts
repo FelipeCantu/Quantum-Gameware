@@ -82,43 +82,43 @@ export class EmailService {
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
             color: #333;
             background-color: #f8fafc;
         }
-        
+
         .email-container {
             max-width: 600px;
             margin: 0 auto;
             background-color: #ffffff;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
-        
+
         .header h1 {
             font-size: 28px;
             margin-bottom: 10px;
             font-weight: 700;
         }
-        
+
         .header p {
             font-size: 16px;
             opacity: 0.9;
         }
-        
+
         .content {
             padding: 30px;
         }
-        
+
         .order-summary {
             background-color: #f8fafc;
             border-radius: 12px;
@@ -126,18 +126,18 @@ export class EmailService {
             margin-bottom: 30px;
             border: 1px solid #e2e8f0;
         }
-        
+
         .order-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 25px;
         }
-        
+
         .detail-item {
             padding: 15px 0;
         }
-        
+
         .detail-label {
             font-weight: 600;
             color: #4a5568;
@@ -146,13 +146,13 @@ export class EmailService {
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .detail-value {
             font-size: 16px;
             color: #2d3748;
             font-weight: 500;
         }
-        
+
         .order-number {
             font-family: 'Courier New', monospace;
             background-color: #edf2f7;
@@ -161,11 +161,11 @@ export class EmailService {
             font-weight: bold;
             font-size: 14px;
         }
-        
+
         .items-section {
             margin: 30px 0;
         }
-        
+
         .section-title {
             font-size: 20px;
             font-weight: 700;
@@ -174,18 +174,18 @@ export class EmailService {
             padding-bottom: 10px;
             border-bottom: 2px solid #e2e8f0;
         }
-        
+
         .item {
             display: flex;
             align-items: center;
             padding: 20px 0;
             border-bottom: 1px solid #e2e8f0;
         }
-        
+
         .item:last-child {
             border-bottom: none;
         }
-        
+
         .item-image {
             width: 80px;
             height: 80px;
@@ -198,44 +198,44 @@ export class EmailService {
             border: 1px solid #e2e8f0;
             flex-shrink: 0;
         }
-        
+
         .item-details {
             flex: 1;
         }
-        
+
         .item-name {
             font-weight: 600;
             font-size: 16px;
             color: #2d3748;
             margin-bottom: 5px;
         }
-        
+
         .item-meta {
             color: #718096;
             font-size: 14px;
             margin-bottom: 8px;
         }
-        
+
         .item-price {
             font-weight: 700;
             font-size: 16px;
             color: #2d3748;
         }
-        
+
         .totals-section {
             background-color: #f8fafc;
             border-radius: 12px;
             padding: 25px;
             margin: 30px 0;
         }
-        
+
         .total-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
         }
-        
+
         .total-row.final {
             border-top: 2px solid #e2e8f0;
             padding-top: 15px;
@@ -243,7 +243,7 @@ export class EmailService {
             font-size: 18px;
             font-weight: 700;
         }
-        
+
         .shipping-section {
             background-color: #f0fff4;
             border-left: 4px solid #48bb78;
@@ -251,7 +251,7 @@ export class EmailService {
             margin: 30px 0;
             border-radius: 0 8px 8px 0;
         }
-        
+
         .shipping-title {
             font-weight: 600;
             color: #2f855a;
@@ -259,12 +259,12 @@ export class EmailService {
             display: flex;
             align-items: center;
         }
-        
+
         .shipping-address {
             color: #2d3748;
             line-height: 1.5;
         }
-        
+
         .next-steps {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -272,18 +272,18 @@ export class EmailService {
             border-radius: 12px;
             margin: 30px 0;
         }
-        
+
         .next-steps h3 {
             margin-bottom: 15px;
             font-size: 18px;
         }
-        
+
         .step {
             display: flex;
             align-items: flex-start;
             margin-bottom: 15px;
         }
-        
+
         .step-number {
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
@@ -298,30 +298,30 @@ export class EmailService {
             margin-right: 12px;
             flex-shrink: 0;
         }
-        
+
         .step-content {
             flex: 1;
         }
-        
+
         .step-title {
             font-weight: 600;
             margin-bottom: 4px;
         }
-        
+
         .step-description {
             opacity: 0.9;
             font-size: 14px;
         }
-        
+
         .cta-section {
             text-align: center;
             margin: 30px 0;
         }
-        
+
         .cta-button {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: white !important;
             padding: 15px 30px;
             text-decoration: none;
             border-radius: 8px;
@@ -329,72 +329,213 @@ export class EmailService {
             margin: 0 10px 10px 0;
             transition: transform 0.2s;
         }
-        
+
         .cta-button:hover {
             transform: translateY(-2px);
         }
-        
+
         .cta-button.secondary {
             background: #f7fafc;
-            color: #4a5568;
+            color: #4a5568 !important;
             border: 2px solid #e2e8f0;
         }
-        
+
         .footer {
             background-color: #f8fafc;
             padding: 30px;
             text-align: center;
             border-top: 1px solid #e2e8f0;
         }
-        
+
         .footer-content {
             margin-bottom: 20px;
         }
-        
+
         .contact-info {
             color: #718096;
             font-size: 14px;
             line-height: 1.5;
         }
-        
+
         .contact-info a {
             color: #4299e1;
             text-decoration: none;
         }
-        
+
         .social-links {
             margin-top: 20px;
         }
-        
+
         .social-links a {
             display: inline-block;
             margin: 0 10px;
             color: #718096;
             text-decoration: none;
         }
-        
+
+        /* Responsive Design for Mobile */
         @media (max-width: 600px) {
             .email-container {
                 margin: 0;
                 box-shadow: none;
+                width: 100% !important;
             }
-            
+
+            .header {
+                padding: 20px !important;
+            }
+
+            .header h1 {
+                font-size: 24px !important;
+            }
+
             .content {
-                padding: 20px;
+                padding: 20px !important;
             }
-            
+
+            .order-summary {
+                padding: 15px !important;
+            }
+
             .order-details {
-                grid-template-columns: 1fr;
-                gap: 10px;
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
             }
-            
+
+            .totals-section {
+                padding: 15px !important;
+            }
+
             .item {
                 flex-direction: column;
                 text-align: center;
             }
-            
+
             .item-image {
-                margin: 0 0 15px 0;
+                margin: 0 0 15px 0 !important;
+            }
+
+            .cta-button {
+                display: block !important;
+                margin: 10px 0 !important;
+                padding: 12px 20px !important;
+            }
+
+            .next-steps {
+                padding: 20px !important;
+            }
+
+            .shipping-section {
+                padding: 15px !important;
+            }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a202c !important;
+                color: #e2e8f0 !important;
+            }
+
+            .email-container {
+                background-color: #2d3748 !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            .content {
+                background-color: #2d3748 !important;
+            }
+
+            .order-summary {
+                background-color: #1a202c !important;
+                border-color: #4a5568 !important;
+            }
+
+            .detail-label {
+                color: #a0aec0 !important;
+            }
+
+            .detail-value {
+                color: #e2e8f0 !important;
+            }
+
+            .order-number {
+                background-color: #4a5568 !important;
+                color: #e2e8f0 !important;
+            }
+
+            .section-title {
+                color: #e2e8f0 !important;
+                border-bottom-color: #4a5568 !important;
+            }
+
+            .item {
+                border-bottom-color: #4a5568 !important;
+            }
+
+            .item-image {
+                background-color: #1a202c !important;
+                border-color: #4a5568 !important;
+            }
+
+            .item-name {
+                color: #e2e8f0 !important;
+            }
+
+            .item-meta {
+                color: #a0aec0 !important;
+            }
+
+            .item-price {
+                color: #e2e8f0 !important;
+            }
+
+            .totals-section {
+                background-color: #1a202c !important;
+            }
+
+            .total-row {
+                color: #e2e8f0 !important;
+            }
+
+            .total-row.final {
+                border-top-color: #4a5568 !important;
+            }
+
+            .shipping-section {
+                background-color: #1a3a2e !important;
+                border-left-color: #48bb78 !important;
+            }
+
+            .shipping-title {
+                color: #68d391 !important;
+            }
+
+            .shipping-address {
+                color: #e2e8f0 !important;
+            }
+
+            .cta-button.secondary {
+                background: #4a5568 !important;
+                color: #e2e8f0 !important;
+                border-color: #718096 !important;
+            }
+
+            .footer {
+                background-color: #1a202c !important;
+                border-top-color: #4a5568 !important;
+            }
+
+            .contact-info {
+                color: #a0aec0 !important;
+            }
+
+            .contact-info a {
+                color: #63b3ed !important;
+            }
+
+            .social-links a {
+                color: #a0aec0 !important;
             }
         }
     </style>
@@ -787,6 +928,34 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Your Email - Quantum Gameware</title>
+    <style>
+        /* Responsive Design for Mobile */
+        @media (max-width: 600px) {
+            .email-wrapper { width: 100% !important; }
+            .email-container { width: 100% !important; border-radius: 0 !important; }
+            .header-padding { padding: 30px 20px !important; }
+            .content-padding { padding: 30px 20px !important; }
+            .footer-padding { padding: 20px !important; }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #1a202c !important; }
+            .email-container { background-color: #2d3748 !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important; }
+            .content-bg { background-color: #2d3748 !important; }
+            .text-primary { color: #e2e8f0 !important; }
+            .text-secondary { color: #a0aec0 !important; }
+            .bg-light { background-color: #1a202c !important; }
+            .border-light { border-color: #4a5568 !important; }
+            .info-box { background-color: #1e3a5f !important; }
+            .info-text { color: #93c5fd !important; }
+            .footer-bg { background-color: #1a202c !important; border-top-color: #4a5568 !important; }
+            .footer-text { color: #a0aec0 !important; }
+            .link-color { color: #63b3ed !important; }
+            .support-button { background: #4a5568 !important; border-color: #718096 !important; }
+            .support-button-text { color: #e2e8f0 !important; }
+        }
+    </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
     <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
@@ -853,10 +1022,10 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             </p>
 
                             <!-- Welcome Section -->
-                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" class="bg-light border-light" style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
                                 <tr>
                                     <td style="padding: 25px;">
-                                        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #2d3748;">
+                                        <p class="text-primary" style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #2d3748;">
                                             🎮 What's next?
                                         </p>
                                         <table cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -871,8 +1040,8 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     </table>
                                                 </td>
                                                 <td style="vertical-align: top; padding-bottom: 15px;">
-                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Enter your verification code</p>
-                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Copy the 6-digit code above and paste it on the verification page</p>
+                                                    <p class="text-primary" style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Enter your verification code</p>
+                                                    <p class="text-secondary" style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Copy the 6-digit code above and paste it on the verification page</p>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -886,8 +1055,8 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     </table>
                                                 </td>
                                                 <td style="vertical-align: top;">
-                                                    <p style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Start shopping for gaming gear</p>
-                                                    <p style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Browse our collection of premium gaming accessories</p>
+                                                    <p class="text-primary" style="margin: 0 0 4px 0; font-weight: 600; color: #2d3748; font-size: 14px;">Start shopping for gaming gear</p>
+                                                    <p class="text-secondary" style="margin: 0; color: #718096; font-size: 14px; line-height: 1.5;">Browse our collection of premium gaming accessories</p>
                                                 </td>
                                             </tr>
                                         </table>
@@ -896,10 +1065,10 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             </table>
 
                             <!-- Security Notice -->
-                            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 0 8px 8px 0;">
+                            <table cellpadding="0" cellspacing="0" border="0" width="100%" class="info-box" style="margin: 30px 0; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 0 8px 8px 0;">
                                 <tr>
                                     <td style="padding: 20px;">
-                                        <p style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
+                                        <p class="info-text" style="margin: 0; color: #1e40af; font-size: 14px; line-height: 1.6;">
                                             <strong>ℹ️ Didn't sign up?</strong> If you didn't create an account with Quantum Gameware, you can safely ignore this email. No account will be created without verification.
                                         </p>
                                     </td>
@@ -909,8 +1078,8 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <!-- Support CTA -->
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
                                 <tr>
-                                    <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
-                                        <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                    <td class="support-button" style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
+                                        <a href="mailto:${this.COMPANY_INFO.email}" class="support-button-text" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
                                             Need Help? Contact Support →
                                         </a>
                                     </td>
@@ -920,7 +1089,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                     </tr>
                     <!-- Footer -->
                     <tr>
-                        <td style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+                        <td class="footer-bg footer-padding" style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                                 <tr>
                                     <td style="vertical-align: middle; padding-right: 8px;">
@@ -984,12 +1153,42 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Changed Successfully</title>
+    <style>
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .email-wrapper { width: 100% !important; }
+            .email-container { width: 100% !important; border-radius: 0 !important; }
+            .header-padding { padding: 30px 20px !important; }
+            .content-padding { padding: 30px 20px !important; }
+            .footer-padding { padding: 20px !important; }
+            .cta-group td { display: block !important; padding: 5px 0 !important; }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #1a202c !important; }
+            .email-container { background-color: #2d3748 !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important; }
+            .content-bg { background-color: #2d3748 !important; }
+            .text-primary { color: #e2e8f0 !important; }
+            .text-secondary { color: #a0aec0 !important; }
+            .bg-light { background-color: #1a202c !important; }
+            .border-light { border-color: #4a5568 !important; }
+            .success-box { background-color: #1a3a2e !important; }
+            .success-text { color: #68d391 !important; }
+            .warning-box { background-color: #3a1a1a !important; }
+            .warning-text { color: #fc8181 !important; }
+            .footer-bg { background-color: #1a202c !important; border-top-color: #4a5568 !important; }
+            .footer-text { color: #a0aec0 !important; }
+            .link-color { color: #63b3ed !important; }
+            .secondary-button { background: #4a5568 !important; border-color: #718096 !important; color: #e2e8f0 !important; }
+        }
+    </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="email-wrapper" style="background-color: #f8fafc; padding: 40px 0;">
         <tr>
             <td align="center">
-                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
                         <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
@@ -1209,12 +1408,42 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Your New Email</title>
+    <style>
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .email-wrapper { width: 100% !important; }
+            .email-container { width: 100% !important; border-radius: 0 !important; }
+            .header-padding { padding: 30px 20px !important; }
+            .content-padding { padding: 30px 20px !important; }
+            .footer-padding { padding: 20px !important; }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #1a202c !important; }
+            .email-container { background-color: #2d3748 !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important; }
+            .content-bg { background-color: #2d3748 !important; }
+            .text-primary { color: #e2e8f0 !important; }
+            .text-secondary { color: #a0aec0 !important; }
+            .bg-light { background-color: #1a202c !important; }
+            .border-light { border-color: #4a5568 !important; }
+            .info-box { background-color: #1e3a5f !important; }
+            .info-text { color: #93c5fd !important; }
+            .warning-box { background-color: #3a2817 !important; }
+            .warning-text { color: #fbbf24 !important; }
+            .footer-bg { background-color: #1a202c !important; border-top-color: #4a5568 !important; }
+            .footer-text { color: #a0aec0 !important; }
+            .link-color { color: #63b3ed !important; }
+            .support-button { background: #4a5568 !important; border-color: #718096 !important; }
+            .support-button-text { color: #e2e8f0 !important; }
+        }
+    </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="email-wrapper" style="background-color: #f8fafc; padding: 40px 0;">
         <tr>
             <td align="center">
-                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
                         <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
@@ -1482,14 +1711,43 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Your Password</title>
+    <style>
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .email-wrapper { width: 100% !important; }
+            .email-container { width: 100% !important; border-radius: 0 !important; }
+            .header-padding { padding: 30px 20px !important; }
+            .content-padding { padding: 30px 20px !important; }
+            .footer-padding { padding: 20px !important; }
+        }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #1a202c !important; }
+            .email-container { background-color: #2d3748 !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important; }
+            .content-bg { background-color: #2d3748 !important; }
+            .text-primary { color: #e2e8f0 !important; }
+            .text-secondary { color: #a0aec0 !important; }
+            .bg-light { background-color: #1a202c !important; }
+            .border-light { border-color: #4a5568 !important; }
+            .warning-box { background-color: #3a1a1a !important; }
+            .warning-text { color: #fc8181 !important; }
+            .footer-bg { background-color: #1a202c !important; border-top-color: #4a5568 !important; }
+            .footer-text { color: #a0aec0 !important; }
+            .link-color { color: #63b3ed !important; }
+            .support-button { background: #4a5568 !important; border-color: #718096 !important; }
+            .support-button-text { color: #e2e8f0 !important; }
+        }
+    </style>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; padding: 40px 0;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="email-wrapper" style="background-color: #f8fafc; padding: 40px 0;">
         <tr>
             <td align="center">
-                <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
                         <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
