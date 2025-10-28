@@ -36,12 +36,12 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
 
   const handleSignIn = () => {
     handleClose();
-    setTimeout(() => router.push('/signin'), 300);
+    setTimeout(() => router.push('/auth/signin'), 300);
   };
 
   const handleSignUp = () => {
     handleClose();
-    setTimeout(() => router.push('/signup'), 300);
+    setTimeout(() => router.push('/auth/signup'), 300);
   };
 
   if (!isOpen) return null;
