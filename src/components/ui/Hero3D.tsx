@@ -40,12 +40,13 @@ function HeadphonesModel({
   const modelRef = useRef<THREE.Group>(null);
   const [hasSlideAnimated, setHasSlideAnimated] = useState(false);
 
-  // Responsive scale - bigger overall, but proportional to screen size
-  const modelScale = isMobile ? 2.0 : isTablet ? 2.2 : 2.4;
+  // Responsive scale - smaller on mobile to fit screen
+  const modelScale = isMobile ? 1.4 : isTablet ? 2.2 : 2.4;
 
-  // Responsive Y position - adjust for better centering on different screens
-  const targetY = isMobile ? 0.5 : isTablet ? 0.8 : 1;
-  const startY = isMobile ? 4 : 5;
+  // Responsive Y position - higher up and more centered
+  const targetY = isMobile ? 1.8 : isTablet ? 1.5 : 1;
+  // Start completely off-screen above viewport
+  const startY = isMobile ? 10 : 10;
 
   // Enhance materials and remove background
   useEffect(() => {
