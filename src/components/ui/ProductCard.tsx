@@ -267,36 +267,71 @@ export default function ProductCard({
             )}
           </div>
 
-          {/* Action Button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={!product.inStock}
-            className={`
-              w-full px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-semibold text-[10px] sm:text-xs md:text-sm transition-all duration-300 
-              transform active:scale-95 flex items-center justify-center gap-1 sm:gap-2 relative z-20
-              ${product.inStock 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]' 
-                : 'bg-white/30 text-gray-700 cursor-not-allowed border border-gray-300'
-              }
-            `}
-          >
-            {product.inStock ? (
-              <>
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!product.inStock}
+              className={`
+                flex-1 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-semibold text-[10px] sm:text-xs md:text-sm transition-all duration-300
+                transform active:scale-95 flex items-center justify-center gap-1 sm:gap-2 relative z-20
+                ${product.inStock
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                  : 'bg-white/30 text-gray-700 cursor-not-allowed border border-gray-300'
+                }
+              `}
+            >
+              {product.inStock ? (
+                <>
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="hidden sm:inline">Add to Cart</span>
+                  <span className="sm:hidden">Add</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                  </svg>
+                  Sold Out
+                </>
+              )}
+            </button>
+
+            {/* Wishlist Button - Visible on Mobile */}
+            <button
+              onClick={handleWishlistToggle}
+              disabled={isWishlistLoading}
+              className={`
+                sm:hidden p-2 rounded-xl transition-all duration-300 shadow-lg active:scale-95 relative z-20
+                ${inWishlist
+                  ? 'bg-red-500 hover:bg-red-600'
+                  : 'bg-white/90 hover:bg-white'
+                }
+              `}
+              aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              {isWishlistLoading ? (
+                <svg className="w-4 h-4 animate-spin text-gray-600" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span className="hidden sm:inline">Add to Cart</span>
-                <span className="sm:hidden">Add</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+              ) : (
+                <svg
+                  className={`w-4 h-4 transition-colors ${
+                    inWishlist ? 'text-white' : 'text-gray-600'
+                  }`}
+                  fill={inWishlist ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                Sold Out
-              </>
-            )}
-          </button>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
