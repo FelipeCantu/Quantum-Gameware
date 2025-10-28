@@ -9,10 +9,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 // Helper function to verify JWT token
 async function verifyToken(request: NextRequest) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const token = request.cookies.get('authToken')?.value;
 
     if (!token) {
-      console.log('No token cookie found');
+      console.log('No authToken cookie found');
       return null;
     }
 
