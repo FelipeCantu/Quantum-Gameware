@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getProduct, getProducts, getRelatedProducts } from '../../../sanity/lib/queries';
 import { Product } from '@/types';
 import AddToCartButton from '@/components/ui/AddToCartButton';
+import WishlistButton from '@/components/ui/WishlistButton';
 import { Metadata } from 'next';
 import ProductImageGallery from './ProductImageGallery';
 import ProductInfoTabs from './ProductInfoTabs';
@@ -164,8 +165,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </div>
 
                 {/* Add to Cart Section */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-xl md:rounded-2xl border border-white/20 p-4 md:p-6 order-3 lg:order-4">
-                  <AddToCartButton product={product} />
+                <div className="bg-white/10 backdrop-blur-lg rounded-xl md:rounded-2xl border border-white/20 p-4 md:p-6 order-3 lg:order-4 space-y-3 md:space-y-4">
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <AddToCartButton product={product} />
+                    </div>
+                    <WishlistButton productSlug={product.slug} productName={product.name} variant="compact" />
+                  </div>
+                  <div className="w-full">
+                    <WishlistButton productSlug={product.slug} productName={product.name} />
+                  </div>
                 </div>
 
                 {/* Trust Signals */}
