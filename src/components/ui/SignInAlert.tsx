@@ -58,12 +58,15 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
       />
 
       {/* Alert Modal */}
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-none">
+      <div className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-none">
         <div
-          className={`relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl w-full max-w-[90vw] sm:max-w-lg border-2 border-white/30 overflow-hidden transform transition-all duration-500 pointer-events-auto ${
+          className={`relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl w-full max-w-[90vw] sm:max-w-lg mx-auto border-2 border-white/30 overflow-hidden transform transition-all duration-500 pointer-events-auto ${
             isVisible ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-8'
           }`}
           onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="signin-alert-title"
         >
           {/* Animated Background Elements */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -125,7 +128,7 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
             </div>
 
             {/* Title */}
-            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2 sm:mb-3 lg:mb-4 text-center leading-tight px-2">
+            <h3 id="signin-alert-title" className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2 sm:mb-3 lg:mb-4 text-center leading-tight px-2">
               Sign In Required
             </h3>
 
