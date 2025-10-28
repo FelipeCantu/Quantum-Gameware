@@ -27,11 +27,26 @@ interface CustomCSSProperties extends CSSProperties {
 }
 
 // 3D Model Component with slide-up animation
-function HeadphonesModel({ isVisible }: { isVisible: boolean }) {
+function HeadphonesModel({
+  isVisible,
+  isMobile,
+  isTablet
+}: {
+  isVisible: boolean;
+  isMobile: boolean;
+  isTablet: boolean;
+}) {
   const { scene } = useGLTF('/174-headphones.gltf');
   const modelRef = useRef<THREE.Group>(null);
   const [hasSlideAnimated, setHasSlideAnimated] = useState(false);
-  
+
+  // Responsive scale - bigger overall, but proportional to screen size
+  const modelScale = isMobile ? 2.0 : isTablet ? 2.2 : 2.4;
+
+  // Responsive Y position - adjust for better centering on different screens
+  const targetY = isMobile ? 0.5 : isTablet ? 0.8 : 1;
+  const startY = isMobile ? 4 : 5;
+
   // Enhance materials and remove background
   useEffect(() => {
     scene.traverse((child) => {
@@ -79,34 +94,34 @@ function HeadphonesModel({ isVisible }: { isVisible: boolean }) {
         const slideProgress = Math.min((state.clock.elapsedTime - 2) / 2, 1);
         if (slideProgress > 0) {
           const easeOutCubic = 1 - Math.pow(1 - slideProgress, 3);
-          modelRef.current.position.y = THREE.MathUtils.lerp(5, 1, easeOutCubic) + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+          modelRef.current.position.y = THREE.MathUtils.lerp(startY, targetY, easeOutCubic) + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
           modelRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.15 + state.clock.elapsedTime * 0.1;
-          
+
           if (slideProgress >= 1) {
             setHasSlideAnimated(true);
           }
         } else {
-          modelRef.current.position.y = 5;
+          modelRef.current.position.y = startY;
         }
       } else if (hasSlideAnimated) {
         modelRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.15 + state.clock.elapsedTime * 0.1;
-        modelRef.current.position.y = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+        modelRef.current.position.y = targetY + Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
       }
     }
   });
 
   return (
     <group ref={modelRef}>
-      <Float 
-        speed={2} 
-        rotationIntensity={0.1} 
+      <Float
+        speed={2}
+        rotationIntensity={0.1}
         floatIntensity={0.2}
         floatingRange={[-0.05, 0.05]}
         enabled={hasSlideAnimated}
       >
-        <primitive 
-          object={scene} 
-          scale={1.8} 
+        <primitive
+          object={scene}
+          scale={modelScale}
           position={[0, 0, 0]}
         />
       </Float>
@@ -121,6 +136,20 @@ if (typeof window !== 'undefined') {
 
 export default function Hero() {
   const [animationStarted, setAnimationStarted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  // Detect screen size for responsive 3D rendering
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -309,10 +338,13 @@ export default function Hero() {
 
         {/* 3D Model Canvas */}
         <div className="absolute inset-0 z-[5] pointer-events-none">
-          <Canvas 
+          <Canvas
             className="w-full h-full"
-            camera={{ position: [0, 0, 5], fov: 45 }}
-            gl={{ 
+            camera={{
+              position: isMobile ? [0, 0, 6.5] : isTablet ? [0, 0, 5.5] : [0, 0, 5],
+              fov: isMobile ? 60 : isTablet ? 50 : 45
+            }}
+            gl={{
               antialias: true,
               alpha: true,
               toneMapping: THREE.ACESFilmicToneMapping,
@@ -332,9 +364,13 @@ export default function Hero() {
             />
             
             <Environment preset="city" environmentIntensity={0.3} />
-            
+
             <Suspense fallback={null}>
-              <HeadphonesModel isVisible={animationStarted} />
+              <HeadphonesModel
+                isVisible={animationStarted}
+                isMobile={isMobile}
+                isTablet={isTablet}
+              />
             </Suspense>
             
             <ContactShadows
