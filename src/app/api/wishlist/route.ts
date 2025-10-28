@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -12,12 +12,17 @@ async function verifyToken(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
 
     if (!token) {
+      console.log('No token cookie found');
       return null;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    return decoded.userId;
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+
+    console.log('Token verified, payload:', payload);
+    return payload.userId as string;
   } catch (error) {
+    console.error('Token verification error:', error);
     return null;
   }
 }
@@ -59,27 +64,39 @@ export async function GET(request: NextRequest) {
 // POST /api/wishlist - Add item to wishlist
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST /api/wishlist - Starting request');
     await connectDB();
+    console.log('Database connected');
 
     const userId = await verifyToken(request);
+    console.log('User ID from token:', userId);
+
     if (!userId) {
+      console.log('No user ID - unauthorized');
       return NextResponse.json(
         { error: 'Unauthorized - Please sign in to add items to your wishlist' },
         { status: 401 }
       );
     }
 
-    const { productId } = await request.json();
+    const body = await request.json();
+    console.log('Request body:', body);
+    const { productId } = body;
 
     if (!productId) {
+      console.log('No product ID provided');
       return NextResponse.json(
         { error: 'Product ID is required' },
         { status: 400 }
       );
     }
 
+    console.log('Finding user:', userId);
     const user = await User.findById(userId);
+    console.log('User found:', user ? 'Yes' : 'No');
+
     if (!user) {
+      console.log('User not found in database');
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -91,8 +108,11 @@ export async function POST(request: NextRequest) {
       user.wishlist = [];
     }
 
+    console.log('Current wishlist:', user.wishlist);
+
     // Check if item is already in wishlist
     if (user.wishlist.includes(productId)) {
+      console.log('Item already in wishlist');
       return NextResponse.json(
         { error: 'Item already in wishlist' },
         { status: 400 }
@@ -101,7 +121,9 @@ export async function POST(request: NextRequest) {
 
     // Add item to wishlist
     user.wishlist.push(productId);
+    console.log('Saving user with new wishlist:', user.wishlist);
     await user.save();
+    console.log('User saved successfully');
 
     return NextResponse.json({
       success: true,
@@ -111,7 +133,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Add to wishlist error:', error);
     return NextResponse.json(
-      { error: 'Failed to add item to wishlist' },
+      { error: 'Failed to add item to wishlist', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

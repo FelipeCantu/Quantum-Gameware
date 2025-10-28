@@ -56,10 +56,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addToWishlist = async (productId: string): Promise<boolean> => {
     if (!isAuthenticated) {
+      console.log('Not authenticated');
       return false;
     }
 
     try {
+      console.log('Adding to wishlist:', productId);
       const response = await fetch('/api/wishlist', {
         method: 'POST',
         headers: {
@@ -68,13 +70,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ productId }),
       });
 
+      console.log('Response status:', response.status, response.statusText);
+      const data = await response.json();
+      console.log('Wishlist API response:', data);
+
       if (response.ok) {
-        const data = await response.json();
         setWishlist(data.wishlist);
         return true;
+      } else {
+        console.error('Wishlist API error - Status:', response.status, 'Data:', data);
+        return false;
       }
-
-      return false;
     } catch (error) {
       console.error('Failed to add to wishlist:', error);
       return false;
@@ -83,21 +89,26 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const removeFromWishlist = async (productId: string): Promise<boolean> => {
     if (!isAuthenticated) {
+      console.log('Not authenticated');
       return false;
     }
 
     try {
+      console.log('Removing from wishlist:', productId);
       const response = await fetch(`/api/wishlist?productId=${productId}`, {
         method: 'DELETE',
       });
 
+      const data = await response.json();
+      console.log('Remove wishlist API response:', data);
+
       if (response.ok) {
-        const data = await response.json();
         setWishlist(data.wishlist);
         return true;
+      } else {
+        console.error('Remove wishlist API error:', data);
+        return false;
       }
-
-      return false;
     } catch (error) {
       console.error('Failed to remove from wishlist:', error);
       return false;
