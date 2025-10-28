@@ -190,7 +190,9 @@ export async function POST(request: NextRequest) {
         sameSite: 'lax',
         maxAge: rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60,
         path: '/',
+        // Don't set domain - let browser handle it
       });
+      console.log('✅ Cookie set successfully');
     } catch (cookieError) {
       console.error('⚠️ Cookie setting error:', cookieError);
     }
