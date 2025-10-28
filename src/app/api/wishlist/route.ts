@@ -6,6 +6,19 @@ import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true',
+};
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS(request: NextRequest) {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // Helper function to verify JWT token
 async function verifyToken(request: NextRequest) {
   try {
@@ -48,15 +61,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      wishlist: user.wishlist || []
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        wishlist: user.wishlist || []
+      },
+      { headers: corsHeaders }
+    );
   } catch (error) {
     console.error('Get wishlist error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch wishlist' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -125,16 +141,19 @@ export async function POST(request: NextRequest) {
     await user.save();
     console.log('User saved successfully');
 
-    return NextResponse.json({
-      success: true,
-      message: 'Item added to wishlist',
-      wishlist: user.wishlist
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Item added to wishlist',
+        wishlist: user.wishlist
+      },
+      { headers: corsHeaders }
+    );
   } catch (error) {
     console.error('Add to wishlist error:', error);
     return NextResponse.json(
       { error: 'Failed to add item to wishlist', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -176,16 +195,19 @@ export async function DELETE(request: NextRequest) {
       await user.save();
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Item removed from wishlist',
-      wishlist: user.wishlist || []
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Item removed from wishlist',
+        wishlist: user.wishlist || []
+      },
+      { headers: corsHeaders }
+    );
   } catch (error) {
     console.error('Remove from wishlist error:', error);
     return NextResponse.json(
       { error: 'Failed to remove item from wishlist' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
