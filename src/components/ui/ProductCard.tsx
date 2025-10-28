@@ -8,6 +8,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import SignInAlert from './SignInAlert';
+import Toast from './Toast';
 
 interface ProductCardProps {
   product: Product;
@@ -30,6 +31,9 @@ export default function ProductCard({
   const [isHovered, setIsHovered] = useState(false);
   const [showSignInAlert, setShowSignInAlert] = useState(false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
 
   const inWishlist = isInWishlist(product.slug);
 
@@ -60,9 +64,25 @@ export default function ProductCard({
       return;
     }
 
+    const wasInWishlist = inWishlist;
     setIsWishlistLoading(true);
-    await toggleWishlist(product.slug);
+    const success = await toggleWishlist(product.slug);
     setIsWishlistLoading(false);
+
+    if (success) {
+      if (wasInWishlist) {
+        setToastMessage('Removed from wishlist');
+        setToastType('info');
+      } else {
+        setToastMessage('Added to wishlist! ❤️');
+        setToastType('success');
+      }
+      setShowToast(true);
+    } else {
+      setToastMessage('Failed to update wishlist');
+      setToastType('error');
+      setShowToast(true);
+    }
   };
 
   // Calculate discount percentage
@@ -285,6 +305,14 @@ export default function ProductCard({
         isOpen={showSignInAlert}
         onClose={() => setShowSignInAlert(false)}
         message="Please sign in to save items to your wishlist and access them across all your devices."
+      />
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isOpen={showToast}
+        onClose={() => setShowToast(false)}
       />
     </div>
   );
