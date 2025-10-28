@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
 interface SignInAlertProps {
@@ -12,7 +13,13 @@ interface SignInAlertProps {
 
 export default function SignInAlert({ isOpen, onClose, message }: SignInAlertProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  // Ensure we're on the client side
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,9 +51,10 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
     setTimeout(() => router.push('/auth/signup'), 300);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !isMounted) return null;
 
-  return (
+  // Render the modal using a portal to document.body
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -170,6 +178,7 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
