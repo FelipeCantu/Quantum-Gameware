@@ -30,6 +30,7 @@ export interface IUser extends Document {
   phone?: string;
   address?: UserAddress;
   preferences?: UserPreferences;
+  wishlist?: string[]; // Array of product IDs
   role: 'customer' | 'admin';
   isActive: boolean;
   emailVerified: boolean;
@@ -115,13 +116,17 @@ const userSchema = new Schema<IUser>({
     emailNotifications: { type: Boolean, default: true },
     smsNotifications: { type: Boolean, default: false },
     marketingEmails: { type: Boolean, default: false },
-    theme: { 
-      type: String, 
-      enum: ['light', 'dark', 'system'], 
-      default: 'system' 
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'system'],
+      default: 'system'
     },
     currency: { type: String, default: 'USD' },
     language: { type: String, default: 'en' }
+  },
+  wishlist: {
+    type: [String],
+    default: []
   },
   role: {
     type: String,

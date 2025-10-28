@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nImplement fully functional wishlist system\n\nBackend:\n- Add wishlist field to User model (array of product slugs)\n- Create wishlist API routes (GET, POST, DELETE)\n- Implement authentication checks for all wishlist operations\n\nFrontend:\n- Create WishlistContext for global wishlist state management\n- Add WishlistProvider to app layout\n- Create beautiful SignInAlert component for non-authenticated users\n- Update ProductCard with heart icon that toggles wishlist\n- Show filled heart for items in wishlist\n- Display sign-in alert when non-logged-in users try to add to wishlist\n- Update wishlist page to fetch real products from Sanity\n- Add loading states for better UX\n- Fix wishlist page to use product slugs instead of IDs\n\nFeatures:\n- Users must be signed in to use wishlist\n- Wishlist persists across sessions\n- Real-time wishlist updates\n- Beautiful animations and transitions\n- Responsive design\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

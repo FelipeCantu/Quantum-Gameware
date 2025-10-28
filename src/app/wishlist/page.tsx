@@ -1,86 +1,80 @@
 // src/app/wishlist/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Link from 'next/link';
 import Image from 'next/image';
-
-// Mock wishlist data for demo
-const mockWishlistItems = [
-  {
-    id: '1',
-    name: 'Gaming Keyboard RGB Pro Max',
-    price: 199.99,
-    originalPrice: 249.99,
-    image: '/images/products/keyboard-rgb.jpg',
-    category: 'Keyboards',
-    brand: 'Corsair',
-    inStock: true,
-    rating: 4.8
-  },
-  {
-    id: '2',
-    name: 'Wireless Gaming Mouse Elite',
-    price: 89.99,
-    originalPrice: null,
-    image: '/images/products/mouse-wireless.jpg',
-    category: 'Mice',
-    brand: 'Logitech',
-    inStock: false,
-    rating: 4.6
-  },
-  {
-    id: '3',
-    name: '4K Gaming Monitor Ultra Wide',
-    price: 699.99,
-    originalPrice: 799.99,
-    image: '/images/products/monitor-4k.jpg',
-    category: 'Monitors',
-    brand: 'ASUS',
-    inStock: true,
-    rating: 4.9
-  }
-];
+import { client } from '@/sanity/lib/client';
+import { Product } from '@/types';
 
 function WishlistContent() {
   const { user } = useAuth();
   const { addToCart } = useCart();
-  const [wishlistItems, setWishlistItems] = useState(mockWishlistItems);
+  const { wishlist, removeFromWishlist, isLoading: wishlistLoading } = useWishlist();
+  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-  const handleRemoveFromWishlist = async (itemId: string) => {
-    setRemovingItems(prev => new Set(prev).add(itemId));
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      setWishlistItems(prev => prev.filter(item => item.id !== itemId));
-      setRemovingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
-      });
-    }, 500);
+  // Fetch products based on wishlist IDs
+  useEffect(() => {
+    const fetchWishlistProducts = async () => {
+      if (!wishlist || wishlist.length === 0) {
+        setWishlistItems([]);
+        setIsLoadingProducts(false);
+        return;
+      }
+
+      try {
+        setIsLoadingProducts(true);
+        const query = `*[_type == "product" && slug.current in $slugs] {
+          _id,
+          name,
+          "slug": slug.current,
+          price,
+          originalPrice,
+          description,
+          "image": image.asset->url,
+          "category": category->name,
+          brand,
+          inStock,
+          rating,
+          isNew
+        }`;
+
+        const products = await client.fetch(query, { slugs: wishlist });
+        setWishlistItems(products);
+      } catch (error) {
+        console.error('Error fetching wishlist products:', error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    fetchWishlistProducts();
+  }, [wishlist]);
+
+  const handleRemoveFromWishlist = async (slug: string) => {
+    setRemovingItems(prev => new Set(prev).add(slug));
+
+    const success = await removeFromWishlist(slug);
+
+    if (success) {
+      setWishlistItems(prev => prev.filter(item => item.slug !== slug));
+    }
+
+    setRemovingItems(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(slug);
+      return newSet;
+    });
   };
 
-  const handleAddToCart = (item: any) => {
-    // Convert wishlist item to cart item format
-    const cartItem = {
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-      category: item.category,
-      brand: item.brand,
-      inStock: item.inStock,
-      slug: item.name.toLowerCase().replace(/\s+/g, '-'),
-      description: `${item.brand} ${item.name}`,
-      rating: item.rating
-    };
-    
-    addToCart(cartItem);
+  const handleAddToCart = (item: Product) => {
+    addToCart(item);
   };
 
   return (
@@ -132,7 +126,17 @@ function WishlistContent() {
 
             {/* Wishlist Content */}
             <div className="md:col-span-3">
-              {wishlistItems.length > 0 ? (
+              {isLoadingProducts || wishlistLoading ? (
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-12 text-center">
+                  <div className="flex flex-col items-center">
+                    <svg className="w-12 h-12 text-white/70 animate-spin mb-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="text-white/70">Loading your wishlist...</p>
+                  </div>
+                </div>
+              ) : wishlistItems.length > 0 ? (
                 <div className="space-y-6">
                   {/* Wishlist Summary */}
                   <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6">
@@ -155,23 +159,33 @@ function WishlistContent() {
                   <div className="grid gap-6">
                     {wishlistItems.map((item) => (
                       <div
-                        key={item.id}
+                        key={item.slug}
                         className={`bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6 transition-all duration-300 ${
-                          removingItems.has(item.id) ? 'opacity-50 scale-95' : ''
+                          removingItems.has(item.slug) ? 'opacity-50 scale-95' : ''
                         }`}
                       >
                         <div className="flex flex-col lg:flex-row gap-6">
                           {/* Product Image */}
                           <div className="flex-shrink-0">
                             <div className="w-full lg:w-48 h-48 bg-white/5 rounded-xl overflow-hidden relative">
-                              <div className="w-full h-full flex items-center justify-center bg-white/5">
-                                <div className="text-gray-400 text-center">
-                                  <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                  </svg>
-                                  <span className="text-sm">No Image</span>
+                              {item.image ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 768px) 100vw, 192px"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-white/5">
+                                  <div className="text-gray-400 text-center">
+                                    <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span className="text-sm">No Image</span>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                               {/* Stock indicator */}
                               {!item.inStock && (
                                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -200,16 +214,18 @@ function WishlistContent() {
                                 </h3>
 
                                 {/* Rating */}
-                                <div className="flex items-center gap-2 mb-4">
-                                  <div className="flex text-yellow-400 text-sm">
-                                    {[...Array(5)].map((_, i) => (
-                                      <span key={i} className={i < Math.floor(item.rating) ? 'text-yellow-400' : 'text-white/30'}>
-                                        ★
-                                      </span>
-                                    ))}
+                                {item.rating && (
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <div className="flex text-yellow-400 text-sm">
+                                      {[...Array(5)].map((_, i) => (
+                                        <span key={i} className={i < Math.floor(item.rating!) ? 'text-yellow-400' : 'text-white/30'}>
+                                          ★
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <span className="text-white/70 text-sm">({item.rating})</span>
                                   </div>
-                                  <span className="text-white/70 text-sm">({item.rating})</span>
-                                </div>
+                                )}
 
                                 {/* Price */}
                                 <div className="flex items-baseline gap-3 mb-4">
@@ -249,11 +265,11 @@ function WishlistContent() {
                                 </button>
 
                                 <button
-                                  onClick={() => handleRemoveFromWishlist(item.id)}
-                                  disabled={removingItems.has(item.id)}
+                                  onClick={() => handleRemoveFromWishlist(item.slug)}
+                                  disabled={removingItems.has(item.slug)}
                                   className="px-6 py-3 bg-white/20 hover:bg-red-500/20 text-white hover:text-red-200 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
                                 >
-                                  {removingItems.has(item.id) ? (
+                                  {removingItems.has(item.slug) ? (
                                     <>
                                       <svg className="w-5 h-5 inline mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -272,7 +288,7 @@ function WishlistContent() {
                                 </button>
 
                                 <Link
-                                  href={`/products/${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                                  href={`/products/${item.slug}`}
                                   className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white text-center rounded-xl font-semibold transition-colors"
                                 >
                                   View Details
