@@ -39,13 +39,14 @@ function WishlistContent() {
           description,
           "image": image.asset->url,
           "category": category->name,
-          brand,
+          "brand": coalesce(brand->name, brand),
           inStock,
           rating,
           isNew
         }`;
 
         const products = await client.fetch(query, { slugs: wishlist });
+        console.log('Fetched wishlist products:', products);
         setWishlistItems(products);
       } catch (error) {
         console.error('Error fetching wishlist products:', error);
@@ -202,11 +203,13 @@ function WishlistContent() {
                             <div className="flex flex-col lg:flex-row lg:items-start justify-between h-full">
                               <div className="flex-1 min-w-0 mb-4 lg:mb-0">
                                 {/* Brand and Category */}
-                                <div className="flex items-center gap-2 text-sm text-white/70 mb-2">
-                                  <span className="font-medium">{item.brand}</span>
-                                  <span className="w-1 h-1 bg-white/50 rounded-full"></span>
-                                  <span>{item.category}</span>
-                                </div>
+                                {(item.brand || item.category) && (
+                                  <div className="flex items-center gap-2 text-sm text-white/70 mb-2">
+                                    {item.brand && <span className="font-medium">{item.brand}</span>}
+                                    {item.brand && item.category && <span className="w-1 h-1 bg-white/50 rounded-full"></span>}
+                                    {item.category && <span>{item.category}</span>}
+                                  </div>
+                                )}
 
                                 {/* Product Name */}
                                 <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
