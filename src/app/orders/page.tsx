@@ -120,16 +120,16 @@ function OrdersPageContent() {
           <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-6 text-center">
             <h2 className="text-xl font-bold text-red-200 mb-2">Error Loading Orders</h2>
             <p className="text-red-300 mb-4">{error}</p>
-            <div className="space-x-4">
-              <button 
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
               >
                 Retry
               </button>
               <Link
                 href="/account"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg inline-block"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg inline-block transition-colors text-center"
               >
                 Go to Account
               </Link>
@@ -158,16 +158,16 @@ function OrdersPageContent() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">My Orders</h1>
-          <p className="text-white/80 text-lg">Track and manage your gaming gear orders</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">My Orders</h1>
+          <p className="text-white/80 text-base sm:text-lg">Track and manage your gaming gear orders</p>
           {user && (
-            <p className="text-white/60 text-sm mt-2">Signed in as: {user.email}</p>
+            <p className="text-white/60 text-sm mt-2 truncate">Signed in as: {user.email}</p>
           )}
         </div>
 
         {orders.length === 0 ? (
           /* Empty State */
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-12 text-center">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl border border-white/20 p-8 sm:p-12 text-center">
             <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
               <svg className="w-12 h-12 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -193,16 +193,16 @@ function OrdersPageContent() {
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300"
+                className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl border border-white/20 p-4 sm:p-6 hover:bg-white/15 transition-all duration-300"
               >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
                   {/* Order Info */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-4">
-                      <h3 className="text-xl font-bold text-white font-mono">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
+                      <h3 className="text-lg sm:text-xl font-bold text-white font-mono">
                         {order.orderNumber}
                       </h3>
-                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
+                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(order.status)} w-fit`}>
                         {getStatusIcon(order.status)}
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
@@ -290,9 +290,9 @@ function OrdersPageContent() {
         )}
 
         {/* Quick Actions */}
-        <div className="mt-12 bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-12 bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl border border-white/20 p-6 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             <Link
               href="/products"
               className="flex items-center p-6 bg-white/10 hover:bg-white/20 rounded-2xl transition-all duration-300 border border-white/20 hover:border-white/30 group"

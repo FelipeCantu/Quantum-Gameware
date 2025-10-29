@@ -58,20 +58,20 @@ export default function Toast({ message, type = 'success', isOpen, onClose, dura
   const currentStyle = styles[type];
 
   return (
-    <div className="fixed top-4 right-4 z-[10000] pointer-events-none">
+    <div className="fixed top-4 right-2 left-2 sm:left-auto sm:right-4 sm:max-w-md z-[10000] pointer-events-none">
       <div
-        className={`pointer-events-auto ${currentStyle.bg} text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-2xl border-2 border-white/20 transform transition-all duration-300 ${
+        className={`pointer-events-auto ${currentStyle.bg} text-white px-3 sm:px-6 py-2 sm:py-4 rounded-lg sm:rounded-2xl shadow-2xl border border-white/20 sm:border-2 transform transition-all duration-300 ${
           isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
         }`}
       >
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Icon */}
-          <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+          <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
             {currentStyle.icon}
           </div>
 
           {/* Message */}
-          <p className="font-semibold text-sm sm:text-base pr-2">{message}</p>
+          <p className="font-semibold text-xs sm:text-base flex-1 leading-snug">{message}</p>
 
           {/* Close Button */}
           <button
@@ -79,10 +79,10 @@ export default function Toast({ message, type = 'success', isOpen, onClose, dura
               setIsVisible(false);
               setTimeout(onClose, 300);
             }}
-            className="flex-shrink-0 p-1 hover:bg-white/20 rounded-full transition-colors"
+            className="flex-shrink-0 p-0.5 sm:p-1 hover:bg-white/20 rounded-full transition-colors"
             aria-label="Close"
           >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>

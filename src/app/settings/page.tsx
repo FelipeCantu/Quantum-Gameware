@@ -88,8 +88,8 @@ function SettingsPageContent() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Settings</h1>
-          <p className="text-white/80 text-lg">Customize your account preferences and notifications</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">Settings</h1>
+          <p className="text-white/80 text-base sm:text-lg">Customize your account preferences and notifications</p>
         </div>
 
         {/* Message */}
@@ -103,110 +103,56 @@ function SettingsPageContent() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6">
-              {/* User Info */}
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <h3 className="text-white font-semibold text-lg">{user?.name}</h3>
-                <p className="text-white/70 text-sm">{user?.email}</p>
-                {user?.role === 'admin' && (
-                  <span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-200 rounded-full text-xs font-medium mt-2">
-                    Admin
-                  </span>
-                )}
-              </div>
-
-              {/* Quick Links */}
-              <nav className="space-y-2">
-                <Link
-                  href="/account"
-                  className="flex items-center space-x-3 px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
-                >
-                  <span className="text-lg">👤</span>
-                  <span className="font-medium">Profile</span>
-                </Link>
-                <div className="flex items-center space-x-3 px-4 py-3 rounded-xl text-white bg-white/20 border border-white/30">
-                  <span className="text-lg">⚙️</span>
-                  <span className="font-medium">Settings</span>
-                </div>
-                <Link
-                  href="/orders"
-                  className="flex items-center space-x-3 px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300"
-                >
-                  <span className="text-lg">📦</span>
-                  <span className="font-medium">Orders</span>
-                </Link>
-              </nav>
-
-              {/* Sign Out */}
-              <div className="mt-6 pt-6 border-t border-white/20">
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-all duration-300 w-full text-left"
-                >
-                  <span className="text-lg">🚪</span>
-                  <span className="font-medium">Sign Out</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
-              <form onSubmit={handleProfileUpdate} className="space-y-8">
+        {/* Main Content */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl border border-white/20 p-4 sm:p-6 lg:p-8">
+              <form onSubmit={handleProfileUpdate} className="space-y-6 sm:space-y-8">
                 
                 {/* Profile Settings */}
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-6">Profile Information</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Profile Information</h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-white font-medium mb-2">Full Name</label>
+                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Full Name</label>
                       <input
                         type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-white font-medium mb-2">Email Address</label>
+                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Email Address</label>
                       <input
                         type="email"
                         name="email"
                         value={formData.email}
                         disabled
-                        className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white/50 cursor-not-allowed"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/20 rounded-xl text-white/50 cursor-not-allowed text-sm sm:text-base"
                       />
-                      <p className="text-white/60 text-sm mt-2">Email cannot be changed</p>
+                      <p className="text-white/60 text-xs sm:text-sm mt-2">Email cannot be changed</p>
                     </div>
 
                     <div>
-                      <label className="block text-white font-medium mb-2">Phone Number</label>
+                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Phone Number</label>
                       <input
                         type="tel"
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="+1 (555) 123-4567"
-                        className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Notification Settings */}
-                <div className="border-t border-white/20 pt-8">
-                  <h2 className="text-2xl font-bold text-white mb-6">Notifications</h2>
-                  <div className="space-y-4">
+                <div className="border-t border-white/20 pt-6 sm:pt-8">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Notifications</h2>
+                  <div className="space-y-3 sm:space-y-4">
                     {[
                       { 
                         key: 'emailNotifications', 
@@ -224,18 +170,18 @@ function SettingsPageContent() {
                         description: 'Receive promotional offers and product recommendations' 
                       }
                     ].map((item) => (
-                      <div key={item.key} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                        <div>
-                          <div className="text-white font-medium">{item.label}</div>
-                          <div className="text-white/70 text-sm">{item.description}</div>
+                      <div key={item.key} className="flex items-start sm:items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-medium text-sm sm:text-base">{item.label}</div>
+                          <div className="text-white/70 text-xs sm:text-sm">{item.description}</div>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                        <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                          <input
+                            type="checkbox"
                             name={item.key}
                             checked={formData[item.key as keyof typeof formData] as boolean}
                             onChange={handleInputChange}
-                            className="sr-only peer" 
+                            className="sr-only peer"
                           />
                           <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                         </label>
@@ -245,16 +191,16 @@ function SettingsPageContent() {
                 </div>
 
                 {/* Display Settings */}
-                <div className="border-t border-white/20 pt-8">
-                  <h2 className="text-2xl font-bold text-white mb-6">Display Preferences</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="border-t border-white/20 pt-6 sm:pt-8">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Display Preferences</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                      <label className="block text-white font-medium mb-2">Theme</label>
+                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Theme</label>
                       <select
                         name="theme"
                         value={formData.theme}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       >
                         <option value="system" className="bg-gray-800">System</option>
                         <option value="light" className="bg-gray-800">Light</option>
@@ -263,12 +209,12 @@ function SettingsPageContent() {
                     </div>
 
                     <div>
-                      <label className="block text-white font-medium mb-2">Currency</label>
+                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Currency</label>
                       <select
                         name="currency"
                         value={formData.currency}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       >
                         <option value="USD" className="bg-gray-800">USD ($)</option>
                         <option value="EUR" className="bg-gray-800">EUR (€)</option>
@@ -278,12 +224,12 @@ function SettingsPageContent() {
                     </div>
 
                     <div>
-                      <label className="block text-white font-medium mb-2">Language</label>
+                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Language</label>
                       <select
                         name="language"
                         value={formData.language}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       >
                         <option value="en" className="bg-gray-800">English</option>
                         <option value="es" className="bg-gray-800">Español</option>
@@ -295,15 +241,15 @@ function SettingsPageContent() {
                 </div>
 
                 {/* Save Button */}
-                <div className="border-t border-white/20 pt-8">
+                <div className="border-t border-white/20 pt-6 sm:pt-8">
                   <div className="flex justify-end">
                     <button
                       type="submit"
                       disabled={isUpdating}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-500 disabled:to-gray-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100"
+                      className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-500 disabled:to-gray-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       {isUpdating ? (
-                        <div className="flex items-center">
+                        <div className="flex items-center justify-center">
                           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -316,9 +262,7 @@ function SettingsPageContent() {
                     </button>
                   </div>
                 </div>
-              </form>
-            </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>

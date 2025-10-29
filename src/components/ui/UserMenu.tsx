@@ -40,9 +40,9 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
   // Optimized event listeners
   useEffect(() => {
     if (isOpen) {
-      // Add event listener with passive option for better performance
-      document.addEventListener('mousedown', handleClickOutside, { passive: true });
-      
+      // Add event listener
+      document.addEventListener('mousedown', handleClickOutside);
+
       // Prevent body scroll when menu is open (mobile)
       if (window.innerWidth < 768) {
         document.body.style.overflow = 'hidden';
@@ -52,7 +52,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.body.style.overflow = '';
-      
+
       // Clean up timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -132,8 +132,10 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
       <button
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           setIsOpen(!isOpen);
+        }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
         }}
         className={`${buttonClasses} flex items-center space-x-2`}
         aria-label="User menu"
@@ -170,7 +172,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
 
       {/* Dropdown Menu with better positioning and performance */}
       {isOpen && (
-        <div 
+        <div
           className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-slideIn"
           style={{
             transformOrigin: 'top right',
@@ -178,6 +180,9 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
           }}
           role="menu"
           aria-labelledby="user-menu-button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
         >
           {/* User Info Header */}
           <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">

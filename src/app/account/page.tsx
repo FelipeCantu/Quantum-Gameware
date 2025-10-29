@@ -477,15 +477,101 @@ function AccountPageContent() {
             </p>
           </div>
 
+          {/* Mobile Profile Header */}
+          <div className="lg:hidden mb-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-4">
+            <div className="flex items-center space-x-3">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-lg">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-white truncate">{user.name}</div>
+                <div className="text-sm text-white/70 truncate">{user.email}</div>
+              </div>
+              {user.role === 'admin' && (
+                <div className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded-full">
+                  Admin
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Horizontal Scrolling Navigation */}
+          <div className="lg:hidden mb-6 -mx-4 sticky top-20 z-30 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 py-3">
+            <div className="px-4">
+              {/* Scrollable container with custom scrollbar */}
+              <div
+                className="overflow-x-auto overflow-y-hidden scroll-smooth"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+              >
+                <nav className="flex gap-2 min-w-max pb-2">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 whitespace-nowrap font-medium text-sm ${
+                        activeTab === tab.id
+                          ? 'bg-white text-blue-600 shadow-lg scale-105'
+                          : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                      }`}
+                    >
+                      <span className="text-base">{tab.icon}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                  <Link
+                    href="/orders"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+                  >
+                    <span className="text-base">📦</span>
+                    <span>Orders</span>
+                  </Link>
+                  <Link
+                    href="/wishlist"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+                  >
+                    <span className="text-base">❤️</span>
+                    <span>Wishlist</span>
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+                  >
+                    <span className="text-base">⚙️</span>
+                    <span>Settings</span>
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 text-red-200 hover:bg-red-500/30 border border-red-500/30 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+                  >
+                    <span className="text-base">🚪</span>
+                    <span>Sign Out</span>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Sidebar Navigation */}
-            <div className="lg:col-span-1">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+            {/* Desktop Sidebar Navigation */}
+            <div className="hidden lg:block lg:col-span-1">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden sticky top-24">
                 <div className="p-6 border-b border-white/20">
                   <div className="flex items-center space-x-3">
                     {user.avatar ? (
-                      <img 
-                        src={user.avatar} 
+                      <img
+                        src={user.avatar}
                         alt={user.name}
                         className="w-12 h-12 rounded-full object-cover"
                       />
@@ -505,7 +591,7 @@ function AccountPageContent() {
                     </div>
                   </div>
                 </div>
-                
+
                 <nav className="p-2">
                   {tabs.map((tab) => (
                     <button
@@ -540,6 +626,13 @@ function AccountPageContent() {
                       <span className="text-lg">❤️</span>
                       <span className="font-medium">Wishlist</span>
                     </Link>
+                    <Link
+                      href="/settings"
+                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
+                    >
+                      <span className="text-lg">⚙️</span>
+                      <span className="font-medium">Settings</span>
+                    </Link>
                     <button
                       onClick={handleSignOut}
                       className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all duration-300 text-left"
@@ -557,7 +650,7 @@ function AccountPageContent() {
               {activeTab === 'overview' && (
                 <div className="space-y-8">
                   {/* Stats Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
                       <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
@@ -623,17 +716,17 @@ function AccountPageContent() {
                     
                     <div className="divide-y divide-white/10">
                       {recentOrders.map((order) => (
-                        <div key={order.id} className="p-6 hover:bg-white/5 transition-colors">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-3">
-                              <div className="font-semibold text-white">{order.id}</div>
+                        <div key={order.id} className="p-4 sm:p-6 hover:bg-white/5 transition-colors">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                            <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+                              <div className="font-semibold text-white text-sm sm:text-base">{order.id}</div>
                               <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </span>
                             </div>
                             <div className="text-white font-semibold">${order.total}</div>
                           </div>
-                          <div className="flex items-center justify-between text-sm">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
                             <div className="text-white/70">
                               {new Date(order.date).toLocaleDateString()} • {order.items} items
                             </div>
