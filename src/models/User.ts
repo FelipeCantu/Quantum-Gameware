@@ -19,6 +19,23 @@ export interface UserPreferences {
   language: string;
 }
 
+export interface ActiveSession {
+  token: string;
+  device: string;
+  browser: string;
+  ipAddress: string;
+  lastActive: Date;
+  createdAt: Date;
+}
+
+export interface LoyaltyInfo {
+  points: number;
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  totalPointsEarned: number;
+  totalPointsRedeemed: number;
+  tierSince: Date;
+}
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -31,6 +48,8 @@ export interface IUser extends Document {
   address?: UserAddress;
   preferences?: UserPreferences;
   wishlist?: string[]; // Array of product IDs
+  loyalty?: LoyaltyInfo;
+  activeSessions?: ActiveSession[];
   role: 'customer' | 'admin';
   isActive: boolean;
   emailVerified: boolean;
@@ -55,6 +74,12 @@ export interface IUser extends Document {
   generatePasswordResetCode(): string;
   generateEmailVerificationCode(): string;
   generateEmailChangeCode(): string;
+  addRewardPoints(points: number): Promise<void>;
+  redeemRewardPoints(points: number): Promise<boolean>;
+  calculateLoyaltyTier(): 'bronze' | 'silver' | 'gold' | 'platinum';
+  addActiveSession(token: string, device: string, browser: string, ipAddress: string): Promise<void>;
+  removeActiveSession(token: string): Promise<void>;
+  cleanExpiredSessions(): Promise<void>;
 }
 
 export interface IUserModel extends mongoose.Model<IUser> {
@@ -128,6 +153,25 @@ const userSchema = new Schema<IUser>({
     type: [String],
     default: []
   },
+  loyalty: {
+    points: { type: Number, default: 0, min: 0 },
+    tier: {
+      type: String,
+      enum: ['bronze', 'silver', 'gold', 'platinum'],
+      default: 'bronze'
+    },
+    totalPointsEarned: { type: Number, default: 0, min: 0 },
+    totalPointsRedeemed: { type: Number, default: 0, min: 0 },
+    tierSince: { type: Date, default: Date.now }
+  },
+  activeSessions: [{
+    token: { type: String, required: true },
+    device: { type: String, required: true },
+    browser: { type: String, required: true },
+    ipAddress: { type: String, required: true },
+    lastActive: { type: Date, default: Date.now },
+    createdAt: { type: Date, default: Date.now }
+  }],
   role: {
     type: String,
     enum: ['customer', 'admin'],
@@ -349,6 +393,121 @@ userSchema.methods.generateEmailChangeCode = function(this: IUser): string {
   this.emailChangeExpires = new Date(Date.now() + 30 * 60 * 1000);
 
   return verificationCode;
+};
+
+// Instance method to add reward points
+userSchema.methods.addRewardPoints = async function(this: IUser, points: number): Promise<void> {
+  if (!this.loyalty) {
+    this.loyalty = {
+      points: 0,
+      tier: 'bronze',
+      totalPointsEarned: 0,
+      totalPointsRedeemed: 0,
+      tierSince: new Date()
+    };
+  }
+
+  this.loyalty.points += points;
+  this.loyalty.totalPointsEarned += points;
+
+  // Check if tier needs to be updated
+  const newTier = this.calculateLoyaltyTier();
+  if (newTier !== this.loyalty.tier) {
+    this.loyalty.tier = newTier;
+    this.loyalty.tierSince = new Date();
+  }
+
+  await this.save({ validateBeforeSave: false });
+};
+
+// Instance method to redeem reward points
+userSchema.methods.redeemRewardPoints = async function(this: IUser, points: number): Promise<boolean> {
+  if (!this.loyalty || this.loyalty.points < points) {
+    return false;
+  }
+
+  this.loyalty.points -= points;
+  this.loyalty.totalPointsRedeemed += points;
+
+  // Check if tier needs to be downgraded
+  const newTier = this.calculateLoyaltyTier();
+  if (newTier !== this.loyalty.tier) {
+    this.loyalty.tier = newTier;
+    this.loyalty.tierSince = new Date();
+  }
+
+  await this.save({ validateBeforeSave: false });
+  return true;
+};
+
+// Instance method to calculate loyalty tier
+userSchema.methods.calculateLoyaltyTier = function(this: IUser): 'bronze' | 'silver' | 'gold' | 'platinum' {
+  if (!this.loyalty) {
+    return 'bronze';
+  }
+
+  const totalPoints = this.loyalty.totalPointsEarned;
+
+  // Tier thresholds based on total points earned (lifetime)
+  if (totalPoints >= 10000) return 'platinum';
+  if (totalPoints >= 5000) return 'gold';
+  if (totalPoints >= 2000) return 'silver';
+  return 'bronze';
+};
+
+// Instance method to add active session
+userSchema.methods.addActiveSession = async function(
+  this: IUser,
+  token: string,
+  device: string,
+  browser: string,
+  ipAddress: string
+): Promise<void> {
+  if (!this.activeSessions) {
+    this.activeSessions = [];
+  }
+
+  // Clean expired sessions (older than 30 days)
+  await this.cleanExpiredSessions();
+
+  // Add new session
+  this.activeSessions.push({
+    token,
+    device,
+    browser,
+    ipAddress,
+    lastActive: new Date(),
+    createdAt: new Date()
+  });
+
+  // Keep only last 10 sessions
+  if (this.activeSessions.length > 10) {
+    this.activeSessions = this.activeSessions.slice(-10);
+  }
+
+  await this.save({ validateBeforeSave: false });
+};
+
+// Instance method to remove active session
+userSchema.methods.removeActiveSession = async function(this: IUser, token: string): Promise<void> {
+  if (!this.activeSessions) {
+    return;
+  }
+
+  this.activeSessions = this.activeSessions.filter(session => session.token !== token);
+  await this.save({ validateBeforeSave: false });
+};
+
+// Instance method to clean expired sessions
+userSchema.methods.cleanExpiredSessions = async function(this: IUser): Promise<void> {
+  if (!this.activeSessions) {
+    return;
+  }
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  this.activeSessions = this.activeSessions.filter(
+    session => new Date(session.lastActive) > thirtyDaysAgo
+  );
 };
 
 // Static method to find user by email

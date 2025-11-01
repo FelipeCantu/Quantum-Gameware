@@ -1,80 +1,9 @@
-// src/app/api/orders/route.ts - Fixed to work with your auth system
+// src/app/api/orders/route.ts - Real database implementation
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-
-// Mock orders data - replace with real database calls
-const getMockOrders = () => [
-  {
-    id: 'order_1',
-    orderNumber: 'QG-001',
-    status: 'delivered',
-    total: 299.99,
-    createdAt: '2024-01-15T10:30:00Z',
-    items: [
-      {
-        id: 'item_1',
-        name: 'Gaming Mechanical Keyboard',
-        price: 149.99,
-        quantity: 1,
-        image: '/products/keyboard-1.jpg'
-      },
-      {
-        id: 'item_2',
-        name: 'Gaming Mouse',
-        price: 79.99,
-        quantity: 1,
-        image: '/products/mouse-1.jpg'
-      }
-    ],
-    shipping: {
-      address: '123 Gaming St, Tech City, TC 12345',
-      method: 'Standard Shipping',
-      cost: 0
-    }
-  },
-  {
-    id: 'order_2',
-    orderNumber: 'QG-002',
-    status: 'processing',
-    total: 199.99,
-    createdAt: '2024-01-20T14:15:00Z',
-    items: [
-      {
-        id: 'item_3',
-        name: 'Gaming Headset',
-        price: 199.99,
-        quantity: 1,
-        image: '/products/headset-1.jpg'
-      }
-    ],
-    shipping: {
-      address: '123 Gaming St, Tech City, TC 12345',
-      method: 'Express Shipping',
-      cost: 15.99
-    }
-  },
-  {
-    id: 'order_3',
-    orderNumber: 'QG-003',
-    status: 'shipped',
-    total: 89.99,
-    createdAt: '2024-01-25T09:20:00Z',
-    items: [
-      {
-        id: 'item_4',
-        name: 'Gaming Controller',
-        price: 89.99,
-        quantity: 1,
-        image: '/products/controller-1.jpg'
-      }
-    ],
-    shipping: {
-      address: '123 Gaming St, Tech City, TC 12345',
-      method: 'Standard Shipping',
-      cost: 0
-    }
-  }
-];
+import { connectDB } from '@/lib/mongodb';
+import Order from '@/models/Order';
+import mongoose from 'mongoose';
 
 async function verifyAuthToken(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -112,28 +41,56 @@ async function verifyAuthToken(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     console.log('📦 Orders API called');
-    
+
     // Verify authentication
     const userPayload = await verifyAuthToken(request);
     console.log('✅ User authenticated:', userPayload.email);
 
-    // Get mock orders (in production, filter by user)
-    const orders = getMockOrders();
-    
-    console.log(`📋 Returning ${orders.length} orders for user`);
+    // Connect to database
+    await connectDB();
+
+    // Get real orders from database, filtered by user
+    const userId = new mongoose.Types.ObjectId(userPayload.userId as string);
+    const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Transform orders to match expected format
+    const transformedOrders = orders.map(order => ({
+      id: order._id.toString(),
+      orderNumber: order.orderNumber,
+      status: order.status,
+      total: order.total,
+      createdAt: order.createdAt,
+      items: order.items.map(item => ({
+        id: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image
+      })),
+      shipping: {
+        address: `${order.shipping.address.street}, ${order.shipping.address.city}, ${order.shipping.address.state} ${order.shipping.address.zipCode}`,
+        method: order.shipping.method,
+        cost: order.shipping.cost,
+        trackingNumber: order.shipping.trackingNumber
+      }
+    }));
+
+    console.log(`📋 Returning ${transformedOrders.length} orders for user`);
 
     return NextResponse.json({
       success: true,
-      orders: orders,
-      total: orders.length
+      orders: transformedOrders,
+      total: transformedOrders.length
     });
 
   } catch (error) {
     console.error('❌ Orders API error:', error);
-    
+
     if (error instanceof Error && error.message.includes('authorization')) {
       return NextResponse.json(
-        { 
+        {
           success: false,
           message: 'Authentication required',
           error: 'Missing or invalid authorization token'
@@ -144,7 +101,7 @@ export async function GET(request: NextRequest) {
 
     if (error instanceof Error && error.message.includes('Invalid token')) {
       return NextResponse.json(
-        { 
+        {
           success: false,
           message: 'Invalid authentication token',
           error: 'Token verification failed'
@@ -154,7 +111,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
+      {
         success: false,
         message: 'Internal server error',
         error: 'Failed to fetch orders'
@@ -168,19 +125,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     console.log('📦 Create order API called');
-    
+
     // Verify authentication
     const userPayload = await verifyAuthToken(request);
     console.log('✅ User authenticated for order creation:', userPayload.email);
+
+    // Connect to database
+    await connectDB();
 
     const orderData = await request.json();
 
     // Validate required fields
     if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          message: 'Order must contain at least one item' 
+          message: 'Order must contain at least one item'
         },
         { status: 400 }
       );
@@ -188,52 +148,103 @@ export async function POST(request: NextRequest) {
 
     if (!orderData.shipping || !orderData.shipping.address) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          message: 'Shipping address is required' 
+          message: 'Shipping address is required'
         },
         { status: 400 }
       );
     }
 
-    // Create mock order
-    const newOrder = {
-      id: 'order_' + Date.now(),
-      orderNumber: 'QG-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
-      status: 'processing',
-      total: orderData.total || 0,
-      createdAt: new Date().toISOString(),
-      items: orderData.items,
-      shipping: orderData.shipping,
-      payment: orderData.payment || {},
-      userId: userPayload.userId
-    };
+    // Calculate reward points (1 point per dollar spent)
+    const rewardPointsEarned = Math.floor(orderData.total || 0);
 
-    console.log('✅ Order created:', newOrder.orderNumber);
+    // Create real order in database
+    const newOrder = await Order.create({
+      userId: new mongoose.Types.ObjectId(userPayload.userId as string),
+      items: orderData.items.map((item: any) => ({
+        productId: item.productId || item.id,
+        productSlug: item.productSlug || item.slug || '',
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+        variant: item.variant
+      })),
+      subtotal: orderData.subtotal || orderData.total || 0,
+      shippingCost: orderData.shippingCost || orderData.shipping?.cost || 0,
+      tax: orderData.tax || 0,
+      total: orderData.total,
+      status: 'pending',
+      shipping: {
+        address: {
+          name: orderData.shipping.name || `${orderData.shipping.firstName || ''} ${orderData.shipping.lastName || ''}`.trim(),
+          street: orderData.shipping.address.street || orderData.shipping.address,
+          city: orderData.shipping.address.city || orderData.shipping.city,
+          state: orderData.shipping.address.state || orderData.shipping.state,
+          zipCode: orderData.shipping.address.zipCode || orderData.shipping.zipCode,
+          country: orderData.shipping.address.country || orderData.shipping.country || 'US',
+          phone: orderData.shipping.phone
+        },
+        method: orderData.shipping.method || 'Standard Shipping',
+        cost: orderData.shippingCost || orderData.shipping?.cost || 0
+      },
+      payment: {
+        method: orderData.payment?.method || 'credit_card',
+        status: orderData.payment?.status || 'completed',
+        transactionId: orderData.payment?.transactionId,
+        paidAt: orderData.payment?.paidAt ? new Date(orderData.payment.paidAt) : new Date()
+      },
+      rewardPointsEarned,
+      notes: orderData.notes
+    });
+
+    // Award reward points to user if they have a loyalty system
+    try {
+      const { User } = await import('@/models/User');
+      const user = await User.findById(userPayload.userId);
+      if (user && user.addRewardPoints) {
+        await user.addRewardPoints(rewardPointsEarned);
+        console.log(`✅ Awarded ${rewardPointsEarned} points to user`);
+      }
+    } catch (error) {
+      console.error('⚠️ Failed to award points:', error);
+      // Don't fail the order if points award fails
+    }
+
+    console.log('✅ Order created in database:', newOrder.orderNumber);
 
     return NextResponse.json({
       success: true,
-      order: newOrder,
+      order: {
+        id: newOrder._id.toString(),
+        orderNumber: newOrder.orderNumber,
+        status: newOrder.status,
+        total: newOrder.total,
+        createdAt: newOrder.createdAt,
+        rewardPointsEarned
+      },
       message: 'Order created successfully'
     }, { status: 201 });
 
   } catch (error) {
     console.error('❌ Create order error:', error);
-    
+
     if (error instanceof Error && (error.message.includes('authorization') || error.message.includes('Invalid token'))) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          message: 'Authentication required' 
+          message: 'Authentication required'
         },
         { status: 401 }
       );
     }
 
     return NextResponse.json(
-      { 
+      {
         success: false,
-        message: 'Internal server error' 
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
