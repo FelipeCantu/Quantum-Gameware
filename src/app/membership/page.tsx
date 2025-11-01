@@ -1,11 +1,24 @@
 // src/app/membership/page.tsx - Membership Tiers & Rewards Program
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 
 export default function MembershipPage() {
+  const router = useRouter();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
   const tiers = [
     {
       name: 'Bronze',
@@ -71,7 +84,67 @@ export default function MembershipPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
       <Header />
 
-      <main className="pt-24 pb-16">
+      {/* Account Navigation */}
+      <div className="-mx-4 sticky top-20 z-30 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-24 pb-3">
+        <div className="px-4 max-w-7xl mx-auto">
+          {/* Scrollable container with custom scrollbar */}
+          <div
+            className="overflow-x-auto overflow-y-hidden scroll-smooth"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            <nav className="flex gap-2 min-w-max pb-2">
+              <Link
+                href="/account"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+              >
+                <span className="text-base">📊</span>
+                <span>Overview</span>
+              </Link>
+              <Link
+                href="/orders"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+              >
+                <span className="text-base">📦</span>
+                <span>Orders</span>
+              </Link>
+              <Link
+                href="/wishlist"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+              >
+                <span className="text-base">❤️</span>
+                <span>Wishlist</span>
+              </Link>
+              <Link
+                href="/membership"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-blue-600 shadow-lg scale-105 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+              >
+                <span className="text-base">⭐</span>
+                <span>Membership</span>
+              </Link>
+              <Link
+                href="/settings"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+              >
+                <span className="text-base">⚙️</span>
+                <span>Settings</span>
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 text-red-200 hover:bg-red-500/30 border border-red-500/30 transition-all duration-300 whitespace-nowrap font-medium text-sm"
+              >
+                <span className="text-base">🚪</span>
+                <span>Sign Out</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <main className="pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
           <div className="text-center mb-12">
