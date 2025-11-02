@@ -720,7 +720,7 @@ function AccountPageContent() {
           </div>
 
           {/* Mobile Horizontal Scrolling Navigation */}
-          <div className="lg:hidden mb-6 -mx-4 sticky top-20 z-30 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 py-3">
+          <div className="lg:hidden mb-6 -mx-4 sticky top-20 z-[60] bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 py-3">
             <div className="px-4">
               {/* Scrollable container with custom scrollbar */}
               <div
