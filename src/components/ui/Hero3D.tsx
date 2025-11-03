@@ -1,11 +1,11 @@
 "use client";
 
 import Link from 'next/link';
-import React, { useState, useEffect, CSSProperties, Suspense, useRef } from 'react';
+import React, { useState, useEffect, CSSProperties, Suspense, useRef, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { 
-  OrbitControls, 
-  useGLTF, 
+import {
+  OrbitControls,
+  useGLTF,
   Float,
   Environment,
   ContactShadows,
@@ -139,6 +139,28 @@ export default function Hero() {
   const [animationStarted, setAnimationStarted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+
+  // Generate random values once for bubbles to avoid hydration mismatch
+  const bubbleStyles = useMemo(() => {
+    return Array.from({ length: 10 }, () => ({
+      left: `${Math.random() * 100}%`,
+      duration: `${6 + Math.random() * 4}s`,
+      delay: `${Math.random() * 5}s`,
+      drift: `${(Math.random() - 0.5) * 100}px`,
+    }));
+  }, []);
+
+  // Generate random values once for scatter particles to avoid hydration mismatch
+  const particleStyles = useMemo(() => {
+    return Array.from({ length: 8 }, (_, i) => ({
+      left: `${20 + (i * 7)}%`,
+      top: `${30 + (i * 5)}%`,
+      randomX: `${(Math.random() - 0.5) * 400}px`,
+      randomY: `${(Math.random() - 0.5) * 400}px`,
+      transitionDelay: `${200 + i * 50}ms`,
+      animationDelay: `${i * 100}ms`,
+    }));
+  }, []);
 
   // Detect screen size for responsive 3D rendering
   useEffect(() => {
@@ -297,15 +319,15 @@ export default function Hero() {
           {/* Underwater effect - floating bubbles */}
           <div className="absolute inset-0 overflow-hidden">
             {/* Small bubbles */}
-            {[...Array(10)].map((_, i) => (
+            {bubbleStyles.map((bubble, i) => (
               <div
                 key={`bubble-${i}`}
                 className="absolute w-2 h-2 bg-white/20 rounded-full animate-bubble"
                 style={{
-                  left: `${Math.random() * 100}%`,
-                  '--duration': `${6 + Math.random() * 4}s`,
-                  '--delay': `${Math.random() * 5}s`,
-                  '--random-drift': `${(Math.random() - 0.5) * 100}px`,
+                  left: bubble.left,
+                  '--duration': bubble.duration,
+                  '--delay': bubble.delay,
+                  '--random-drift': bubble.drift,
                 } as CustomCSSProperties}
               />
             ))}
@@ -394,10 +416,10 @@ export default function Hero() {
         </div>
 
         {/* Opening Logo Animation Overlay */}
-        <div 
-          className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-1200 ${
-            animationStarted 
-              ? 'translate-y-full scale-110 opacity-0' 
+        <div
+          className={`fixed inset-0 z-[150] flex items-center justify-center transition-all duration-1200 ${
+            animationStarted
+              ? 'translate-y-full scale-110 opacity-0'
               : 'translate-y-0 scale-100 opacity-100'
           }`}
           style={{ 
@@ -410,19 +432,19 @@ export default function Hero() {
         >
           {/* Animated particles that scatter on exit */}
           <div className="absolute inset-0 overflow-hidden">
-            {[...Array(8)].map((_, i) => (
+            {particleStyles.map((particle, i) => (
               <div
                 key={i}
                 className={`absolute w-2 h-2 bg-white rounded-full transition-all duration-1000 ${
                   animationStarted ? 'animate-scatter' : 'opacity-0'
                 }`}
                 style={{
-                  left: `${20 + (i * 7)}%`,
-                  top: `${30 + (i * 5)}%`,
-                  '--random-x': `${(Math.random() - 0.5) * 400}px`,
-                  '--random-y': `${(Math.random() - 0.5) * 400}px`,
-                  transitionDelay: `${200 + i * 50}ms`,
-                  animationDelay: `${i * 100}ms`
+                  left: particle.left,
+                  top: particle.top,
+                  '--random-x': particle.randomX,
+                  '--random-y': particle.randomY,
+                  transitionDelay: particle.transitionDelay,
+                  animationDelay: particle.animationDelay
                 } as CustomCSSProperties}
               />
             ))}

@@ -1,6 +1,6 @@
 // src/app/categories/[category]/page.tsx
 import { getProducts } from '@/sanity/lib/queries';
-import ProductGrid from '@/components/ProductGrid';
+import CategoryProducts from '@/components/CategoryProducts';
 import Link from 'next/link';
 import { getCategoryBySlug, getAllCategorySlugs } from '@/data/categories';
 
@@ -192,45 +192,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {/* Products Section - Same styling as home page */}
       <section className="bg-gray-50 py-20">
         <div className="container mx-auto px-4">
-          {/* Filter and Sort Options - Updated to match Explore More Categories */}
-          {categoryProducts.length > 0 && (
-            <div className="relative bg-gradient-to-br from-white/80 to-blue-50/80 backdrop-blur-lg rounded-3xl border border-blue-300/50 p-6 mb-8 shadow-lg">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-              <div className="absolute bottom-0 left-0 w-20 h-20 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-              <div className="relative z-10">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <span className="text-gray-700 font-medium">Sort by:</span>
-                    <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/70 text-gray-700">
-                      <option value="newest">Newest First</option>
-                      <option value="price-low">Price: Low to High</option>
-                      <option value="price-high">Price: High to Low</option>
-                      <option value="name">Name A-Z</option>
-                      <option value="rating">Highest Rated</option>
-                    </select>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <span className="text-gray-700 font-medium">View:</span>
-                    <div className="flex items-center bg-gray-100/70 backdrop-blur-sm rounded-lg p-1">
-                      <button className="p-2 rounded-md bg-white/80 shadow-sm">
-                        <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                        </svg>
-                      </button>
-                      <button className="p-2 rounded-md">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Products Grid */}
+          {/* Products with Filters and Sorting */}
           {categoryProducts.length === 0 ? (
             <div className="text-center py-20">
               <div className="bg-white rounded-3xl p-12 max-w-md mx-auto border border-gray-100 shadow-sm">
@@ -248,17 +210,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </div>
             </div>
           ) : (
-            <div className="mb-16">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl font-bold text-gray-900">
-                  All {categoryData.name}
-                </h2>
-                <span className="text-gray-600">
-                  {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''} found
-                </span>
-              </div>
-              <ProductGrid products={categoryProducts} />
-            </div>
+            <CategoryProducts products={categoryProducts} categoryName={categoryData.name} />
           )}
 
           {/* Related Categories */}
