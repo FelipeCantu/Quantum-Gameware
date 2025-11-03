@@ -137,8 +137,8 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
 
         {/* List View */}
         {viewMode === 'list' && (
-          <div className="space-y-6">
-            {sortedProducts.map((product) => {
+          <div className="space-y-8">
+            {sortedProducts.map((product, index) => {
               const inWishlist = isInWishlist(product.slug);
               const discountPercentage = product.originalPrice && product.originalPrice > product.price
                 ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -184,39 +184,50 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
               return (
                 <div
                   key={product._id}
-                  className="group relative flex flex-col sm:flex-row gap-6 bg-white rounded-2xl p-6 border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300"
+                  className="group relative flex flex-col sm:flex-row gap-8 bg-gradient-to-br from-white via-white to-blue-50/30 rounded-3xl p-8 border border-gray-200/50 hover:border-blue-300/50 shadow-md hover:shadow-2xl transition-all duration-500 animate-fade-in backdrop-blur-sm"
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
+                  {/* Decorative gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
                   {/* Product Image */}
                   <Link
                     href={`/products/${encodeURIComponent(product.slug)}`}
-                    className="relative w-full sm:w-48 h-48 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden"
+                    className="relative w-full sm:w-64 h-64 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-2xl transition-all duration-500 z-10 ring-2 ring-gray-100 group-hover:ring-blue-200"
                   >
                     {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, 192px"
-                      />
+                      <>
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700"
+                          sizes="(max-width: 768px) 100vw, 256px"
+                        />
+                        {/* Image overlay gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                        <div className="text-center">
+                          <svg className="w-20 h-20 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-sm font-medium">No image</span>
+                        </div>
                       </div>
                     )}
 
                     {/* Badges */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
                       {product.isNew && (
-                        <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">
-                          NEW
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold rounded-full shadow-xl backdrop-blur-sm border border-white/20 animate-pulse">
+                          ✨ NEW
                         </span>
                       )}
                       {discountPercentage > 0 && (
-                        <span className="px-2.5 py-1 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg">
-                          -{discountPercentage}%
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold rounded-full shadow-xl backdrop-blur-sm border border-white/20">
+                          🔥 -{discountPercentage}%
                         </span>
                       )}
                     </div>
@@ -232,19 +243,22 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                   </Link>
 
                   {/* Product Details */}
-                  <div className="flex-1 flex flex-col justify-between">
+                  <div className="flex-1 flex flex-col justify-between relative z-10">
                     <div>
                       {/* Brand and Category */}
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <span className="font-medium">{product.brand}</span>
-                        <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                        <span>{product.category}</span>
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="px-3 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 text-blue-700 rounded-lg text-sm font-semibold shadow-sm">
+                          {product.brand}
+                        </span>
+                        <span className="px-3 py-1 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200/50 text-purple-700 rounded-lg text-sm font-medium shadow-sm">
+                          {product.category}
+                        </span>
                       </div>
 
-                      {/* Product Name and Price */}
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <Link href={`/products/${encodeURIComponent(product.slug)}`}>
-                          <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {/* Product Name and Wishlist */}
+                      <div className="flex items-start justify-between gap-4 mb-5">
+                        <Link href={`/products/${encodeURIComponent(product.slug)}`} className="flex-1">
+                          <h3 className="text-2xl font-bold text-gray-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300 leading-tight">
                             {product.name}
                           </h3>
                         </Link>
@@ -252,16 +266,16 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                         {/* Wishlist Button */}
                         <button
                           onClick={handleWishlistToggle}
-                          className={`p-2.5 backdrop-blur-sm rounded-full transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0 ${
+                          className={`p-3 backdrop-blur-sm rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex-shrink-0 hover:scale-110 ${
                             inWishlist
-                              ? 'bg-red-500 hover:bg-red-600'
-                              : 'bg-white hover:bg-gray-50 border border-gray-200'
+                              ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700'
+                              : 'bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-red-300'
                           }`}
                           aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
                         >
                           <svg
-                            className={`w-5 h-5 transition-colors ${
-                              inWishlist ? 'text-white' : 'text-gray-600'
+                            className={`w-6 h-6 transition-all duration-300 ${
+                              inWishlist ? 'text-white' : 'text-gray-600 group-hover:text-red-500'
                             }`}
                             fill={inWishlist ? 'currentColor' : 'none'}
                             stroke="currentColor"
@@ -273,63 +287,69 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                       </div>
 
                       {/* Price */}
-                      <div className="mb-4">
+                      <div className="mb-5 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200/50">
                         {product.originalPrice && product.originalPrice > product.price ? (
-                          <div className="flex items-baseline gap-2 flex-wrap">
-                            <span className="text-3xl font-bold text-gray-900">${product.price?.toFixed(2)}</span>
-                            <span className="text-lg text-gray-500 line-through">${product.originalPrice?.toFixed(2)}</span>
-                            <span className="text-sm text-green-700 font-semibold">
-                              Save ${(product.originalPrice - product.price).toFixed(2)}
+                          <div className="flex items-baseline gap-3 flex-wrap">
+                            <span className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                              ${product.price?.toFixed(2)}
+                            </span>
+                            <span className="text-xl text-gray-400 line-through font-medium">${product.originalPrice?.toFixed(2)}</span>
+                            <span className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold rounded-full shadow-md">
+                              💰 Save ${(product.originalPrice - product.price).toFixed(2)}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-3xl font-bold text-gray-900">${product.price?.toFixed(2)}</span>
+                          <span className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            ${product.price?.toFixed(2)}
+                          </span>
                         )}
                       </div>
 
                       {product.description && (
-                        <p className="text-gray-600 mb-4 line-clamp-2">
+                        <p className="text-gray-700 text-lg mb-5 leading-relaxed line-clamp-2">
                           {product.description}
                         </p>
                       )}
 
                       {/* Rating */}
                       {product.rating && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="flex text-yellow-500">
+                        <div className="flex items-center gap-3 mb-5 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200/50">
+                          <div className="flex text-2xl">
                             {[...Array(5)].map((_, i) => (
-                              <span key={i} className={i < Math.floor(product.rating || 0) ? 'text-yellow-500' : 'text-gray-300'}>
+                              <span key={i} className={`transition-all duration-300 ${i < Math.floor(product.rating || 0) ? 'text-yellow-500 drop-shadow-sm' : 'text-gray-300'}`}>
                                 ★
                               </span>
                             ))}
                           </div>
-                          <span className="text-sm text-gray-600">
-                            ({product.rating.toFixed(1)})
+                          <span className="text-base text-gray-700 font-semibold">
+                            {product.rating.toFixed(1)} / 5.0
                           </span>
                         </div>
                       )}
 
                       {/* Tags */}
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {product.inStock ? (
-                          <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-medium">
-                            In Stock
-                          </span>
+                          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-bold shadow-md">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                            ✓ In Stock
+                          </div>
                         ) : (
-                          <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm font-medium">
-                            Out of Stock
-                          </span>
+                          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl text-sm font-bold shadow-md">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                            ✗ Out of Stock
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="mt-6 pt-4 border-t border-gray-100 flex gap-3">
+                    {/* Action Button */}
+                    <div className="mt-6 pt-4 border-t border-gray-100">
                       <button
                         onClick={handleAddToCart}
                         disabled={!product.inStock}
                         className={`
-                          flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2
+                          w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2
                           ${product.inStock
                             ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-105'
                             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
@@ -352,16 +372,6 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                           </>
                         )}
                       </button>
-
-                      <Link
-                        href={`/products/${encodeURIComponent(product.slug)}`}
-                        className="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 flex items-center justify-center gap-2"
-                      >
-                        View Details
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
                     </div>
                   </div>
                 </div>
