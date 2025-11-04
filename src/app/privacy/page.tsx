@@ -37,7 +37,7 @@ export default function PrivacyPage() {
                 Your privacy is important to us. Learn how we collect, use, and protect your personal information.
               </p>
               <div className="mt-6 text-sm text-white/70">
-                Last updated: January 1, 2024
+                Last updated: November 3, 2025
               </div>
             </div>
           </div>
@@ -175,26 +175,44 @@ export default function PrivacyPage() {
               </section>
 
               <section className="mb-10">
-                <h2 className="text-2xl font-bold text-white mb-4">7. International Transfers</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">7. Data Retention</h2>
                 <div className="text-white/90 space-y-4">
-                  <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place for international transfers, including:</p>
+                  <p>We retain your personal information only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required by law. Our retention periods vary based on data type:</p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Account information: Retained while your account is active and for up to 3 years after account closure</li>
+                    <li>Order history and transaction data: Retained for 7 years for tax and legal compliance</li>
+                    <li>Marketing data: Retained until you opt out or for 2 years of inactivity</li>
+                    <li>Support communications: Retained for 3 years after resolution</li>
+                    <li>Analytics data: Aggregated and anonymized after 24 months</li>
+                  </ul>
+                  <p className="mt-4">When we no longer need your information, we securely delete or anonymize it in accordance with data protection best practices.</p>
+                </div>
+              </section>
+
+              <section className="mb-10">
+                <h2 className="text-2xl font-bold text-white mb-4">8. International Transfers</h2>
+                <div className="text-white/90 space-y-4">
+                  <p>Your information may be transferred to and processed in countries other than your own, including the United States and other regions where our service providers operate. We ensure appropriate safeguards are in place for international transfers, including:</p>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Adequacy decisions by relevant authorities</li>
-                    <li>Standard contractual clauses</li>
-                    <li>Certification schemes and codes of conduct</li>
+                    <li>Standard contractual clauses approved by the European Commission</li>
+                    <li>Certification schemes (EU-U.S. Data Privacy Framework)</li>
+                    <li>Binding corporate rules and codes of conduct</li>
                   </ul>
+                  <p className="mt-4">By using our services, you consent to the transfer of your information to countries that may have different data protection laws than your country of residence.</p>
                 </div>
               </section>
 
               <section className="mb-10">
-                <h2 className="text-2xl font-bold text-white mb-4">8. Children's Privacy</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">9. Children's Privacy</h2>
                 <div className="text-white/90 space-y-4">
-                  <p>Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information.</p>
+                  <p>Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information promptly.</p>
+                  <p className="mt-4">If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@quantumgameware.com so we can take appropriate action.</p>
                 </div>
               </section>
 
               <section className="mb-10">
-                <h2 className="text-2xl font-bold text-white mb-4">9. Changes to This Policy</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">10. Changes to This Policy</h2>
                 <div className="text-white/90 space-y-4">
                   <p>We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any material changes by:</p>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -207,7 +225,7 @@ export default function PrivacyPage() {
               </section>
 
               <section>
-                <h2 className="text-2xl font-bold text-white mb-4">10. Contact Us</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">11. Contact Us</h2>
                 <div className="text-white/90 space-y-4">
                   <p>If you have questions about this Privacy Policy or our data practices, please contact us:</p>
                   <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">

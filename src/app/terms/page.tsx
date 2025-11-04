@@ -37,7 +37,7 @@ export default function TermsPage() {
                 Please read these terms carefully before using our services. By using our website, you agree to these terms.
               </p>
               <div className="mt-6 text-sm text-white/70">
-                Last updated: January 1, 2024
+                Last updated: November 3, 2025
               </div>
             </div>
           </div>
@@ -132,14 +132,20 @@ export default function TermsPage() {
                 <div className="text-white/90 space-y-4">
                   <h3 className="text-xl font-semibold text-white">Shipping Policy</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
-                    <li>We ship to addresses within the United States and internationally</li>
-                    <li>Shipping costs are calculated at checkout</li>
+                    <li>We ship to addresses within the United States and internationally to 200+ countries</li>
+                    <li>Free standard shipping on all orders</li>
+                    <li>Processing time: 1-3 business days (up to 5 days during peak periods)</li>
+                    <li>Standard delivery: 5-15 business days (US), 10-25 business days (International)</li>
                     <li>Delivery times are estimates and not guaranteed</li>
-                    <li>Risk of loss transfers to you upon delivery</li>
+                    <li>Tracking information provided once order ships</li>
+                    <li>Risk of loss and title transfer to you upon delivery</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold text-white mt-4">International Shipping</h3>
-                  <p>International customers are responsible for all customs duties, taxes, and fees. Delivery times for international orders may vary due to customs processing.</p>
+                  <p>International customers are responsible for all customs duties, taxes, import fees, and clearance charges. These fees are not included in your order total and must be paid upon delivery. Delivery times may vary significantly due to customs processing, which is beyond our control.</p>
+
+                  <h3 className="text-xl font-semibold text-white mt-4">Shipping Address</h3>
+                  <p>You are responsible for providing accurate shipping information. We cannot be held responsible for orders shipped to incorrect addresses provided by the customer. Address changes after order placement may not be possible once processing has begun.</p>
                 </div>
               </section>
 
@@ -147,23 +153,31 @@ export default function TermsPage() {
                 <h2 className="text-2xl font-bold text-white mb-4">7. Returns and Refunds</h2>
                 <div className="text-white/90 space-y-4">
                   <h3 className="text-xl font-semibold text-white">Return Policy</h3>
-                  <p>We offer a 30-day return policy for most items. To be eligible for a return:</p>
+                  <p>We offer a 30-day return policy from the delivery date for most items. To be eligible for a return:</p>
                   <ul className="list-disc list-inside space-y-2 ml-4">
-                    <li>Items must be unused and in original condition</li>
-                    <li>Original packaging and accessories must be included</li>
-                    <li>Return authorization must be obtained from customer service</li>
-                    <li>Return shipping costs are the customer's responsibility</li>
+                    <li>Items must be unused, unworn, and in original condition with all tags attached</li>
+                    <li>All original packaging, accessories, manuals, and cables must be included</li>
+                    <li>Return must be initiated within 30 days of delivery</li>
+                    <li>Valid proof of purchase required</li>
+                    <li>Items must pass inspection upon return</li>
+                    <li>Customer is responsible for return shipping costs unless item is defective or incorrect</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold text-white mt-4">Refund Process</h3>
-                  <p>Refunds will be processed within 5-10 business days after we receive and inspect the returned item. Refunds will be issued to the original payment method.</p>
+                  <p>Refunds will be processed within 5-10 business days after we receive and inspect the returned item. Refunds will be issued to the original payment method. Please allow an additional 3-5 business days for your financial institution to process the refund.</p>
+                  <p className="mt-2">Refund amount includes the product price. Original shipping fees are non-refundable unless the item was defective or we made an error with your order.</p>
 
                   <h3 className="text-xl font-semibold text-white mt-4">Non-Returnable Items</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Customized or personalized products</li>
                     <li>Software products or digital downloads</li>
-                    <li>Items damaged by misuse or normal wear</li>
+                    <li>Items damaged by misuse, abuse, or normal wear and tear</li>
+                    <li>Items without original packaging or missing components</li>
+                    <li>Clearance or final sale items (when indicated at time of purchase)</li>
                   </ul>
+
+                  <h3 className="text-xl font-semibold text-white mt-4">Damaged or Defective Items</h3>
+                  <p>If you receive a damaged or defective item, contact us within 48 hours of delivery with photos. We will provide a prepaid return label and process a replacement or full refund including original shipping costs.</p>
                 </div>
               </section>
 
@@ -230,7 +244,8 @@ export default function TermsPage() {
               <section className="mb-10">
                 <h2 className="text-2xl font-bold text-white mb-4">14. Governing Law</h2>
                 <div className="text-white/90 space-y-4">
-                  <p>These Terms shall be interpreted and governed by the laws of the State of [Your State], without regard to conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.</p>
+                  <p>These Terms shall be interpreted and governed by the laws of the United States, without regard to conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.</p>
+                  <p className="mt-4">Any disputes arising out of or relating to these Terms or your use of our Service shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association, except where prohibited by law. You agree to waive your right to participate in class action lawsuits or class-wide arbitrations.</p>
                 </div>
               </section>
 

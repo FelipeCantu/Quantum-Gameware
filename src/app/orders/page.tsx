@@ -6,6 +6,9 @@ import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Link from 'next/link';
 import Image from 'next/image';
+import ReturnRequestForm from '@/components/ReturnRequestForm';
+import { ReturnService } from '@/services/returnService';
+import { Order as OrderType } from '@/services/orderService';
 
 interface Order {
   id: string;
@@ -34,11 +37,14 @@ function OrdersPageContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [returnOrderId, setReturnOrderId] = useState<string | null>(null);
+  const [showReturnSuccess, setShowReturnSuccess] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
       // Only fetch if user is authenticated
       if (!isAuthenticated || !user) {
+        console.log('👤 User not authenticated yet');
         setLoading(false);
         return;
       }
@@ -46,13 +52,13 @@ function OrdersPageContent() {
       try {
         const token = localStorage.getItem('authToken');
         if (!token) {
-          console.log('No auth token found');
+          console.log('❌ No auth token found');
           setError('Authentication token not found');
           setLoading(false);
           return;
         }
 
-        console.log('Fetching orders for user:', user.email);
+        console.log('📦 Fetching orders for user:', user.email);
         const response = await fetch('/api/orders', {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -60,17 +66,19 @@ function OrdersPageContent() {
           },
         });
 
+        console.log('📡 Orders API response status:', response.status);
+        const data = await response.json();
+        console.log('📊 Orders API response data:', data);
+
         if (response.ok) {
-          const data = await response.json();
-          console.log('Orders fetched successfully:', data);
+          console.log(`✅ Orders fetched successfully: ${data.orders?.length || 0} orders`);
           setOrders(data.orders || []);
         } else {
-          console.error('Failed to fetch orders:', response.status, response.statusText);
-          const errorText = await response.text();
-          setError(`Failed to load orders (${response.status}): ${errorText}`);
+          console.error('❌ Failed to fetch orders:', response.status, data);
+          setError(`Failed to load orders: ${data.message || data.error || 'Unknown error'}`);
         }
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('❌ Error fetching orders:', error);
         setError('Network error while loading orders');
       } finally {
         setLoading(false);
@@ -101,6 +109,28 @@ function OrdersPageContent() {
       default: return <span className="text-lg">📋</span>;
     }
   };
+
+  const canRequestReturn = (order: Order): boolean => {
+    // Can only return delivered orders
+    if (order.status !== 'delivered') return false;
+
+    // Check if within 30-day return window
+    const orderDate = new Date(order.createdAt);
+    return ReturnService.canReturnOrder(orderDate);
+  };
+
+  const hasExistingReturn = (orderId: string): boolean => {
+    const returns = ReturnService.getReturnsByOrderId(orderId);
+    return returns.some(r => !['cancelled', 'completed'].includes(r.status));
+  };
+
+  const handleReturnSuccess = () => {
+    setReturnOrderId(null);
+    setShowReturnSuccess(true);
+    setTimeout(() => setShowReturnSuccess(false), 5000);
+  };
+
+  const selectedOrder = orders.find(o => o.id === returnOrderId);
 
   if (loading) {
     return (
@@ -246,6 +276,22 @@ function OrdersPageContent() {
                         Track Package
                       </Link>
                     )}
+                    {canRequestReturn(order) && !hasExistingReturn(order.id) && (
+                      <button
+                        onClick={() => setReturnOrderId(order.id)}
+                        className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl font-medium transition-all duration-300 text-center flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                        Request Return
+                      </button>
+                    )}
+                    {hasExistingReturn(order.id) && (
+                      <div className="px-6 py-3 bg-yellow-500/20 border border-yellow-400/30 text-yellow-300 rounded-xl font-medium text-center">
+                        Return Pending
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -339,6 +385,57 @@ function OrdersPageContent() {
             </Link>
           </div>
         </div>
+
+        {/* Return Request Form Modal */}
+        {returnOrderId && selectedOrder && (
+          <ReturnRequestForm
+            order={{
+              ...selectedOrder,
+              shipping: {
+                firstName: '',
+                lastName: '',
+                email: user?.email || '',
+                phone: '',
+                address: selectedOrder.shipping.address,
+                apartment: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                country: '',
+              },
+              payment: {
+                last4: '',
+                cardType: '',
+                transactionId: '',
+              },
+              totals: {
+                subtotal: selectedOrder.total,
+                tax: 0,
+                shipping: selectedOrder.shipping.cost,
+                total: selectedOrder.total,
+              },
+              createdAt: new Date(selectedOrder.createdAt),
+              estimatedDelivery: new Date(),
+            }}
+            onSuccess={handleReturnSuccess}
+            onCancel={() => setReturnOrderId(null)}
+          />
+        )}
+
+        {/* Success Message */}
+        {showReturnSuccess && (
+          <div className="fixed bottom-8 right-8 z-50 animate-slide-up">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="font-semibold">Return Request Submitted!</p>
+                <p className="text-sm text-green-100">We'll review your request and send you an email shortly.</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

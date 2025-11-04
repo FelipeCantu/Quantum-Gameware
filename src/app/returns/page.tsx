@@ -34,7 +34,7 @@ export default function ReturnsPage() {
                 Returns & Exchanges
               </h1>
               <p className="text-xl text-white/80 max-w-3xl mx-auto">
-                Not completely satisfied? We offer hassle-free returns and exchanges within 30 days of purchase.
+                Not completely satisfied? We offer hassle-free returns within 30 days of delivery for most items.
               </p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function ReturnsPage() {
                   4
                 </div>
                 <h3 className="font-semibold text-white mb-2">Get Your Refund</h3>
-                <p className="text-white/80 text-sm">Receive your refund within 5-7 business days of our receipt.</p>
+                <p className="text-white/80 text-sm">Refunds processed within 5-10 business days after we receive your return.</p>
               </div>
             </div>
 
@@ -120,37 +120,43 @@ export default function ReturnsPage() {
           {/* Return Policy Details */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
-              <h2 className="text-2xl font-bold text-white mb-6">✅ Eligible Items</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">✅ Return Eligibility Requirements</h2>
               <ul className="space-y-3 text-white/90">
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Items in original, unused condition
+                  Items must be unused and in original condition with all tags attached
                 </li>
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  All original packaging and accessories included
+                  All original packaging, accessories, manuals, and cables must be included
                 </li>
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Gaming peripherals (keyboards, mice, headsets)
+                  Return initiated within 30 days of delivery date
                 </li>
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Gaming chairs and furniture
+                  Valid proof of purchase (order number or receipt)
                 </li>
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Accessories and components
+                  Customer responsible for return shipping costs (unless item is defective or incorrect)
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-green-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Items must pass inspection upon return to our facility
                 </li>
               </ul>
             </div>
@@ -257,7 +263,7 @@ export default function ReturnsPage() {
                   </svg>
                 </div>
                 <h3 className="font-semibold text-white mb-2">Processing Time</h3>
-                <p className="text-white/80 text-sm">5-7 business days after we receive your return</p>
+                <p className="text-white/80 text-sm">5-10 business days after we receive and inspect your return</p>
               </div>
 
               <div className="text-center">
@@ -267,7 +273,7 @@ export default function ReturnsPage() {
                   </svg>
                 </div>
                 <h3 className="font-semibold text-white mb-2">Refund Method</h3>
-                <p className="text-white/80 text-sm">Back to your original payment method</p>
+                <p className="text-white/80 text-sm">Issued to your original payment method (allow 3-5 additional business days for bank processing)</p>
               </div>
 
               <div className="text-center">
@@ -276,8 +282,8 @@ export default function ReturnsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-white mb-2">Full Refund</h3>
-                <p className="text-white/80 text-sm">100% of purchase price (excluding shipping)</p>
+                <h3 className="font-semibold text-white mb-2">Refund Amount</h3>
+                <p className="text-white/80 text-sm">Product price refunded. Original shipping fees are non-refundable unless the item is defective</p>
               </div>
             </div>
           </div>

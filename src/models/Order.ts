@@ -46,7 +46,7 @@ export interface IOrder extends Document {
   shippingCost: number;
   tax: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   shipping: ShippingInfo;
   payment: PaymentInfo;
   notes?: string;
@@ -112,9 +112,9 @@ const orderSchema = new Schema<IOrder>(
     },
     orderNumber: {
       type: String,
-      required: true,
       unique: true,
       index: true
+      // Note: Not required here because it's auto-generated in pre-save hook
     },
     items: {
       type: [orderItemSchema],
@@ -133,7 +133,7 @@ const orderSchema = new Schema<IOrder>(
     status: {
       type: String,
       required: true,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
+      enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
       default: 'pending',
       index: true
     },
@@ -157,7 +157,7 @@ const orderSchema = new Schema<IOrder>(
 
 // Index for efficient querying
 orderSchema.index({ userId: 1, createdAt: -1 });
-orderSchema.index({ orderNumber: 1 });
+// Note: orderNumber index is already defined in the schema with "index: true"
 orderSchema.index({ 'payment.status': 1 });
 
 // Pre-save middleware to generate order number if not exists

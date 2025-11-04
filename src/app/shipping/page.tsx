@@ -72,19 +72,25 @@ export default function ShippingPage() {
                       <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      3-7 business days
+                      5-15 business days delivery
                     </li>
                     <li className="flex items-center">
                       <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Full package tracking
+                      Processing: 1-3 business days
                     </li>
                     <li className="flex items-center">
                       <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Signature delivery available
+                      Full package tracking included
+                    </li>
+                    <li className="flex items-center">
+                      <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Free on all orders
                     </li>
                   </ul>
                 </div>
@@ -96,39 +102,26 @@ export default function ShippingPage() {
                       <svg className="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      1-2 business days - $15.99
+                      7-12 business days - Pricing varies
                     </li>
                     <li className="flex items-center">
                       <svg className="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      Priority handling
+                      Priority handling & faster transit
                     </li>
                     <li className="flex items-center">
                       <svg className="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      Guaranteed delivery time
+                      Full tracking & insurance
                     </li>
                   </ul>
                 </div>
 
-                <div>
-                  <h4 className="font-semibold text-white mb-3">Overnight Shipping</h4>
-                  <ul className="space-y-2 text-white/80">
-                    <li className="flex items-center">
-                      <svg className="w-4 h-4 text-purple-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Next business day - $24.99
-                    </li>
-                    <li className="flex items-center">
-                      <svg className="w-4 h-4 text-purple-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Order by 2 PM EST
-                    </li>
-                  </ul>
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                  <h5 className="font-semibold text-white mb-2">Processing Times</h5>
+                  <p className="text-white/80 text-sm">Orders are processed within 1-3 business days. During peak seasons and promotional periods, processing may take longer. You'll receive tracking information once your order ships.</p>
                 </div>
               </div>
             </div>
@@ -152,7 +145,13 @@ export default function ShippingPage() {
                       <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      7-14 business days
+                      10-25 business days delivery
+                    </li>
+                    <li className="flex items-center">
+                      <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Processing: 1-3 business days
                     </li>
                     <li className="flex items-center">
                       <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,7 +163,7 @@ export default function ShippingPage() {
                       <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Full tracking included
+                      Tracking included
                     </li>
                   </ul>
                 </div>
@@ -176,20 +175,27 @@ export default function ShippingPage() {
                       <svg className="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      3-7 business days - $29.99
+                      7-15 business days - Pricing varies
                     </li>
                     <li className="flex items-center">
                       <svg className="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      Priority customs processing
+                      Faster processing & transit
+                    </li>
+                    <li className="flex items-center">
+                      <svg className="w-4 h-4 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Priority customs handling
                     </li>
                   </ul>
                 </div>
 
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                  <h5 className="font-semibold text-white mb-2">📋 Important Note</h5>
-                  <p className="text-white/80 text-sm">International customers are responsible for customs duties and taxes. Delivery times may vary due to customs processing.</p>
+                  <h5 className="font-semibold text-white mb-2">Important Customs Information</h5>
+                  <p className="text-white/80 text-sm mb-2">International customers are responsible for all customs duties, taxes, and import fees imposed by your country. These charges are not included in your order total and must be paid upon delivery.</p>
+                  <p className="text-white/80 text-sm">Delivery times may vary based on customs processing and local carrier efficiency. We cannot control or expedite customs clearance.</p>
                 </div>
               </div>
             </div>
@@ -260,34 +266,34 @@ export default function ShippingPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-white mb-2">When will my order ship?</h3>
-                  <p className="text-white/80 text-sm">Orders typically ship within 1-2 business days. You'll receive tracking information once your order is on its way.</p>
+                  <p className="text-white/80 text-sm">Orders are processed within 1-3 business days. During peak seasons and promotional periods, processing may take up to 5 business days. You'll receive tracking information via email once your order ships.</p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-white mb-2">Can I change my shipping address?</h3>
-                  <p className="text-white/80 text-sm">Address changes are possible if your order hasn't shipped yet. Contact us immediately at support@quantumgameware.com.</p>
+                  <p className="text-white/80 text-sm">Address changes are possible only if your order hasn't been processed yet. Contact us immediately at support@quantumgameware.com with your order number. Once shipped, we cannot modify the delivery address.</p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-white mb-2">Do you ship to PO Boxes?</h3>
-                  <p className="text-white/80 text-sm">Yes, we ship to PO Boxes within the United States using USPS. Some express options may not be available.</p>
+                  <h3 className="font-semibold text-white mb-2">Do you ship to PO Boxes and APO/FPO addresses?</h3>
+                  <p className="text-white/80 text-sm">Yes, we ship to PO Boxes and military addresses (APO/FPO) within the United States. Delivery times may be longer for these addresses.</p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-white mb-2">What about customs and duties?</h3>
-                  <p className="text-white/80 text-sm">International customers are responsible for all customs duties, taxes, and fees imposed by their country.</p>
+                  <p className="text-white/80 text-sm">International customers are responsible for all customs duties, taxes, and import fees imposed by their country. These charges are separate from your order total and must be paid to your local customs office or delivery carrier.</p>
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-white mb-2">Can I track my package?</h3>
-                  <p className="text-white/80 text-sm">Absolutely! You'll receive tracking information via email once your order ships. You can also track orders in your account.</p>
+                  <p className="text-white/80 text-sm">Yes! All orders include tracking. You'll receive an email with your tracking number once your order ships. You can also view tracking information in your account dashboard.</p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-white mb-2">What if my package is damaged?</h3>
-                  <p className="text-white/80 text-sm">All packages are insured. If your item arrives damaged, contact us within 48 hours for a replacement or refund.</p>
+                  <h3 className="font-semibold text-white mb-2">What if my package is lost or damaged?</h3>
+                  <p className="text-white/80 text-sm">All shipments are tracked and insured. If your package is lost in transit or arrives damaged, contact us within 48 hours with photos of any damage. We'll work with the carrier to resolve the issue and provide a replacement or refund.</p>
                 </div>
               </div>
             </div>

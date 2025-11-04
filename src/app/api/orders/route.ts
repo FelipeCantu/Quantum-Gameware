@@ -159,9 +159,12 @@ export async function POST(request: NextRequest) {
     // Calculate reward points (1 point per dollar spent)
     const rewardPointsEarned = Math.floor(orderData.total || 0);
 
+    const userId = new mongoose.Types.ObjectId(userPayload.userId as string);
+    console.log('👤 Creating order for userId:', userId.toString());
+
     // Create real order in database
     const newOrder = await Order.create({
-      userId: new mongoose.Types.ObjectId(userPayload.userId as string),
+      userId: userId,
       items: orderData.items.map((item: any) => ({
         productId: item.productId || item.id,
         productSlug: item.productSlug || item.slug || '',
@@ -175,7 +178,7 @@ export async function POST(request: NextRequest) {
       shippingCost: orderData.shippingCost || orderData.shipping?.cost || 0,
       tax: orderData.tax || 0,
       total: orderData.total,
-      status: 'pending',
+      status: 'confirmed',
       shipping: {
         address: {
           name: orderData.shipping.name || `${orderData.shipping.firstName || ''} ${orderData.shipping.lastName || ''}`.trim(),
@@ -199,6 +202,10 @@ export async function POST(request: NextRequest) {
       notes: orderData.notes
     });
 
+    console.log('✅ Order created in database:', newOrder.orderNumber);
+    console.log('📦 Order ID:', newOrder._id.toString());
+    console.log('👤 Order userId:', newOrder.userId.toString());
+
     // Award reward points to user if they have a loyalty system
     try {
       const { User } = await import('@/models/User');
@@ -211,8 +218,6 @@ export async function POST(request: NextRequest) {
       console.error('⚠️ Failed to award points:', error);
       // Don't fail the order if points award fails
     }
-
-    console.log('✅ Order created in database:', newOrder.orderNumber);
 
     return NextResponse.json({
       success: true,

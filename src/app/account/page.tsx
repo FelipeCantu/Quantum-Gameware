@@ -836,6 +836,13 @@ function AccountPageContent() {
                       <span className="font-medium">My Orders</span>
                     </Link>
                     <Link
+                      href="/returns-status"
+                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
+                    >
+                      <span className="text-lg">🔄</span>
+                      <span className="font-medium">My Returns</span>
+                    </Link>
+                    <Link
                       href="/wishlist"
                       className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
                     >
@@ -992,10 +999,10 @@ function AccountPageContent() {
                               {new Date(order.date).toLocaleDateString()} • {order.items} items
                             </div>
                             <Link
-                              href={`/orders/${order.id}`}
+                              href="/orders"
                               className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
                             >
-                              View Details
+                              View All Orders
                             </Link>
                           </div>
                         </div>

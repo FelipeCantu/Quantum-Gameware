@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import { type EmailOrder } from '@/services/emailService';
+import { EmailService, type EmailOrder } from '@/services/emailService';
 
 interface ShippingForm {
   firstName: string;
@@ -257,16 +257,133 @@ export default function CheckoutPage() {
         estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
       };
 
-      // Save order to localStorage
+      // Save order to database (for authenticated users) and localStorage (for all users)
+      let savedOrderId = order.id;
+
       try {
+        // Check if user is authenticated
+        const authToken = localStorage.getItem('authToken');
+
+        if (authToken) {
+          // User is authenticated - save to database
+          console.log('💾 Saving order to database for authenticated user...');
+
+          const orderData = {
+            items: items.map(item => ({
+              productId: item._id,
+              productSlug: item.slug || '',
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+              variant: item.variant || null
+            })),
+            subtotal: subtotal,
+            shippingCost: shipping,
+            tax: tax,
+            total: total,
+            shipping: {
+              firstName: shippingForm.firstName,
+              lastName: shippingForm.lastName,
+              name: `${shippingForm.firstName} ${shippingForm.lastName}`,
+              email: shippingForm.email,
+              phone: shippingForm.phone,
+              address: {
+                street: shippingForm.address,
+                city: shippingForm.city,
+                state: shippingForm.state,
+                zipCode: shippingForm.zipCode,
+                country: shippingForm.country
+              },
+              method: 'Standard Shipping',
+              cost: shipping
+            },
+            payment: {
+              method: paymentForm.paymentMethod === 'card' ? 'credit_card' : paymentForm.paymentMethod,
+              status: 'completed',
+              transactionId: transactionId,
+              paidAt: new Date().toISOString()
+            }
+          };
+
+          console.log('📤 Sending order data to API:', {
+            itemsCount: items.length,
+            total: total,
+            subtotal: subtotal,
+            tax: tax,
+            shipping: shipping,
+            hasAuth: !!authToken,
+            shippingAddress: {
+              city: shippingForm.city,
+              state: shippingForm.state,
+              country: shippingForm.country
+            }
+          });
+          console.log('📦 Full order data structure:', JSON.stringify(orderData, null, 2));
+
+          const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(orderData)
+          });
+
+          console.log('📡 API Response Status:', response.status);
+
+          // Clone the response so we can read it twice if needed
+          const responseClone = response.clone();
+
+          let result;
+          try {
+            result = await response.json();
+          } catch (jsonError) {
+            console.error('❌ Failed to parse API response as JSON:', jsonError);
+            try {
+              const textResponse = await responseClone.text();
+              console.error('📄 Raw response text:', textResponse);
+            } catch (textError) {
+              console.error('❌ Could not read response as text either');
+            }
+            throw new Error('Invalid API response');
+          }
+
+          console.log('📦 Order API response:', response.status, result);
+
+          if (response.ok) {
+            console.log('✅ Order saved to database:', result.order?.orderNumber);
+            // Use the database order ID for the success page
+            if (result.order && result.order.id) {
+              savedOrderId = result.order.id;
+              // Update local order with database ID
+              order.id = result.order.id;
+            }
+          } else {
+            console.error('❌ Failed to save order to database:', result);
+            console.error('❌ Error details:', {
+              status: response.status,
+              message: result.message,
+              error: result.error
+            });
+            console.warn('⚠️ Continuing with checkout using localStorage');
+          }
+        } else {
+          console.log('👤 Guest checkout - order saved to localStorage only');
+        }
+
+        // Always save to localStorage as backup
         const existingOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
         const updatedOrders = [order, ...existingOrders].slice(0, 50);
         localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
+
       } catch (storageError) {
         console.error('Failed to save order:', storageError);
+        // Continue with checkout even if save fails
       }
 
       // Send confirmation email
+      let emailSuccess = false;
       try {
         const emailOrder: EmailOrder = {
           id: order.id,
@@ -279,21 +396,23 @@ export default function CheckoutPage() {
           estimatedDelivery: order.estimatedDelivery
         };
 
-        const emailSuccess = await EmailService.sendOrderConfirmationEmail(emailOrder);
+        emailSuccess = await EmailService.sendOrderConfirmationEmail(emailOrder);
         setEmailSent(emailSuccess);
-        
+
         if (emailSuccess) {
-          console.log('✅ Order confirmation email sent successfully');
+          console.log('✅ Order confirmation email sent successfully from checkout');
         } else {
           console.warn('⚠️ Failed to send confirmation email, but order was processed');
         }
       } catch (emailError) {
         console.error('Email service error:', emailError);
+        emailSuccess = false;
       }
-      
-      // Clear cart and redirect to success page
+
+      // Clear cart and redirect to success page with email status
       clearCart();
-      router.push(`/cart/checkout/success?order=${order.id}`);
+      const emailParam = emailSuccess ? 'emailSent=true' : 'emailFailed=true';
+      router.push(`/cart/checkout/success?order=${savedOrderId}&${emailParam}`);
       
     } catch (error) {
       console.error('Payment failed:', error);

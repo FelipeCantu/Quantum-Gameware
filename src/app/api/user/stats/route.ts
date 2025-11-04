@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     const userId = new mongoose.Types.ObjectId(userPayload.userId as string);
+    console.log('🔍 Looking for orders with userId:', userId.toString());
 
     // Get user data with loyalty info
     const user = await User.findById(userId);
@@ -54,12 +55,19 @@ export async function GET(request: NextRequest) {
 
     // Get order statistics using the static method
     const orderStats = await Order.getUserStats(userId);
+    console.log('📊 Order stats from getUserStats:', orderStats);
 
     // Get recent orders
     const recentOrders = await Order.find({ userId })
       .sort({ createdAt: -1 })
       .limit(5)
       .lean();
+
+    console.log('📦 Found recent orders:', recentOrders.length);
+
+    // Also check total order count in database
+    const totalOrdersInDb = await Order.countDocuments({ userId });
+    console.log('🔢 Total orders in database for this user:', totalOrdersInDb);
 
     // Transform recent orders
     const transformedOrders = recentOrders.map(order => ({
