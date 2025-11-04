@@ -34,7 +34,7 @@ export default function Cart() {
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-[150] overflow-hidden">
       {/* Background overlay with blur */}
       <div 
         className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${

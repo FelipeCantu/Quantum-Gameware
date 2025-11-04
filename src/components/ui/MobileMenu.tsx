@@ -189,7 +189,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
   if (!mounted || !isMenuOpen) return null;
 
   const menuContent = (
-    <div className="fixed inset-0 z-[100] lg:hidden">
+    <div className="fixed inset-0 z-[200] lg:hidden">
       {/* Backdrop */}
       <div 
         className={`
