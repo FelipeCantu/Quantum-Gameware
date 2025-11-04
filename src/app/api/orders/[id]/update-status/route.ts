@@ -1,4 +1,4 @@
-// src/app/api/orders/[id]/route.ts
+// src/app/api/orders/[id]/update-status/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { connectDB } from '@/lib/mongodb';
@@ -27,14 +27,14 @@ async function verifyAuthToken(request: NextRequest) {
   }
 }
 
-// GET /api/orders/[id] - Get single order details
-export async function GET(
+// PATCH /api/orders/[id]/update-status - Update order status
+export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
-    console.log('📦 Fetching order details for ID:', id);
+    console.log('📦 Updating order status for ID:', id);
 
     if (!id) {
       return NextResponse.json(
@@ -47,10 +47,30 @@ export async function GET(
     const userPayload = await verifyAuthToken(request);
     console.log('✅ User authenticated:', userPayload.email);
 
+    // Get the new status from request body
+    const body = await request.json();
+    const { status } = body;
+
+    if (!status) {
+      return NextResponse.json(
+        { success: false, message: 'Status is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate status value
+    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid status value' },
+        { status: 400 }
+      );
+    }
+
     // Connect to database
     await connectDB();
 
-    // Find order by ID or order number
+    // Find and update order
     let order;
 
     // Check if it's a MongoDB ObjectId
@@ -58,7 +78,7 @@ export async function GET(
       order = await Order.findOne({
         _id: new mongoose.Types.ObjectId(id),
         userId: new mongoose.Types.ObjectId(userPayload.userId as string)
-      }).lean();
+      });
     }
 
     // If not found, try to find by order number
@@ -66,7 +86,7 @@ export async function GET(
       order = await Order.findOne({
         orderNumber: id,
         userId: new mongoose.Types.ObjectId(userPayload.userId as string)
-      }).lean();
+      });
     }
 
     if (!order) {
@@ -77,40 +97,23 @@ export async function GET(
       );
     }
 
-    console.log('✅ Order found:', order.orderNumber);
+    // Update the order status using the model method
+    await order.updateStatus(status, `Status changed to ${status}`);
 
-    // Transform order to match expected format
-    const transformedOrder = {
-      id: order._id.toString(),
-      orderNumber: order.orderNumber,
-      status: order.status,
-      total: order.total,
-      createdAt: order.createdAt,
-      items: order.items.map(item => ({
-        id: item.productId,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image
-      })),
-      shipping: {
-        address: `${order.shipping.address.street}, ${order.shipping.address.city}, ${order.shipping.address.state} ${order.shipping.address.zipCode}`,
-        method: order.shipping.method,
-        cost: order.shipping.cost
-      },
-      payment: {
-        method: order.payment.method,
-        last4: order.payment.transactionId?.slice(-4) || '****'
-      }
-    };
+    console.log('✅ Order status updated:', order.orderNumber, '->', status);
 
     return NextResponse.json({
       success: true,
-      order: transformedOrder
+      message: 'Order status updated successfully',
+      order: {
+        id: order._id.toString(),
+        orderNumber: order.orderNumber,
+        status: order.status
+      }
     });
 
   } catch (error) {
-    console.error('❌ Order fetch error:', error);
+    console.error('❌ Order status update error:', error);
 
     if (error instanceof Error && (error.message.includes('authorization') || error.message.includes('Invalid token'))) {
       return NextResponse.json(
@@ -120,7 +123,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch order details' },
+      { success: false, message: 'Failed to update order status' },
       { status: 500 }
     );
   }

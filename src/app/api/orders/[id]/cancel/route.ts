@@ -1,4 +1,4 @@
-// src/app/api/orders/[id]/route.ts
+// src/app/api/orders/[id]/cancel/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { connectDB } from '@/lib/mongodb';
@@ -27,14 +27,14 @@ async function verifyAuthToken(request: NextRequest) {
   }
 }
 
-// GET /api/orders/[id] - Get single order details
-export async function GET(
+// POST /api/orders/[id]/cancel - Cancel an order
+export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
-    console.log('📦 Fetching order details for ID:', id);
+    console.log('🚫 Cancelling order ID:', id);
 
     if (!id) {
       return NextResponse.json(
@@ -50,7 +50,7 @@ export async function GET(
     // Connect to database
     await connectDB();
 
-    // Find order by ID or order number
+    // Find order
     let order;
 
     // Check if it's a MongoDB ObjectId
@@ -58,7 +58,7 @@ export async function GET(
       order = await Order.findOne({
         _id: new mongoose.Types.ObjectId(id),
         userId: new mongoose.Types.ObjectId(userPayload.userId as string)
-      }).lean();
+      });
     }
 
     // If not found, try to find by order number
@@ -66,7 +66,7 @@ export async function GET(
       order = await Order.findOne({
         orderNumber: id,
         userId: new mongoose.Types.ObjectId(userPayload.userId as string)
-      }).lean();
+      });
     }
 
     if (!order) {
@@ -77,40 +77,50 @@ export async function GET(
       );
     }
 
-    console.log('✅ Order found:', order.orderNumber);
+    // Check if order can be cancelled
+    const orderAge = Date.now() - new Date(order.createdAt).getTime();
+    const cancellationWindow = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-    // Transform order to match expected format
-    const transformedOrder = {
-      id: order._id.toString(),
-      orderNumber: order.orderNumber,
-      status: order.status,
-      total: order.total,
-      createdAt: order.createdAt,
-      items: order.items.map(item => ({
-        id: item.productId,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image
-      })),
-      shipping: {
-        address: `${order.shipping.address.street}, ${order.shipping.address.city}, ${order.shipping.address.state} ${order.shipping.address.zipCode}`,
-        method: order.shipping.method,
-        cost: order.shipping.cost
-      },
-      payment: {
-        method: order.payment.method,
-        last4: order.payment.transactionId?.slice(-4) || '****'
-      }
-    };
+    if (orderAge > cancellationWindow) {
+      console.log('❌ Order cancellation window expired');
+      return NextResponse.json(
+        { success: false, message: 'Order cancellation window has expired (30 minutes)' },
+        { status: 400 }
+      );
+    }
+
+    // Check if order status allows cancellation
+    if (!['pending', 'confirmed'].includes(order.status)) {
+      console.log('❌ Order cannot be cancelled, status:', order.status);
+      return NextResponse.json(
+        { success: false, message: `Order cannot be cancelled (status: ${order.status})` },
+        { status: 400 }
+      );
+    }
+
+    // Cancel the order
+    await order.updateStatus('cancelled', 'Cancelled by customer within 30-minute window');
+
+    console.log('✅ Order cancelled:', order.orderNumber);
+
+    // TODO: In production, you'd also want to:
+    // - Refund the payment
+    // - Send cancellation confirmation email
+    // - Update inventory
+    // - Revoke reward points
 
     return NextResponse.json({
       success: true,
-      order: transformedOrder
+      message: 'Order cancelled successfully',
+      order: {
+        id: order._id.toString(),
+        orderNumber: order.orderNumber,
+        status: order.status
+      }
     });
 
   } catch (error) {
-    console.error('❌ Order fetch error:', error);
+    console.error('❌ Order cancellation error:', error);
 
     if (error instanceof Error && (error.message.includes('authorization') || error.message.includes('Invalid token'))) {
       return NextResponse.json(
@@ -120,7 +130,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch order details' },
+      { success: false, message: 'Failed to cancel order' },
       { status: 500 }
     );
   }

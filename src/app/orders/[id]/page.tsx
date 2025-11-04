@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
+import ReturnRequestForm from '@/components/ReturnRequestForm';
+import { ReturnService } from '@/services/returnService';
 
 interface OrderItem {
   id: string;
@@ -41,100 +43,64 @@ function OrderDetailContent() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [showReturnSuccess, setShowReturnSuccess] = useState(false);
+  const [showCancelSuccess, setShowCancelSuccess] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const orderId = params?.id as string;
 
   useEffect(() => {
-    // Mock order data based on ID
-    const mockOrders: Record<string, Order> = {
-      'ORD-2024-001': {
-        id: 'order_1',
-        orderNumber: 'ORD-2024-001',
-        status: 'delivered',
-        total: 299.99,
-        createdAt: '2024-01-15T10:30:00Z',
-        items: [
-          {
-            id: 'item_1',
-            name: 'Gaming Mechanical Keyboard',
-            price: 149.99,
-            quantity: 1,
+    const fetchOrder = async () => {
+      if (!orderId || !user) {
+        setError('Order not found');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          setError('Authentication required');
+          setLoading(false);
+          return;
+        }
+
+        console.log('📦 Fetching order details for:', orderId);
+
+        const response = await fetch(`/api/orders/${orderId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-          {
-            id: 'item_2',
-            name: 'Gaming Mouse',
-            price: 79.99,
-            quantity: 1,
+        });
+
+        console.log('📡 Order details response:', response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Order details fetched:', data);
+
+          if (data.success && data.order) {
+            setOrder(data.order);
+          } else {
+            setError('Order not found');
           }
-        ],
-        shipping: {
-          address: '123 Gaming St, Tech City, TC 12345',
-          method: 'Standard Shipping',
-          cost: 0
-        },
-        payment: {
-          method: 'Credit Card',
-          last4: '4242'
+        } else {
+          const errorData = await response.json();
+          console.error('❌ Failed to fetch order:', errorData);
+          setError(errorData.message || 'Failed to load order');
         }
-      },
-      'ORD-2024-002': {
-        id: 'order_2',
-        orderNumber: 'ORD-2024-002',
-        status: 'shipped',
-        total: 149.99,
-        createdAt: '2024-01-20T14:15:00Z',
-        items: [
-          {
-            id: 'item_3',
-            name: 'Gaming Headset',
-            price: 149.99,
-            quantity: 1,
-          }
-        ],
-        shipping: {
-          address: '123 Gaming St, Tech City, TC 12345',
-          method: 'Express Shipping',
-          cost: 15.99
-        },
-        payment: {
-          method: 'Credit Card',
-          last4: '4242'
-        }
-      },
-      'ORD-2024-003': {
-        id: 'order_3',
-        orderNumber: 'ORD-2024-003',
-        status: 'processing',
-        total: 89.99,
-        createdAt: '2024-01-25T09:20:00Z',
-        items: [
-          {
-            id: 'item_4',
-            name: 'Gaming Controller',
-            price: 89.99,
-            quantity: 1,
-          }
-        ],
-        shipping: {
-          address: '123 Gaming St, Tech City, TC 12345',
-          method: 'Standard Shipping',
-          cost: 0
-        },
-        payment: {
-          method: 'Credit Card',
-          last4: '4242'
-        }
+      } catch (error) {
+        console.error('❌ Error fetching order:', error);
+        setError('Network error while loading order');
+      } finally {
+        setLoading(false);
       }
     };
 
-    const foundOrder = mockOrders[orderId];
-    if (foundOrder) {
-      setOrder(foundOrder);
-    } else {
-      setError('Order not found');
-    }
-    setLoading(false);
-  }, [orderId]);
+    fetchOrder();
+  }, [orderId, user]);
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -155,6 +121,75 @@ function OrderDetailContent() {
       case 'delivered': return '📦';
       case 'cancelled': return '❌';
       default: return '📋';
+    }
+  };
+
+  const canRequestReturn = (): boolean => {
+    if (!order) return false;
+    // Can only return delivered orders
+    if (order.status !== 'delivered') return false;
+
+    // Check if within 30-day return window
+    const orderDate = new Date(order.createdAt);
+    return ReturnService.canReturnOrder(orderDate);
+  };
+
+  const hasExistingReturn = (): boolean => {
+    if (!order) return false;
+    const returns = ReturnService.getReturnsByOrderId(order.id);
+    return returns.some(r => !['cancelled', 'completed'].includes(r.status));
+  };
+
+  const handleReturnSuccess = () => {
+    setShowReturnForm(false);
+    setShowReturnSuccess(true);
+    setTimeout(() => setShowReturnSuccess(false), 5000);
+  };
+
+  const canCancelOrder = (): boolean => {
+    if (!order) return false;
+    // Can only cancel pending or confirmed orders
+    return ['processing', 'confirmed'].includes(order.status);
+  };
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+
+    const confirmCancel = confirm(
+      `Are you sure you want to cancel this order?\n\nOrder #${order.orderNumber}\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmCancel) return;
+
+    setIsCancelling(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`/api/orders/${order.id}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('✅ Order cancelled successfully');
+        setShowCancelSuccess(true);
+        setTimeout(() => setShowCancelSuccess(false), 5000);
+        // Reload order data
+        window.location.reload();
+      } else {
+        console.error('❌ Failed to cancel order:', data);
+        alert(data.message || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('❌ Error cancelling order:', error);
+      alert('Network error while cancelling order');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -238,7 +273,40 @@ function OrderDetailContent() {
                   {getStatusIcon(order.status)}
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
-                
+
+                {/* Temporary testing button - remove in production */}
+                {order.status !== 'delivered' && (
+                  <button
+                    onClick={async () => {
+                      if (confirm('Mark this order as delivered? (For testing returns)')) {
+                        try {
+                          const token = localStorage.getItem('authToken');
+                          const response = await fetch(`/api/orders/${order.id}/update-status`, {
+                            method: 'PATCH',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ status: 'delivered' })
+                          });
+
+                          if (response.ok) {
+                            window.location.reload();
+                          } else {
+                            alert('Failed to update status');
+                          }
+                        } catch (error) {
+                          console.error('Error:', error);
+                          alert('Error updating status');
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+                  >
+                    🧪 Mark as Delivered (Test)
+                  </button>
+                )}
+
                 {order.status === 'shipped' && (
                   <Link
                     href={`/tracking/${order.id}`}
@@ -276,8 +344,8 @@ function OrderDetailContent() {
                       </div>
                       
                       <div className="text-right">
-                        <p className="font-semibold text-white">${(item.price * item.quantity).toFixed(2)}</p>
-                        <p className="text-white/70 text-sm">${item.price.toFixed(2)} each</p>
+                        <p className="font-semibold text-white">${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="text-white/70 text-sm">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each</p>
                       </div>
                     </div>
                   ))}
@@ -294,16 +362,16 @@ function OrderDetailContent() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-white/80">
                     <span>Subtotal</span>
-                    <span>${(order.total - order.shipping.cost).toFixed(2)}</span>
+                    <span>${(order.total - order.shipping.cost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-white/80">
                     <span>Shipping</span>
-                    <span>{order.shipping.cost === 0 ? 'FREE' : `$${order.shipping.cost.toFixed(2)}`}</span>
+                    <span>{order.shipping.cost === 0 ? 'FREE' : `$${order.shipping.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                   </div>
                   <div className="border-t border-white/20 pt-3">
                     <div className="flex justify-between text-white font-bold text-lg">
                       <span>Total</span>
-                      <span>${order.total.toFixed(2)}</span>
+                      <span>${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
@@ -344,13 +412,65 @@ function OrderDetailContent() {
 
               {/* Actions */}
               <div className="space-y-3">
+                {/* Cancel Order Button */}
+                {canCancelOrder() && (
+                  <div className="bg-red-500/10 border-2 border-red-400/30 rounded-xl p-4 space-y-3">
+                    <button
+                      onClick={handleCancelOrder}
+                      disabled={isCancelling}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:shadow-red-500/30"
+                    >
+                      {isCancelling ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Cancelling...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Cancel Order
+                        </>
+                      )}
+                    </button>
+                    <p className="text-xs text-red-300/80 text-center">
+                      You can cancel this order while it's still processing
+                    </p>
+                  </div>
+                )}
+
+                {canRequestReturn() && !hasExistingReturn() && (
+                  <button
+                    onClick={() => setShowReturnForm(true)}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl font-medium transition-colors shadow-lg"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                    </svg>
+                    Request Return
+                  </button>
+                )}
+
+                {hasExistingReturn() && (
+                  <div className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-yellow-500/20 border border-yellow-500/30 text-yellow-200 rounded-xl font-medium">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Return Pending
+                  </div>
+                )}
+
                 <Link
                   href="/orders"
                   className="w-full flex items-center justify-center px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl font-medium transition-colors border border-white/30"
                 >
                   ← Back to Orders
                 </Link>
-                
+
                 <Link
                   href="/support"
                   className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-colors"
@@ -362,6 +482,44 @@ function OrderDetailContent() {
           </div>
         </div>
       </main>
+
+      {/* Return Request Form Modal */}
+      {showReturnForm && order && (
+        <ReturnRequestForm
+          order={order}
+          onSuccess={handleReturnSuccess}
+          onCancel={() => setShowReturnForm(false)}
+        />
+      )}
+
+      {/* Success Messages */}
+      {showReturnSuccess && (
+        <div className="fixed top-4 right-4 z-[10000] bg-green-500/90 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-2xl border border-green-400/30 animate-slide-in">
+          <div className="flex items-center gap-3">
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-semibold">Return Request Submitted!</p>
+              <p className="text-sm text-green-100">We'll process your return shortly.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelSuccess && (
+        <div className="fixed top-4 right-4 z-[10000] bg-red-500/90 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-2xl border border-red-400/30 animate-slide-in">
+          <div className="flex items-center gap-3">
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-semibold">Order Cancelled Successfully!</p>
+              <p className="text-sm text-red-100">Your refund will be processed shortly.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

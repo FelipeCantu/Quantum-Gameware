@@ -338,7 +338,7 @@ function SuccessContent() {
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Total Amount:</span>
                     <span className="text-white font-bold text-xl">
-                      ${order?.totals.total.toFixed(2) || '0.00'}
+                      ${order?.totals.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                     </span>
                   </div>
                 </div>
@@ -409,7 +409,7 @@ function SuccessContent() {
                       <div className="flex-1">
                         <h3 className="font-semibold text-white">{item.name}</h3>
                         <p className="text-white/70 text-sm">Quantity: {item.quantity}</p>
-                        <p className="font-bold text-white">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-bold text-white">${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       </div>
                     </div>
                   ))}

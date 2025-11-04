@@ -894,7 +894,7 @@ function AccountPageContent() {
                           </svg>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-white mb-1">${userStats.totalSpent.toLocaleString()}</div>
+                      <div className="text-2xl font-bold text-white mb-1">${userStats.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       <div className="text-white/70 text-sm">Total Spent</div>
                     </div>
 
@@ -992,7 +992,7 @@ function AccountPageContent() {
                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </span>
                             </div>
-                            <div className="text-white font-semibold">${order.total}</div>
+                            <div className="text-white font-semibold text-lg">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                           </div>
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
                             <div className="text-white/70">

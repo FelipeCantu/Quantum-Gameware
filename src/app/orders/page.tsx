@@ -251,7 +251,7 @@ function OrdersPageContent() {
                       </div>
                       <div>
                         <p className="text-white/60">Total Amount</p>
-                        <p className="text-white font-medium text-lg">${order.total.toFixed(2)}</p>
+                        <p className="text-white font-medium text-lg">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       </div>
                       <div>
                         <p className="text-white/60">Items</p>
@@ -319,7 +319,7 @@ function OrdersPageContent() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium text-white truncate text-sm">{item.name}</p>
-                          <p className="text-xs text-white/60">Qty: {item.quantity} × ${item.price}</p>
+                          <p className="text-xs text-white/60">Qty: {item.quantity} × ${item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         </div>
                       </div>
                     ))}
