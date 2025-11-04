@@ -994,16 +994,8 @@ function AccountPageContent() {
                             </div>
                             <div className="text-white font-semibold text-lg">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                           </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm">
-                            <div className="text-white/70">
-                              {new Date(order.date).toLocaleDateString()} • {order.items} items
-                            </div>
-                            <Link
-                              href="/orders"
-                              className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                            >
-                              View All Orders
-                            </Link>
+                          <div className="text-sm text-white/70">
+                            {new Date(order.date).toLocaleDateString()} • {order.items} items
                           </div>
                         </div>
                       ))}
