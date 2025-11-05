@@ -75,7 +75,7 @@ export default function RootLayout({
               <ScrollBehavior />
               <div className="min-h-screen flex flex-col bg-gray-50">
                 <Header />
-                <main className="flex-1">
+                <main className="flex-1 pt-20 sm:pt-24">
                   {children}
                 </main>
                 <Footer />

@@ -15,7 +15,7 @@ export default async function Home() {
     ]);
 
     return (
-      <div>
+      <div className="-mt-20 sm:-mt-24">
         {/* NEW: 3D Hero Section */}
         <Hero3D />
         
@@ -54,7 +54,7 @@ export default async function Home() {
     console.error('Error fetching products:', error);
     
     return (
-      <div>
+      <div className="-mt-20 sm:-mt-24">
         {/* Even in error state, show the 3D Hero */}
         <Hero3D />
         <div className="bg-gray-50 py-20">
