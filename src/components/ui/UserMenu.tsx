@@ -77,9 +77,9 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
     setIsOpen(false);
   }, []);
 
-  const buttonClasses = `p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
-    isScrolled 
-      ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
+  const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
+    isScrolled
+      ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
       : 'hover:bg-white/10'
   }`;
 
@@ -95,10 +95,10 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
   // Show sign in button when not authenticated
   if (!isAuthenticated || !user) {
     return (
-      <div className="flex items-center space-x-2">
+      <>
         <Link
           href="/auth/signin"
-          className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
+          className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
             isScrolled
               ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
               : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border border-white/30'
@@ -106,7 +106,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
         >
           Sign In
         </Link>
-        
+
         <Link
           href="/auth/signup"
           className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
@@ -117,7 +117,7 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
         >
           Sign Up
         </Link>
-      </div>
+      </>
     );
   }
 

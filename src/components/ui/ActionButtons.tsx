@@ -23,11 +23,11 @@ const AnimatedMenuButton = ({
   <button
     onClick={onClick}
     className={`
-      lg:hidden p-2.5 rounded-xl transition-all duration-300 
-      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 
+      lg:hidden p-2 sm:p-2.5 rounded-xl transition-all duration-300
+      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2
       active:scale-95 flex-shrink-0 ${
-        isScrolled 
-          ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
+        isScrolled
+          ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
           : 'hover:bg-white/10'
       }
     `}
@@ -88,14 +88,14 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const buttonClasses = `p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
-    isScrolled 
-      ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
+  const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
+    isScrolled
+      ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
       : 'hover:bg-white/10'
   }`;
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center gap-1.5 sm:gap-2">
       {/* Search Button - Desktop */}
       <div className="hidden md:block relative" ref={searchRef}>
         <button
