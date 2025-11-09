@@ -4,9 +4,10 @@ import Image from 'next/image';
 
 interface LogoProps {
   isScrolled: boolean;
+  effectiveTheme: 'light' | 'dark';
 }
 
-export default function Logo({ isScrolled }: LogoProps) {
+export default function Logo({ isScrolled, effectiveTheme }: LogoProps) {
   return (
     <div className="flex items-center flex-shrink-0">
       <Link href="/" className="group flex items-center space-x-3 transition-transform hover:scale-105">
@@ -36,17 +37,19 @@ export default function Logo({ isScrolled }: LogoProps) {
         </div>
         <div className="hidden sm:block">
           <span className={`font-brand text-lg sm:text-xl md:text-2xl font-bold leading-none ${
-            isScrolled 
+            isScrolled
               ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'
               : 'text-white'
           }`}>
             Quantum
           </span>
           <div className={`font-brand text-xs sm:text-sm font-medium leading-none ${
-    isScrolled ? 'text-gray-600' : 'text-white/80'
-  }`}>
-    Gameware
-  </div>
+            isScrolled
+              ? effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-300'
+              : 'text-white/80'
+          }`}>
+            Gameware
+          </div>
         </div>
       </Link>
     </div>

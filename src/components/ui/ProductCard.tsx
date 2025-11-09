@@ -6,6 +6,7 @@ import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { useState } from 'react';
 import SignInAlert from './SignInAlert';
 import Toast from './Toast';
@@ -26,6 +27,7 @@ export default function ProductCard({
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
+  const { effectiveTheme, getCardBgClass } = useTheme();
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -98,11 +100,15 @@ export default function ProductCard({
   };
 
   return (
-    <div 
+    <div
       className={`
-        group relative bg-white/20 backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-2xl 
-        transition-all duration-500 overflow-hidden border border-white/20 hover:border-white/30
-        hover:bg-white/25 transform hover:scale-[1.02] flex flex-col h-full
+        group relative ${getCardBgClass()} backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-2xl
+        transition-all duration-500 overflow-hidden
+        ${effectiveTheme === 'light'
+          ? 'border border-gray-200 hover:border-gray-300 hover:bg-white'
+          : 'border border-white/20 hover:border-white/30 hover:bg-white/15'
+        }
+        transform hover:scale-[1.02] flex flex-col h-full
         ${className}
       `}
       onMouseEnter={() => setIsHovered(true)}
@@ -218,21 +224,31 @@ export default function ProductCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none rounded-b-2xl sm:rounded-b-3xl"></div>
         
         {/* Brand and Category - hidden on mobile for space */}
-        <div className="hidden sm:flex items-center gap-2 text-xs md:text-sm text-gray-800 mb-2 md:mb-3 relative z-10">
+        <div className={`hidden sm:flex items-center gap-2 text-xs md:text-sm mb-2 md:mb-3 relative z-10 ${
+          effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-300'
+        }`}>
           <span className="font-medium truncate">{product.brand}</span>
-          <span className="w-1 h-1 bg-gray-600 rounded-full flex-shrink-0"></span>
+          <span className={`w-1 h-1 rounded-full flex-shrink-0 ${
+            effectiveTheme === 'light' ? 'bg-gray-400' : 'bg-gray-500'
+          }`}></span>
           <span className="truncate">{product.category}</span>
         </div>
 
         {/* Product Name */}
         <Link href={`/products/${encodeURIComponent(product.slug)}`} className="relative z-10">
-          <h3 className="font-bold text-xs sm:text-sm md:text-base mb-2 sm:mb-3 text-gray-900 hover:text-blue-700 transition-colors line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem]">
+          <h3 className={`font-bold text-xs sm:text-sm md:text-base mb-2 sm:mb-3 transition-colors line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] ${
+            effectiveTheme === 'light'
+              ? 'text-gray-900 hover:text-blue-700'
+              : 'text-white hover:text-blue-400'
+          }`}>
             {product.name}
           </h3>
         </Link>
-        
+
         {/* Description - reduced on mobile */}
-        <p className="text-gray-700 text-[10px] sm:text-xs md:text-sm mb-2 sm:mb-3 line-clamp-2 leading-relaxed flex-1 relative z-10">
+        <p className={`text-[10px] sm:text-xs md:text-sm mb-2 sm:mb-3 line-clamp-2 leading-relaxed flex-1 relative z-10 ${
+          effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-300'
+        }`}>
           {product.description}
         </p>
 
@@ -241,12 +257,14 @@ export default function ProductCard({
           <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 relative z-10">
             <div className="flex text-yellow-500 text-xs">
               {[...Array(5)].map((_, i) => (
-                <span key={i} className={i < Math.floor(product.rating!) ? 'text-yellow-500' : 'text-gray-400'}>
+                <span key={i} className={i < Math.floor(product.rating!) ? 'text-yellow-500' : effectiveTheme === 'light' ? 'text-gray-400' : 'text-gray-600'}>
                   ★
                 </span>
               ))}
             </div>
-            <span className="text-[10px] sm:text-xs text-gray-700">({product.rating})</span>
+            <span className={`text-[10px] sm:text-xs ${
+              effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-300'
+            }`}>({product.rating})</span>
           </div>
         )}
         
@@ -256,14 +274,22 @@ export default function ProductCard({
           <div className="mb-2 sm:mb-3">
             {product.originalPrice && product.originalPrice > product.price ? (
               <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
-                <span className="text-base sm:text-lg md:text-xl font-bold text-gray-900">${product.price}</span>
-                <span className="text-xs sm:text-sm text-gray-600 line-through">${product.originalPrice}</span>
-                <span className="text-[9px] sm:text-xs text-green-700 font-semibold hidden sm:inline">
+                <span className={`text-base sm:text-lg md:text-xl font-bold ${
+                  effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
+                }`}>${product.price}</span>
+                <span className={`text-xs sm:text-sm line-through ${
+                  effectiveTheme === 'light' ? 'text-gray-500' : 'text-gray-400'
+                }`}>${product.originalPrice}</span>
+                <span className={`text-[9px] sm:text-xs font-semibold hidden sm:inline ${
+                  effectiveTheme === 'light' ? 'text-green-700' : 'text-green-400'
+                }`}>
                   Save ${(product.originalPrice - product.price).toFixed(2)}
                 </span>
               </div>
             ) : (
-              <span className="text-base sm:text-lg md:text-xl font-bold text-gray-900">${product.price}</span>
+              <span className={`text-base sm:text-lg md:text-xl font-bold ${
+                effectiveTheme === 'light' ? 'text-gray-900' : 'text-white'
+              }`}>${product.price}</span>
             )}
           </div>
 
@@ -278,7 +304,9 @@ export default function ProductCard({
                 transform active:scale-95 flex items-center justify-center gap-1 sm:gap-2 relative z-20
                 ${product.inStock
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                  : 'bg-white/30 text-gray-700 cursor-not-allowed border border-gray-300'
+                  : effectiveTheme === 'light'
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300'
+                    : 'bg-white/20 text-gray-300 cursor-not-allowed border border-gray-600'
                 }
               `}
             >

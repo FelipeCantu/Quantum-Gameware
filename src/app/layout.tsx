@@ -5,9 +5,11 @@ import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import Cart from '@/components/Cart';
+import ThemeWrapper from '@/components/ThemeWrapper';
 import './globals.css';
 import ScrollBehavior from '@/components/ui/ScrollBehavior';
 
@@ -70,19 +72,21 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <ScrollBehavior />
-              <div className="min-h-screen flex flex-col bg-gray-50">
-                <Header />
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-                <Cart />
-              </div>
-            </CartProvider>
-          </WishlistProvider>
+          <ThemeProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <ScrollBehavior />
+                <ThemeWrapper>
+                  <Header />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                  <Footer />
+                  <Cart />
+                </ThemeWrapper>
+              </CartProvider>
+            </WishlistProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

@@ -3,22 +3,25 @@
 import Link from 'next/link';
 import { Product } from '@/types';
 import ProductCard from '@/components/ui/ProductCard';
+import { useTheme } from '@/context/ThemeContext';
 
 interface RelatedProductsProps {
   products: Product[];
 }
 
 export default function RelatedProducts({ products }: RelatedProductsProps) {
+  const { getBgClass, getTextClass, getSecondaryTextClass, getBorderClass, effectiveTheme } = useTheme();
+
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-12 md:py-16 lg:py-20 border-t border-gray-200">
+    <section className={`${getBgClass()} py-12 md:py-16 lg:py-20 border-t ${getBorderClass()}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+          <h2 className={`text-2xl md:text-3xl lg:text-4xl font-bold ${getTextClass()} mb-3 md:mb-4`}>
             You Might Also Like
           </h2>
-          <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className={`text-base md:text-lg lg:text-xl ${getSecondaryTextClass()} max-w-2xl mx-auto`}>
             Similar products that other customers loved
           </p>
         </div>
@@ -30,10 +33,10 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
                 key={product._id}
                 className="flex-none w-72 sm:w-80 md:w-96 snap-start"
               >
-                <ProductCard 
-                  product={product} 
+                <ProductCard
+                  product={product}
                   imageAspectRatio="wide"
-                  className="h-full bg-white shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-gray-200"
+                  className="h-full shadow-sm hover:shadow-lg transition-all duration-300"
                 />
               </div>
             ))}
@@ -56,24 +59,24 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
       <style jsx>{`
         .minimal-scrollbar {
           scrollbar-width: thin;
-          scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+          scrollbar-color: ${effectiveTheme === 'light' ? 'rgba(156, 163, 175, 0.4)' : 'rgba(75, 85, 99, 0.4)'} transparent;
         }
-        
+
         .minimal-scrollbar::-webkit-scrollbar {
           height: 4px;
         }
-        
+
         .minimal-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
-        
+
         .minimal-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(156, 163, 175, 0.4);
+          background: ${effectiveTheme === 'light' ? 'rgba(156, 163, 175, 0.4)' : 'rgba(75, 85, 99, 0.4)'};
           border-radius: 2px;
         }
-        
+
         .minimal-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(107, 114, 128, 0.6);
+          background: ${effectiveTheme === 'light' ? 'rgba(107, 114, 128, 0.6)' : 'rgba(107, 114, 128, 0.6)'};
         }
       `}</style>
     </section>

@@ -6,19 +6,22 @@ import UserMenu from './UserMenu';
 
 interface ActionButtonsProps {
   isScrolled: boolean;
+  effectiveTheme: 'light' | 'dark';
   isMenuOpen: boolean;
   openMenu: () => void;
 }
 
 // Animated Menu Button Component
-const AnimatedMenuButton = ({ 
-  isOpen, 
-  onClick, 
-  isScrolled 
-}: { 
-  isOpen: boolean; 
-  onClick: () => void; 
+const AnimatedMenuButton = ({
+  isOpen,
+  onClick,
+  isScrolled,
+  effectiveTheme
+}: {
+  isOpen: boolean;
+  onClick: () => void;
   isScrolled: boolean;
+  effectiveTheme: 'light' | 'dark';
 }) => (
   <button
     onClick={onClick}
@@ -37,33 +40,42 @@ const AnimatedMenuButton = ({
     <div className="w-5 h-5 relative">
       {/* Top bar */}
       <span className={`
-        absolute left-0 w-full h-0.5 rounded-full 
+        absolute left-0 w-full h-0.5 rounded-full
         transition-all duration-300 ease-out origin-center
-        ${isScrolled ? 'bg-gray-600' : 'bg-white'}
-        ${isOpen 
-          ? 'top-[9.5px] rotate-45' 
+        ${isScrolled
+          ? effectiveTheme === 'light' ? 'bg-gray-600' : 'bg-gray-200'
+          : 'bg-white'
+        }
+        ${isOpen
+          ? 'top-[9.5px] rotate-45'
           : 'top-[3px]'
         }
       `} />
-      
+
       {/* Middle bar */}
       <span className={`
-        absolute left-0 top-[9.5px] w-full h-0.5 rounded-full 
+        absolute left-0 top-[9.5px] w-full h-0.5 rounded-full
         transition-all duration-300 ease-out
-        ${isScrolled ? 'bg-gray-600' : 'bg-white'}
-        ${isOpen 
-          ? 'opacity-0 scale-0' 
+        ${isScrolled
+          ? effectiveTheme === 'light' ? 'bg-gray-600' : 'bg-gray-200'
+          : 'bg-white'
+        }
+        ${isOpen
+          ? 'opacity-0 scale-0'
           : 'opacity-100 scale-100'
         }
       `} />
-      
+
       {/* Bottom bar */}
       <span className={`
-        absolute left-0 w-full h-0.5 rounded-full 
+        absolute left-0 w-full h-0.5 rounded-full
         transition-all duration-300 ease-out origin-center
-        ${isScrolled ? 'bg-gray-600' : 'bg-white'}
-        ${isOpen 
-          ? 'top-[9.5px] -rotate-45' 
+        ${isScrolled
+          ? effectiveTheme === 'light' ? 'bg-gray-600' : 'bg-gray-200'
+          : 'bg-white'
+        }
+        ${isOpen
+          ? 'top-[9.5px] -rotate-45'
           : 'top-[16px]'
         }
       `} />
@@ -71,7 +83,7 @@ const AnimatedMenuButton = ({
   </button>
 );
 
-export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: ActionButtonsProps) {
+export default function ActionButtons({ isScrolled, effectiveTheme, isMenuOpen, openMenu }: ActionButtonsProps) {
   const { toggleCart, getCartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -90,7 +102,9 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
 
   const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
     isScrolled
-      ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+      ? effectiveTheme === 'light'
+        ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+        : 'hover:bg-white/10'
       : 'hover:bg-white/10'
   }`;
 
@@ -103,12 +117,16 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
           className={buttonClasses}
           aria-label="Search products"
         >
-          <svg 
+          <svg
             className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
-              isScrolled ? 'text-gray-600 group-hover:text-blue-600' : 'text-white group-hover:text-white'
-            }`} 
-            fill="none" 
-            viewBox="0 0 24 24" 
+              isScrolled
+                ? effectiveTheme === 'light'
+                  ? 'text-gray-600 group-hover:text-blue-600'
+                  : 'text-gray-200 group-hover:text-white'
+                : 'text-white group-hover:text-white'
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -122,18 +140,22 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
       </div>
 
       {/* User Menu - Sign In/Account */}
-      <UserMenu isScrolled={isScrolled} />
+      <UserMenu isScrolled={isScrolled} effectiveTheme={effectiveTheme} />
 
       {/* Cart Button */}
-      <button 
+      <button
         onClick={toggleCart}
         className={`relative ${buttonClasses}`}
         aria-label={`Shopping cart ${cartCount > 0 ? `with ${cartCount} items` : ''}`}
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
           className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
-            isScrolled ? 'text-gray-600 group-hover:text-blue-600' : 'text-white group-hover:text-white'
+            isScrolled
+              ? effectiveTheme === 'light'
+                ? 'text-gray-600 group-hover:text-blue-600'
+                : 'text-gray-200 group-hover:text-white'
+              : 'text-white group-hover:text-white'
           }`} 
           fill="none" 
           viewBox="0 0 24 24" 
@@ -162,10 +184,11 @@ export default function ActionButtons({ isScrolled, isMenuOpen, openMenu }: Acti
       </button>
       
       {/* Mobile Menu Button with Animated Icon */}
-      <AnimatedMenuButton 
+      <AnimatedMenuButton
         isOpen={isMenuOpen}
         onClick={openMenu}
         isScrolled={isScrolled}
+        effectiveTheme={effectiveTheme}
       />
     </div>
   );

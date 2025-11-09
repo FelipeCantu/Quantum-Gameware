@@ -1,6 +1,6 @@
 // src/app/products/page.tsx
 import { getProducts } from '@/sanity/lib/queries';
-import ProductGrid from '@/components/ProductGrid';
+import ProductsContent from './ProductsContent';
 import Link from 'next/link';
 
 export default async function ProductsPage() {
@@ -53,34 +53,8 @@ export default async function ProductsPage() {
         </div>
       </section>
 
-      {/* Products Section - Same styling as home page */}
-      <section className="bg-gray-50 py-20">
-        <div className="container mx-auto px-4">
-          {products.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="bg-white rounded-3xl p-12 max-w-md mx-auto shadow-sm border border-gray-100">
-                <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">No Products Available</h2>
-                <p className="text-gray-500 mb-6">
-                  We couldn&apos;t find any products in our catalog. Check back soon for new gaming gear!
-                </p>
-                <Link
-                  href="/"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg inline-block"
-                >
-                  Return to Home
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <ProductGrid products={products} />
-          )}
-        </div>
-      </section>
+      {/* Products Section */}
+      <ProductsContent products={products} />
     </div>
   );
 }

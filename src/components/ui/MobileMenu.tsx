@@ -12,6 +12,7 @@ import { createPortal } from 'react-dom';
 interface MobileMenuProps {
   isMenuOpen: boolean;
   closeMenu: () => void;
+  effectiveTheme: 'light' | 'dark';
 }
 
 // Animated Menu/Close Button Component
@@ -80,7 +81,7 @@ const MenuLink = ({
   </Link>
 );
 
-export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
+export default function MobileMenu({ isMenuOpen, closeMenu, effectiveTheme }: MobileMenuProps) {
   const { toggleCart, getCartCount } = useCart();
   const { user, isAuthenticated, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -243,8 +244,8 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
                 </div>
               </div>
               <div>
-                <div className="text-white font-bold text-lg">Quantum</div>
-                <div className="text-white/70 text-xs">Gameware</div>
+                <div className="font-brand text-white font-bold text-lg">Quantum</div>
+                <div className="font-brand text-white/70 text-xs">Gameware</div>
               </div>
             </Link>
             
@@ -448,7 +449,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu }: MobileMenuProps) {
           {/* Footer */}
           <div className="p-6 border-t border-white/10 text-center">
             <p className="text-white/60 text-sm">
-              © 2024 Quantum Gameware
+              © 2025 Quantum Gameware
             </p>
           </div>
         </div>

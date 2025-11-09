@@ -18,6 +18,7 @@ function WishlistContent() {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set());
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isAddingAll, setIsAddingAll] = useState(false);
 
   // Fetch products based on wishlist IDs
   useEffect(() => {
@@ -78,6 +79,23 @@ function WishlistContent() {
     addToCart(item);
   };
 
+  const handleAddAllToCart = () => {
+    setIsAddingAll(true);
+
+    // Filter and add only items that are in stock
+    const inStockItems = wishlistItems.filter(item => item.inStock);
+
+    // Add each item to cart
+    inStockItems.forEach(item => {
+      addToCart(item);
+    });
+
+    // Brief delay for visual feedback
+    setTimeout(() => {
+      setIsAddingAll(false);
+    }, 500);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
       {/* Background Pattern */}
@@ -120,8 +138,22 @@ function WishlistContent() {
                         Total value: ${wishlistItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)}
                       </p>
                     </div>
-                    <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap">
-                      Add All to Cart
+                    <button
+                      onClick={handleAddAllToCart}
+                      disabled={isAddingAll || wishlistItems.every(item => !item.inStock)}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAddingAll ? (
+                        <>
+                          <svg className="w-4 h-4 inline mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Adding...
+                        </>
+                      ) : (
+                        'Add All to Cart'
+                      )}
                     </button>
                   </div>
                 </div>

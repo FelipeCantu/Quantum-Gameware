@@ -6,9 +6,10 @@ import PortalDropdown from './PortalDropdown';
 
 interface DesktopNavigationProps {
   isScrolled: boolean;
+  effectiveTheme: 'light' | 'dark';
 }
 
-export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps) {
+export default function DesktopNavigation({ isScrolled, effectiveTheme }: DesktopNavigationProps) {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -28,14 +29,18 @@ export default function DesktopNavigation({ isScrolled }: DesktopNavigationProps
   }, []);
 
   const navLinkClasses = `relative px-4 py-2.5 transition-all duration-300 font-medium rounded-xl group overflow-hidden text-center whitespace-nowrap ${
-    isScrolled 
-      ? 'text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50' 
+    isScrolled
+      ? effectiveTheme === 'light'
+        ? 'text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+        : 'text-gray-200 hover:text-white hover:bg-white/10'
       : 'text-white/90 hover:text-white hover:bg-white/10'
   }`;
 
   const underlineClasses = `absolute bottom-0 left-1/2 w-0 h-0.5 group-hover:w-full group-hover:left-0 transition-all duration-300 ${
-    isScrolled 
-      ? 'bg-gradient-to-r from-blue-600 to-purple-600' 
+    isScrolled
+      ? effectiveTheme === 'light'
+        ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+        : 'bg-gradient-to-r from-blue-400 to-purple-400'
       : 'bg-white'
   }`;
 

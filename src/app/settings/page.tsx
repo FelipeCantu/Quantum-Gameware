@@ -1,13 +1,15 @@
 // src/app/settings/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Link from 'next/link';
 
 function SettingsPageContent() {
   const { user, updateProfile, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -18,17 +20,29 @@ function SettingsPageContent() {
     emailNotifications: user?.preferences?.emailNotifications ?? true,
     smsNotifications: user?.preferences?.smsNotifications ?? false,
     marketingEmails: user?.preferences?.marketingEmails ?? false,
-    theme: user?.preferences?.theme || 'system',
+    theme: theme,
     currency: user?.preferences?.currency || 'USD',
     language: user?.preferences?.language || 'en'
   });
 
+  // Sync formData theme with context theme
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, theme }));
+  }, [theme]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: newValue
     }));
+
+    // Update theme in context immediately for real-time preview
+    if (name === 'theme') {
+      setTheme(value as 'light' | 'dark');
+    }
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -44,7 +58,7 @@ function SettingsPageContent() {
           emailNotifications: formData.emailNotifications,
           smsNotifications: formData.smsNotifications,
           marketingEmails: formData.marketingEmails,
-          theme: formData.theme as 'light' | 'dark' | 'system',
+          theme: formData.theme as 'light' | 'dark',
           currency: formData.currency,
           language: formData.language
         }
@@ -202,7 +216,6 @@ function SettingsPageContent() {
                         onChange={handleInputChange}
                         className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       >
-                        <option value="system" className="bg-gray-800">System</option>
                         <option value="light" className="bg-gray-800">Light</option>
                         <option value="dark" className="bg-gray-800">Dark</option>
                       </select>

@@ -5,9 +5,10 @@ import { useAuth } from '@/context/AuthContext';
 
 interface UserMenuProps {
   isScrolled: boolean;
+  effectiveTheme: 'light' | 'dark';
 }
 
-export default function UserMenu({ isScrolled }: UserMenuProps) {
+export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, signOut, loading } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -79,7 +80,9 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
 
   const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
     isScrolled
-      ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+      ? effectiveTheme === 'light'
+        ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+        : 'hover:bg-white/10'
       : 'hover:bg-white/10'
   }`;
 
@@ -111,7 +114,9 @@ export default function UserMenu({ isScrolled }: UserMenuProps) {
           href="/auth/signup"
           className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
             isScrolled
-              ? 'text-blue-600 hover:bg-blue-50 border border-blue-200'
+              ? effectiveTheme === 'light'
+                ? 'text-blue-600 hover:bg-blue-50 border border-blue-200'
+                : 'text-gray-200 hover:bg-white/10 border border-gray-600'
               : 'text-white hover:bg-white/10 border border-white/30'
           }`}
         >
