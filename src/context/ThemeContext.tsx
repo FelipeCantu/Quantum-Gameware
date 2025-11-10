@@ -80,6 +80,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
           if (response.ok) {
             console.log('✅ Theme preference saved to database');
+
+            // Update localStorage userData with new theme preference
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+              try {
+                const parsedUser = JSON.parse(userData);
+                parsedUser.preferences = {
+                  ...parsedUser.preferences,
+                  theme: newTheme
+                };
+                localStorage.setItem('userData', JSON.stringify(parsedUser));
+                console.log('✅ Theme preference updated in localStorage');
+              } catch (error) {
+                console.error('❌ Error updating localStorage userData:', error);
+              }
+            }
+
             // Refresh user data to sync the updated preference
             await refreshUser();
           } else {
