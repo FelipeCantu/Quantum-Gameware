@@ -684,8 +684,8 @@ function AccountPageContent() {
       <main className="pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">
+          <div className="mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
               Welcome back, {user.name}!
             </h1>
             <p className="text-white/80 text-sm sm:text-base lg:text-lg">
@@ -694,7 +694,7 @@ function AccountPageContent() {
           </div>
 
           {/* Mobile Profile Header */}
-          <div className="lg:hidden mb-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-4">
+          <div className="lg:hidden mb-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-4">
             <div className="flex items-center space-x-3">
               {user.avatar ? (
                 <img
@@ -720,7 +720,7 @@ function AccountPageContent() {
           </div>
 
           {/* Mobile Horizontal Scrolling Navigation */}
-          <div className="lg:hidden mb-6 -mx-4 sticky top-20 z-[70] bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 py-3">
+          <div className="lg:hidden mb-3 -mx-4 sticky top-[72px] z-[70] bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 py-3">
             <div className="px-4">
               {/* Scrollable container with custom scrollbar */}
               <div
