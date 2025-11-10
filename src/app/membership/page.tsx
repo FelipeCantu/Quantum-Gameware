@@ -84,9 +84,9 @@ export default function MembershipPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
       <Header />
 
-      {/* Account Navigation */}
-      <div className="-mx-4 sticky top-20 z-30 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-24 pb-3">
-        <div className="px-4 max-w-7xl mx-auto">
+      {/* Account Navigation - Mobile/Tablet Only */}
+      <div className="lg:hidden sticky top-16 z-40 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-6 pb-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Scrollable container with custom scrollbar */}
           <div
             className="overflow-x-auto overflow-y-hidden scroll-smooth"
@@ -144,7 +144,7 @@ export default function MembershipPage() {
         </div>
       </div>
 
-      <main className="pb-16">
+      <main className="pb-16 pt-20 lg:pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
           <div className="text-center mb-12">
