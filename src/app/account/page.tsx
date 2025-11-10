@@ -294,7 +294,7 @@ function AccountPageContent() {
         return {
           ...prev,
           [parent]: {
-            ...prev[parent as keyof EditProfileData],
+            ...(prev[parent as keyof EditProfileData] as any),
             [child]: value
           }
         };
