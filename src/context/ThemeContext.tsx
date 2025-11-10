@@ -23,16 +23,23 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [theme, setThemeState] = useState<Theme>('light');
 
   // Load theme from user preferences or localStorage
   useEffect(() => {
     if (user) {
-      // User is logged in - use their preference or saved theme
+      // User is logged in - use their database preference
       if (user.preferences?.theme && (user.preferences.theme === 'light' || user.preferences.theme === 'dark')) {
         setThemeState(user.preferences.theme);
+        localStorage.setItem('theme', user.preferences.theme);
+        console.log('✅ Theme loaded from user preferences:', user.preferences.theme);
+      } else if (user.preferences?.theme === 'system') {
+        // If user has 'system' preference, default to 'light' for now
+        setThemeState('light');
+        localStorage.setItem('theme', 'light');
       } else {
+        // No preference in database, check localStorage
         const savedTheme = localStorage.getItem('theme') as Theme;
         if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
           setThemeState(savedTheme);
@@ -48,9 +55,41 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = async (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem('theme', newTheme);
+
+    // If user is logged in, save theme to database
+    if (user) {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          const response = await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              preferences: {
+                ...user.preferences,
+                theme: newTheme
+              }
+            })
+          });
+
+          if (response.ok) {
+            console.log('✅ Theme preference saved to database');
+            // Refresh user data to sync the updated preference
+            await refreshUser();
+          } else {
+            console.error('❌ Failed to save theme preference to database');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error saving theme preference:', error);
+      }
+    }
   };
 
   // Theme is always the effective theme (no system resolution needed)
