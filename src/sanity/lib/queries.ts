@@ -252,22 +252,56 @@ export async function getRelatedProducts(
   }
 }
 
+// Fetch all brands with logos
+export async function getBrands() {
+  try {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏷️ Fetching brands...');
+    }
+
+    const query = `
+      *[_type == "brand"]{
+        _id,
+        name,
+        "logo": logo.asset->url,
+        slug,
+        description,
+        website
+      } | order(name asc)
+    `;
+
+    const brands = await client.fetch(query);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Fetched brands:', {
+        count: brands?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return brands || [];
+  } catch (error) {
+    console.error('❌ Error fetching brands:', error);
+    return [];
+  }
+}
+
 // Helper function to validate environment variables
 export function validateSanityConfig(): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
+
   if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
     errors.push('Missing NEXT_PUBLIC_SANITY_PROJECT_ID environment variable');
   }
-  
+
   if (!process.env.NEXT_PUBLIC_SANITY_DATASET) {
     errors.push('Missing NEXT_PUBLIC_SANITY_DATASET environment variable');
   }
-  
+
   if (!process.env.NEXT_PUBLIC_SANITY_API_VERSION) {
     errors.push('Missing NEXT_PUBLIC_SANITY_API_VERSION environment variable');
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors

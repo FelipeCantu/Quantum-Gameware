@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/context/ThemeContext';
 import ProductGrid from '@/components/ProductGrid';
+import BrandCarousel from '@/components/BrandCarousel';
 import { Product } from '@/types';
 
 export default function HomeContent({
@@ -15,6 +16,9 @@ export default function HomeContent({
 
   return (
     <>
+      {/* Brand Carousel */}
+      <BrandCarousel />
+
       {/* Featured Products Section with themed background */}
       <section className={`${getBgClass()} py-20`}>
         <div className="container mx-auto px-4">
