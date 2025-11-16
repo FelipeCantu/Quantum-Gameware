@@ -28,27 +28,36 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Load theme from user preferences or localStorage
   useEffect(() => {
+    console.log('🎨 ThemeContext useEffect triggered');
+    console.log('🎨 User object:', user);
+    console.log('🎨 User preferences:', user?.preferences);
+
     if (user) {
       // User is logged in - use their database preference
       if (user.preferences?.theme && (user.preferences.theme === 'light' || user.preferences.theme === 'dark')) {
+        console.log('✅ Loading theme from user preferences:', user.preferences.theme);
         setThemeState(user.preferences.theme);
         localStorage.setItem('theme', user.preferences.theme);
-        console.log('✅ Theme loaded from user preferences:', user.preferences.theme);
       } else if (user.preferences?.theme === 'system') {
+        console.log('⚙️ User has system preference, defaulting to light');
         // If user has 'system' preference, default to 'light' for now
         setThemeState('light');
         localStorage.setItem('theme', 'light');
       } else {
+        console.log('📦 No user preference, checking localStorage');
         // No preference in database, check localStorage
         const savedTheme = localStorage.getItem('theme') as Theme;
         if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+          console.log('✅ Loading theme from localStorage:', savedTheme);
           setThemeState(savedTheme);
         } else {
+          console.log('🔆 No saved theme, defaulting to light');
           setThemeState('light');
           localStorage.setItem('theme', 'light');
         }
       }
     } else {
+      console.log('👤 No user logged in, defaulting to light theme');
       // User is NOT logged in - always default to light theme
       setThemeState('light');
       localStorage.setItem('theme', 'light');
@@ -56,14 +65,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const setTheme = async (newTheme: Theme) => {
+    console.log('🎨 setTheme called with:', newTheme);
     setThemeState(newTheme);
     localStorage.setItem('theme', newTheme);
 
     // If user is logged in, save theme to database
     if (user) {
+      console.log('💾 User is logged in, saving to database...');
       try {
         const token = localStorage.getItem('authToken');
         if (token) {
+          console.log('📡 Sending theme update to API:', newTheme);
           const response = await fetch('/api/auth/profile', {
             method: 'PUT',
             headers: {
@@ -106,6 +118,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('❌ Error saving theme preference:', error);
       }
+    } else {
+      console.log('👤 User not logged in, theme only saved to localStorage');
     }
   };
 

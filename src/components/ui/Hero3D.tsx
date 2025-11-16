@@ -12,6 +12,7 @@ import {
 } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import Prism from './Prism';
 
 // Extend CSSProperties to include CSS custom properties
 interface CustomCSSProperties extends CSSProperties {
@@ -417,19 +418,36 @@ export default function Hero() {
 
         {/* Opening Logo Animation Overlay */}
         <div
-          className={`fixed inset-0 z-[150] flex items-center justify-center transition-all duration-1200 ${
+          className={`fixed inset-0 z-[150] flex items-center justify-center transition-all duration-1200 bg-gray-900 ${
             animationStarted
               ? 'translate-y-full scale-110 opacity-0'
               : 'translate-y-0 scale-100 opacity-100'
           }`}
-          style={{ 
+          style={{
             transitionDelay: animationStarted ? '0ms' : '2000ms',
-            transitionTimingFunction: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-            background: animationStarted 
-              ? 'linear-gradient(45deg, #1e3a8a, #581c87, #312e81)' 
-              : 'linear-gradient(135deg, #0f172a, #1e293b, #334155)'
+            transitionTimingFunction: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
           } as CSSProperties}
         >
+          {/* Prism Background Effect - Main Background */}
+          <div className="absolute inset-0 opacity-60">
+            {/* Immediate fallback gradient while Prism loads */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/40 to-indigo-900/40" />
+            <Prism
+              height={3.5}
+              baseWidth={5.5}
+              animationType="3drotate"
+              glow={1.8}
+              noise={0.15}
+              transparent={true}
+              scale={3.6}
+              hueShift={0.5}
+              colorFrequency={1.2}
+              bloom={2.5}
+              timeScale={0.5}
+              suspendWhenOffscreen={false}
+            />
+          </div>
+
           {/* Animated particles that scatter on exit */}
           <div className="absolute inset-0 overflow-hidden">
             {particleStyles.map((particle, i) => (
