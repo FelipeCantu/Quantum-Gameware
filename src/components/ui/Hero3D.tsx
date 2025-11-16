@@ -12,7 +12,6 @@ import {
 } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import Prism from './Prism';
 
 // Extend CSSProperties to include CSS custom properties
 interface CustomCSSProperties extends CSSProperties {
@@ -418,7 +417,7 @@ export default function Hero() {
 
         {/* Opening Logo Animation Overlay */}
         <div
-          className={`fixed inset-0 z-[150] flex items-center justify-center transition-all duration-1200 bg-gray-900 ${
+          className={`fixed inset-0 z-[150] flex items-center justify-center transition-all duration-1200 overflow-hidden ${
             animationStarted
               ? 'translate-y-full scale-110 opacity-0'
               : 'translate-y-0 scale-100 opacity-100'
@@ -428,28 +427,21 @@ export default function Hero() {
             transitionTimingFunction: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
           } as CSSProperties}
         >
-          {/* Prism Background Effect - Main Background */}
-          <div className="absolute inset-0 opacity-60">
-            {/* Immediate fallback gradient while Prism loads */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/40 to-indigo-900/40" />
-            <Prism
-              height={3.5}
-              baseWidth={5.5}
-              animationType="3drotate"
-              glow={1.8}
-              noise={0.15}
-              transparent={true}
-              scale={3.6}
-              hueShift={0.5}
-              colorFrequency={1.2}
-              bloom={2.5}
-              timeScale={0.5}
-              suspendWhenOffscreen={false}
-            />
+          {/* Smooth Animated Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 animate-gradient-xy"></div>
+
+          {/* Smooth Floating Orbs */}
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-blob"></div>
+            <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-blob" style={{ animationDelay: '2s' } as CSSProperties}></div>
+            <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-indigo-500/30 rounded-full blur-3xl animate-blob" style={{ animationDelay: '4s' } as CSSProperties}></div>
           </div>
 
+          {/* Subtle Shimmer Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse"></div>
+
           {/* Animated particles that scatter on exit */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {particleStyles.map((particle, i) => (
               <div
                 key={i}
@@ -468,31 +460,31 @@ export default function Hero() {
             ))}
           </div>
 
-          <div 
-            className={`text-center relative z-10 transition-all duration-800 ${
-              animationStarted 
-                ? 'scale-75 -translate-y-8 opacity-0' 
+          <div
+            className={`text-center relative z-20 transition-all duration-1000 ease-out ${
+              animationStarted
+                ? 'scale-75 -translate-y-8 opacity-0'
                 : 'scale-100 translate-y-0 opacity-100'
             }`}
-            style={{ 
-              transitionDelay: animationStarted ? '200ms' : '500ms',
-              transitionTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            style={{
+              transitionDelay: animationStarted ? '0ms' : '500ms',
+              transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
             } as CSSProperties}
           >
             {/* Large Axolotl Mascot */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 w-64 h-64 mx-auto bg-gradient-to-br from-blue-400 to-purple-600 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-              <img 
-                src="/qg-axolotl-rbg.png" 
-                alt="QG Axolotl Mascot" 
-                className="relative w-64 h-64 mx-auto object-contain drop-shadow-2xl"
+            <div className="relative mb-8 animate-float">
+              <div className="absolute inset-0 w-64 h-64 mx-auto bg-gradient-to-br from-blue-400 via-purple-500 to-pink-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+              <img
+                src="/qg-axolotl-rbg.png"
+                alt="QG Axolotl Mascot"
+                className="relative w-64 h-64 mx-auto object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-110"
               />
             </div>
 
             {/* Header-style logo and brand name */}
-            <div className="flex items-center justify-center space-x-4">
-              <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-2 shadow-2xl">
-                <div className="w-full h-full bg-white rounded-xl flex items-center justify-center">
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-2xl p-2 shadow-2xl">
+                <div className="w-full h-full bg-white rounded-xl flex items-center justify-center transition-transform duration-300 hover:scale-105">
                   <img
                     src="/nextgens-logo.png"
                     alt="Quantum Gameware Logo"
@@ -500,18 +492,20 @@ export default function Hero() {
                   />
                 </div>
               </div>
-              
-              <div>
-                <span className="font-brand text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+
+              <div className="flex flex-col">
+                <span className="font-brand text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                   Quantum
                 </span>
-                <div className="font-brand text-lg text-white/80">Gameware</div>
+                <span className="font-brand text-xl text-white/90 tracking-wide">Gameware</span>
               </div>
             </div>
 
-            <div className="relative w-24 h-1 mx-auto mt-4 mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full"></div>
+            <div className="relative w-32 h-1 mx-auto mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse"></div>
+            </div>
 
-            <p className="text-white/80 text-base font-light tracking-wide">
+            <p className="text-white/90 text-lg font-light tracking-wide">
               Quality Gaming Gear at Great Prices
             </p>
           </div>
