@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import Cart from '@/components/Cart';
+import AIAssistant from '@/components/AIAssistant';
 import ThemeWrapper from '@/components/ThemeWrapper';
 import './globals.css';
 import ScrollBehavior from '@/components/ui/ScrollBehavior';
@@ -83,6 +84,7 @@ export default function RootLayout({
                   </main>
                   <Footer />
                   <Cart />
+                  <AIAssistant />
                 </ThemeWrapper>
               </CartProvider>
             </WishlistProvider>
