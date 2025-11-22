@@ -14,16 +14,88 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
   const decodedCategory = decodeURIComponent(category);
-  
+
   // Get category data
   const categoryData = getCategoryBySlug(decodedCategory);
-  
+
   // Get all products and filter by category
   const allProducts = await getProducts();
-  const categoryProducts = allProducts.filter(
-    product => product.category.toLowerCase() === categoryData?.name.toLowerCase() ||
-               product.category.toLowerCase().includes(decodedCategory.toLowerCase())
-  );
+
+  // Debug: Log category info
+  if (process.env.NODE_ENV === 'development') {
+    console.log('=== Category Page Debug ===');
+    console.log('Requested slug:', decodedCategory);
+    console.log('Category data:', categoryData?.name, 'slug:', categoryData?.slug);
+    console.log('All product categories:', [...new Set(allProducts.map(p => p.category))]);
+  }
+
+  // Better category filtering logic
+  const categoryProducts = allProducts.filter(product => {
+    if (!product.category || !categoryData) return false;
+
+    const productCategoryLower = product.category.toLowerCase().trim();
+    const categoryNameLower = categoryData.name.toLowerCase().trim();
+    const categorySlugLower = categoryData.slug.toLowerCase().trim();
+
+    // Direct exact match - highest priority
+    if (productCategoryLower === categoryNameLower) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✓ Matched ${product.name} - exact match`);
+      }
+      return true;
+    }
+
+    // Extract the main keyword from category slug (e.g., "mice", "keyboards", "headsets")
+    // This is the most reliable way to match
+    const slugKeyword = categorySlugLower.replace(/s$/, ''); // Remove plural 's' for better matching
+
+    // Check if product category contains the slug keyword
+    // For example: "Gaming Mice" contains "mice" or "mouse"
+    if (productCategoryLower.includes(categorySlugLower) ||
+        productCategoryLower.includes(slugKeyword)) {
+      return true;
+    }
+
+    // Also check singular/plural variations
+    // mice -> mouse, keyboards -> keyboard
+    const singularPlural = {
+      'mice': 'mouse',
+      'mouse': 'mice',
+      'keyboards': 'keyboard',
+      'keyboard': 'keyboards',
+      'headsets': 'headset',
+      'headset': 'headsets',
+      'monitors': 'monitor',
+      'monitor': 'monitors',
+      'controllers': 'controller',
+      'controller': 'controllers',
+      'chairs': 'chair',
+      'chair': 'chairs',
+      'mousepads': 'mousepad',
+      'mousepad': 'mousepads',
+      'microphones': 'microphone',
+      'microphone': 'microphones',
+      'speakers': 'speaker',
+      'speaker': 'speakers',
+      'accessories': 'accessory',
+      'accessory': 'accessories',
+      'webcams': 'webcam',
+      'webcam': 'webcams',
+    };
+
+    const alternateForm = singularPlural[categorySlugLower as keyof typeof singularPlural];
+    if (alternateForm && productCategoryLower.includes(alternateForm)) {
+      return true;
+    }
+
+    return false;
+  });
+
+  // Debug: Log results
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Found ${categoryProducts.length} products for category ${categoryData?.name}`);
+    console.log('Products:', categoryProducts.map(p => `${p.name} (${p.category})`));
+  }
 
   if (!categoryData) {
     return (

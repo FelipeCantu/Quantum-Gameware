@@ -170,11 +170,11 @@ export default function ActionButtons({ isScrolled, effectiveTheme, isMenuOpen, 
         </svg>
         {cartCount > 0 && (
           <span className={`
-            absolute -top-1 -right-1 text-white text-xs font-bold rounded-full 
-            h-5 w-5 flex items-center justify-center transform transition-all duration-300 
-            shadow-lg z-10 animate-pulse
-            ${isScrolled 
-              ? 'bg-gradient-to-r from-red-500 to-pink-500' 
+            absolute -top-1 -right-1 text-white text-xs font-bold rounded-full
+            h-5 w-5 flex items-center justify-center transform transition-all duration-300
+            shadow-lg z-10
+            ${isScrolled
+              ? 'bg-gradient-to-r from-red-500 to-pink-500'
               : 'bg-red-500'
             }
           `}>

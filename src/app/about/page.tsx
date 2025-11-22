@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import qgMascot from '../../../public/qg-axolotl.png';
+import qgMascot from '../../../public/qg-axolotl.jpg';
 
 export default function AboutPage() {
   return (

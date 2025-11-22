@@ -139,19 +139,22 @@ export default function Hero() {
   const [animationStarted, setAnimationStarted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Generate random values once for bubbles to avoid hydration mismatch
+  // Generate random values once for bubbles - only on client to avoid hydration mismatch
   const bubbleStyles = useMemo(() => {
+    if (!isClient) return [];
     return Array.from({ length: 10 }, () => ({
       left: `${Math.random() * 100}%`,
       duration: `${6 + Math.random() * 4}s`,
       delay: `${Math.random() * 5}s`,
       drift: `${(Math.random() - 0.5) * 100}px`,
     }));
-  }, []);
+  }, [isClient]);
 
-  // Generate random values once for scatter particles to avoid hydration mismatch
+  // Generate random values once for scatter particles - only on client to avoid hydration mismatch
   const particleStyles = useMemo(() => {
+    if (!isClient) return [];
     return Array.from({ length: 8 }, (_, i) => ({
       left: `${20 + (i * 7)}%`,
       top: `${30 + (i * 5)}%`,
@@ -160,6 +163,11 @@ export default function Hero() {
       transitionDelay: `${200 + i * 50}ms`,
       animationDelay: `${i * 100}ms`,
     }));
+  }, [isClient]);
+
+  // Set client flag after mount to avoid hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
   }, []);
 
   // Detect screen size for responsive 3D rendering

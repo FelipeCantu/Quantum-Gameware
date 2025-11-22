@@ -53,10 +53,13 @@ export default function CategoriesContent({ productCategories, productCounts }: 
                   category.name.toLowerCase().includes(c.name.toLowerCase())
                 );
 
+                // Use the proper category slug if found, otherwise derive from name
+                const categorySlug = categoryData?.slug || category.name.toLowerCase().replace(/\s+/g, '-');
+
                 return (
                   <Link
                     key={category.name}
-                    href={`/categories/${encodeURIComponent(category.name.toLowerCase().replace(/\s+/g, '-'))}`}
+                    href={`/categories/${categorySlug}`}
                     className="group relative bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:border-gray-200 animate-fade-in"
                     style={{ animationDelay: `${(categories.length + index) * 100}ms` }}
                   >
