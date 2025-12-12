@@ -105,8 +105,8 @@ export default function ProductCard({
         group relative ${getCardBgClass()} backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-sm hover:shadow-2xl
         transition-all duration-500 overflow-hidden
         ${effectiveTheme === 'light'
-          ? 'border border-gray-200 hover:border-gray-300 hover:bg-white'
-          : 'border border-white/20 hover:border-white/30 hover:bg-white/15'
+          ? 'border border-gray-200 hover:border-gray-300 hover:bg-white shadow-gray-200/50'
+          : 'border border-slate-700 hover:border-slate-600 hover:bg-slate-800/70 shadow-slate-900/50'
         }
         transform hover:scale-[1.02] flex flex-col h-full
         ${className}
@@ -225,11 +225,11 @@ export default function ProductCard({
         
         {/* Brand and Category - hidden on mobile for space */}
         <div className={`hidden sm:flex items-center gap-2 text-xs md:text-sm mb-2 md:mb-3 relative z-10 ${
-          effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-300'
+          effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-400'
         }`}>
           <span className="font-medium truncate">{product.brand}</span>
           <span className={`w-1 h-1 rounded-full flex-shrink-0 ${
-            effectiveTheme === 'light' ? 'bg-gray-400' : 'bg-gray-500'
+            effectiveTheme === 'light' ? 'bg-gray-400' : 'bg-gray-600'
           }`}></span>
           <span className="truncate">{product.category}</span>
         </div>
@@ -306,7 +306,7 @@ export default function ProductCard({
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
                   : effectiveTheme === 'light'
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300'
-                    : 'bg-white/20 text-gray-300 cursor-not-allowed border border-gray-600'
+                    : 'bg-slate-700/50 text-gray-400 cursor-not-allowed border border-slate-600'
                 }
               `}
             >

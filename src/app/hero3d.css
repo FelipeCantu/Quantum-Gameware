@@ -199,10 +199,3 @@ canvas {
 html {
   scroll-behavior: smooth;
 }
-
-/* Dark mode support (if needed) */
-@media (prefers-color-scheme: dark) {
-  .bg-gray-50 {
-    background-color: #0f172a;
-  }
-}

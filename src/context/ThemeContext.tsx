@@ -2,9 +2,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from './AuthContext';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
@@ -23,126 +22,62 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { user, refreshUser } = useAuth();
   const [theme, setThemeState] = useState<Theme>('light');
+  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('light');
 
-  // Load theme from user preferences or localStorage
+  // Load theme preference from localStorage on mount
   useEffect(() => {
-    console.log('🎨 ThemeContext useEffect triggered');
-    console.log('🎨 User object:', user);
-    console.log('🎨 User preferences:', user?.preferences);
-
-    if (user) {
-      // User is logged in - use their database preference
-      if (user.preferences?.theme && (user.preferences.theme === 'light' || user.preferences.theme === 'dark')) {
-        console.log('✅ Loading theme from user preferences:', user.preferences.theme);
-        setThemeState(user.preferences.theme);
-        localStorage.setItem('theme', user.preferences.theme);
-      } else if (user.preferences?.theme === 'system') {
-        console.log('⚙️ User has system preference, defaulting to light');
-        // If user has 'system' preference, default to 'light' for now
-        setThemeState('light');
-        localStorage.setItem('theme', 'light');
-      } else {
-        console.log('📦 No user preference, checking localStorage');
-        // No preference in database, check localStorage
-        const savedTheme = localStorage.getItem('theme') as Theme;
-        if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-          console.log('✅ Loading theme from localStorage:', savedTheme);
-          setThemeState(savedTheme);
-        } else {
-          console.log('🔆 No saved theme, defaulting to light');
-          setThemeState('light');
-          localStorage.setItem('theme', 'light');
-        }
-      }
-    } else {
-      console.log('👤 No user logged in, defaulting to light theme');
-      // User is NOT logged in - always default to light theme
-      setThemeState('light');
-      localStorage.setItem('theme', 'light');
+    const savedTheme = localStorage.getItem('theme') as Theme | null;
+    if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+      setThemeState(savedTheme);
     }
-  }, [user]);
+  }, []);
 
-  const setTheme = async (newTheme: Theme) => {
-    console.log('🎨 setTheme called with:', newTheme);
+  // Detect and track system theme preference
+  useEffect(() => {
+    if (window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+      // Set initial system theme
+      setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
+
+      // Listen for changes to system theme preference
+      const handler = (e: MediaQueryListEvent) => {
+        setSystemTheme(e.matches ? 'dark' : 'light');
+      };
+
+      mediaQuery.addEventListener('change', handler);
+
+      return () => mediaQuery.removeEventListener('change', handler);
+    }
+  }, []);
+
+  // Calculate effective theme based on user preference
+  const effectiveTheme: 'light' | 'dark' = theme === 'system' ? systemTheme : theme;
+
+  // Set theme preference and save to localStorage
+  const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem('theme', newTheme);
-
-    // If user is logged in, save theme to database
-    if (user) {
-      console.log('💾 User is logged in, saving to database...');
-      try {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          console.log('📡 Sending theme update to API:', newTheme);
-          const response = await fetch('/api/auth/profile', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              preferences: {
-                ...user.preferences,
-                theme: newTheme
-              }
-            })
-          });
-
-          if (response.ok) {
-            console.log('✅ Theme preference saved to database');
-
-            // Update localStorage userData with new theme preference
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-              try {
-                const parsedUser = JSON.parse(userData);
-                parsedUser.preferences = {
-                  ...parsedUser.preferences,
-                  theme: newTheme
-                };
-                localStorage.setItem('userData', JSON.stringify(parsedUser));
-                console.log('✅ Theme preference updated in localStorage');
-              } catch (error) {
-                console.error('❌ Error updating localStorage userData:', error);
-              }
-            }
-
-            // Refresh user data to sync the updated preference
-            await refreshUser();
-          } else {
-            console.error('❌ Failed to save theme preference to database');
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error saving theme preference:', error);
-      }
-    } else {
-      console.log('👤 User not logged in, theme only saved to localStorage');
-    }
   };
-
-  // Theme is always the effective theme (no system resolution needed)
-  const effectiveTheme: 'light' | 'dark' = theme;
 
   // Helper functions to get appropriate classes
   const getBgClass = () => {
     return effectiveTheme === 'light'
-      ? 'bg-white'
-      : 'bg-gray-900';
+      ? 'bg-gradient-to-br from-gray-50 to-gray-100'
+      : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
   };
 
   const getCardBgClass = () => {
     return effectiveTheme === 'light'
-      ? 'bg-white/90'
-      : 'bg-white/10';
+      ? 'bg-white'
+      : 'bg-slate-800/50';
   };
 
   const getTextClass = () => {
     return effectiveTheme === 'light'
       ? 'text-gray-900'
-      : 'text-white';
+      : 'text-gray-50';
   };
 
   const getSecondaryTextClass = () => {
@@ -160,19 +95,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const getBorderClass = () => {
     return effectiveTheme === 'light'
       ? 'border-gray-200'
-      : 'border-white/20';
+      : 'border-slate-700';
   };
 
   const getInputBgClass = () => {
     return effectiveTheme === 'light'
       ? 'bg-white border-gray-300'
-      : 'bg-white/10 border-white/30';
+      : 'bg-slate-800 border-slate-600';
   };
 
   const getHoverBgClass = () => {
     return effectiveTheme === 'light'
       ? 'hover:bg-gray-50'
-      : 'hover:bg-white/5';
+      : 'hover:bg-slate-700/50';
   };
 
   return (

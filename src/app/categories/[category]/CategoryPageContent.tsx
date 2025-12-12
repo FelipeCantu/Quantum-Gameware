@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import Link from 'next/link';
 import { Product } from '@/types';
-import CategoryProducts from '@/components/CategoryProducts';
+import CategoryFilter from '@/components/CategoryFilter';
+import ProductGrid from '@/components/ProductGrid';
 
 interface CategoryData {
   name: string;
@@ -25,6 +27,12 @@ interface CategoryPageContentProps {
 
 export default function CategoryPageContent({ categoryData, categoryProducts }: CategoryPageContentProps) {
   const { getBgClass, getTextClass, getSecondaryTextClass, getCardBgClass, getBorderClass } = useTheme();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(categoryProducts);
+
+  // Update filtered products when category products change
+  useEffect(() => {
+    setFilteredProducts(categoryProducts);
+  }, [categoryProducts]);
 
   return (
     <>
@@ -113,7 +121,61 @@ export default function CategoryPageContent({ categoryData, categoryProducts }: 
               </div>
             </div>
           ) : (
-            <CategoryProducts products={categoryProducts} categoryName={categoryData.name} />
+            <>
+              {/* Category Filter */}
+              <CategoryFilter
+                products={categoryProducts}
+                onFilterChange={setFilteredProducts}
+                selectedCategory={categoryData.slug}
+              />
+
+              {/* Products Grid */}
+              <div className="mb-16">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                  <div>
+                    <h2 className={`text-3xl font-bold ${getTextClass()} mb-2`}>
+                      All {categoryData.name}
+                    </h2>
+                    <p className={`${getSecondaryTextClass()} text-sm`}>
+                      Showing {filteredProducts.length} of {categoryProducts.length} products
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className={`px-5 py-3 rounded-xl ${getCardBgClass()} border-2 ${getBorderClass()} shadow-md`}>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full animate-pulse"></div>
+                          <span className={`${getSecondaryTextClass()} text-sm font-medium`}>Results:</span>
+                        </div>
+                        <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent">
+                          {filteredProducts.length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {filteredProducts.length > 0 ? (
+                  <ProductGrid products={filteredProducts} />
+                ) : (
+                  <div className={`${getCardBgClass()} rounded-2xl border-2 border-dashed ${getBorderClass()} p-12 text-center`}>
+                    <div className="max-w-md mx-auto">
+                      <div className="text-6xl mb-4">🔍</div>
+                      <h3 className={`text-xl font-bold ${getTextClass()} mb-2`}>No Products Found</h3>
+                      <p className={`${getSecondaryTextClass()} mb-6`}>
+                        Try adjusting your filters or search criteria to find what you're looking for.
+                      </p>
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-medium">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        {categoryProducts.length} total products available
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Related Categories */}

@@ -46,6 +46,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: '#23378e',
+  colorScheme: 'light',
 };
 
 export default function RootLayout({
@@ -57,16 +58,52 @@ export default function RootLayout({
     <html lang="en" className={brandFont.variable}>
       {/* REMOVED scroll-smooth class - this was preventing instant scroll to top */}
       <head>
-        {/* Light mode favicons (default) */}
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" media="(prefers-color-scheme: light)" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" media="(prefers-color-scheme: light)" />
+        <meta name="color-scheme" content="light only" />
+        {/* Theme initialization script - IGNORES browser/system preferences */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  // ALWAYS start by removing dark class
+                  document.documentElement.classList.remove('dark');
 
-        {/* Dark mode favicons */}
-        <link rel="icon" href="/favicon-dark.ico" type="image/x-icon" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96-dark.png" media="(prefers-color-scheme: dark)" />
+                  // Check if user is logged in
+                  const userData = localStorage.getItem('userData');
+                  const authToken = localStorage.getItem('authToken');
+                  const isLoggedIn = userData && authToken;
 
-        {/* Fallback for browsers that don't support media queries */}
+                  if (!isLoggedIn) {
+                    // User is NOT logged in - FORCE light mode, ignore system preference
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                  } else {
+                    // User IS logged in - ONLY use their explicit preference
+                    const user = JSON.parse(userData);
+                    const userTheme = user?.preferences?.theme;
+
+                    // Only add dark class if user EXPLICITLY chose dark mode
+                    if (userTheme === 'dark') {
+                      document.documentElement.classList.add('dark');
+                      localStorage.setItem('theme', 'dark');
+                    } else {
+                      // Default to light for logged-in users too
+                      document.documentElement.classList.remove('dark');
+                      localStorage.setItem('theme', 'light');
+                    }
+                  }
+                } catch (e) {
+                  // If anything fails, FORCE light mode
+                  document.documentElement.classList.remove('dark');
+                  localStorage.setItem('theme', 'light');
+                }
+              })();
+            `,
+          }}
+        />
+        {/* Favicons - no system dark mode detection */}
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
 
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />

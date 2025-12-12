@@ -1,0 +1,797 @@
+[
+  {
+    "name": "ASUS ROG Swift PG27AQDM",
+    "slug": "asus-rog-swift-pg27aqdm",
+    "description": "27-inch OLED gaming monitor with 240Hz refresh rate, stunning colors, and lightning-fast 0.03ms response time. Perfect for competitive gaming with G-SYNC compatibility.",
+    "price": 899,
+    "originalPrice": 999,
+    "category": "Gaming Monitors",
+    "brand": "ASUS",
+    "features": [
+      "27-inch OLED display",
+      "2560x1440 QHD resolution",
+      "240Hz refresh rate",
+      "0.03ms response time",
+      "G-SYNC compatible",
+      "HDR support",
+      "Custom heatsink for OLED protection"
+    ],
+    "compatibility": ["pc", "ps5", "xbox-series"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": true,
+    "rating": 4.9,
+    "categoryAttributes": {
+      "screenSize": 27,
+      "refreshRate": 240,
+      "resolution": ["1440p"],
+      "panelType": ["oled"],
+      "responseTime": "1ms",
+      "curved": false,
+      "hdr": ["hdr10", "hdr400"]
+    }
+  },
+  {
+    "name": "Samsung Odyssey G9",
+    "slug": "samsung-odyssey-g9",
+    "description": "49-inch super ultrawide curved gaming monitor with stunning 5120x1440 resolution and 240Hz refresh rate. Immerse yourself in games with the 1000R curve.",
+    "price": 1299,
+    "originalPrice": 1499,
+    "category": "Gaming Monitors",
+    "brand": "Samsung",
+    "features": [
+      "49-inch super ultrawide display",
+      "5120x1440 Dual QHD resolution",
+      "240Hz refresh rate",
+      "1ms response time",
+      "1000R curve",
+      "Quantum Dot technology",
+      "G-SYNC and FreeSync Premium Pro"
+    ],
+    "compatibility": ["pc", "ps5", "xbox-series"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.8,
+    "categoryAttributes": {
+      "screenSize": 49,
+      "refreshRate": 240,
+      "resolution": ["super-ultrawide"],
+      "panelType": ["va", "quantum-dot"],
+      "responseTime": "1ms",
+      "curved": true,
+      "hdr": ["hdr1000"]
+    }
+  },
+  {
+    "name": "LG UltraGear 27GN950-B",
+    "slug": "lg-ultragear-27gn950-b",
+    "description": "27-inch 4K UHD gaming monitor with Nano IPS technology, 144Hz refresh rate, and stunning color accuracy. Perfect for both gaming and content creation.",
+    "price": 699,
+    "category": "Gaming Monitors",
+    "brand": "LG",
+    "features": [
+      "27-inch 4K display",
+      "3840x2160 UHD resolution",
+      "144Hz refresh rate with overclock to 160Hz",
+      "1ms response time",
+      "Nano IPS technology",
+      "98% DCI-P3 color gamut",
+      "G-SYNC compatible"
+    ],
+    "compatibility": ["pc", "ps5", "xbox-series"],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "screenSize": 27,
+      "refreshRate": 144,
+      "resolution": ["4k"],
+      "panelType": ["ips"],
+      "responseTime": "1ms",
+      "curved": false,
+      "hdr": ["hdr600"]
+    }
+  },
+  {
+    "name": "Logitech G Pro X Superlight",
+    "slug": "logitech-g-pro-x-superlight",
+    "description": "Ultra-lightweight wireless gaming mouse designed for esports pros. Weighing under 63g with HERO 25K sensor and 70-hour battery life.",
+    "price": 159,
+    "category": "Gaming Mice",
+    "brand": "Logitech",
+    "features": [
+      "Sub-63g lightweight design",
+      "HERO 25K sensor",
+      "25,600 DPI",
+      "LIGHTSPEED wireless technology",
+      "70-hour battery life",
+      "Zero additive PTFE feet",
+      "Five programmable buttons"
+    ],
+    "compatibility": ["pc"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.9,
+    "categoryAttributes": {
+      "dpiRange": 25600,
+      "weight": 63,
+      "sensorType": "optical",
+      "handOrientation": "ambidextrous",
+      "connection": ["wireless-24ghz"],
+      "rgbLighting": false
+    }
+  },
+  {
+    "name": "Razer DeathAdder V3 Pro",
+    "slug": "razer-deathadder-v3-pro",
+    "description": "Ergonomic wireless gaming mouse with Focus Pro 30K sensor and legendary DeathAdder shape. Perfect for palm grip gamers.",
+    "price": 149,
+    "originalPrice": 169,
+    "category": "Gaming Mice",
+    "brand": "Razer",
+    "features": [
+      "Focus Pro 30K Optical Sensor",
+      "30,000 DPI",
+      "59g lightweight",
+      "Razer HyperSpeed Wireless",
+      "90-hour battery life",
+      "Ergonomic right-handed design",
+      "Gen-3 Optical Mouse Switches"
+    ],
+    "compatibility": ["pc"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": true,
+    "rating": 4.8,
+    "categoryAttributes": {
+      "dpiRange": 30000,
+      "weight": 59,
+      "sensorType": "optical",
+      "handOrientation": "right-handed",
+      "connection": ["wireless-24ghz", "wired"],
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "Glorious Model O Wireless",
+    "slug": "glorious-model-o-wireless",
+    "description": "Honeycomb lightweight wireless gaming mouse with customizable RGB and incredible 71-hour battery life. Perfect for FPS gamers.",
+    "price": 79,
+    "category": "Gaming Mice",
+    "brand": "Glorious",
+    "features": [
+      "Honeycomb shell design",
+      "69g lightweight",
+      "BAMF 2.0 Sensor - 19,000 DPI",
+      "71-hour battery life",
+      "Glorious FORGE wireless",
+      "G-Skates feet",
+      "Customizable RGB"
+    ],
+    "compatibility": ["pc"],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.6,
+    "categoryAttributes": {
+      "dpiRange": 19000,
+      "weight": 69,
+      "sensorType": "optical",
+      "handOrientation": "ambidextrous",
+      "connection": ["wireless-24ghz", "wired"],
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "Keychron Q1 Pro",
+    "slug": "keychron-q1-pro",
+    "description": "Premium wireless mechanical keyboard with hot-swappable switches, full aluminum body, and tri-mode connectivity. Customize to your heart's content.",
+    "price": 199,
+    "category": "Gaming Keyboards",
+    "brand": "Keychron",
+    "features": [
+      "75% compact layout",
+      "Hot-swappable switches",
+      "Full CNC aluminum body",
+      "Tri-mode connectivity",
+      "QMK/VIA programmable",
+      "South-facing RGB",
+      "Double-gasket design"
+    ],
+    "compatibility": ["pc", "mac"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": true,
+    "rating": 4.9,
+    "categoryAttributes": {
+      "switchType": ["mechanical"],
+      "keyboardSize": "75",
+      "hotSwappable": true,
+      "connection": ["usb-c", "wireless-24ghz", "bluetooth"],
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "Corsair K70 RGB PRO",
+    "slug": "corsair-k70-rgb-pro",
+    "description": "Full-size mechanical gaming keyboard with Cherry MX switches, tournament-grade features, and stunning per-key RGB lighting.",
+    "price": 169,
+    "originalPrice": 189,
+    "category": "Gaming Keyboards",
+    "brand": "Corsair",
+    "features": [
+      "Cherry MX mechanical switches",
+      "Full-size layout with numpad",
+      "Per-key RGB backlighting",
+      "Dedicated media controls",
+      "Detachable USB-C cable",
+      "Tournament switch for instant focus",
+      "8MB onboard storage"
+    ],
+    "compatibility": ["pc"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "switchType": ["mechanical", "linear"],
+      "keyboardSize": "full-size",
+      "hotSwappable": false,
+      "connection": ["usb-c"],
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "Ducky One 3 TKL",
+    "slug": "ducky-one-3-tkl",
+    "description": "Premium TKL mechanical keyboard with hot-swappable switches and beautiful dual-tone colorway. Built like a tank.",
+    "price": 139,
+    "category": "Gaming Keyboards",
+    "brand": "Ducky",
+    "features": [
+      "TKL compact layout",
+      "Hot-swappable Cherry MX switches",
+      "PBT double-shot keycaps",
+      "Dual-tone colorway",
+      "USB-C connection",
+      "Per-key RGB lighting",
+      "N-key rollover"
+    ],
+    "compatibility": ["pc", "mac"],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.8,
+    "categoryAttributes": {
+      "switchType": ["mechanical", "tactile"],
+      "keyboardSize": "tkl",
+      "hotSwappable": true,
+      "connection": ["usb-c"],
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "SteelSeries Arctis Nova Pro Wireless",
+    "slug": "steelseries-arctis-nova-pro-wireless",
+    "description": "Premium wireless gaming headset with active noise cancellation, 360° spatial audio, and dual-battery hot-swap system for unlimited playtime.",
+    "price": 349,
+    "category": "Gaming Headsets",
+    "brand": "SteelSeries",
+    "features": [
+      "Active Noise Cancellation",
+      "360° Spatial Audio",
+      "Dual battery hot-swap system",
+      "Premium Hi-Res speakers",
+      "ClearCast Gen 2 AI mic",
+      "GameDAC wireless transmitter",
+      "Multi-platform support"
+    ],
+    "compatibility": ["pc", "ps5", "xbox-series", "switch"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": true,
+    "rating": 4.8,
+    "categoryAttributes": {
+      "driverSize": 40,
+      "surroundSound": ["7.1", "virtual"],
+      "noiseCancellation": "active",
+      "micType": ["retractable", "boom"],
+      "connection": ["wireless-24ghz", "usb"]
+    }
+  },
+  {
+    "name": "HyperX Cloud Alpha Wireless",
+    "slug": "hyperx-cloud-alpha-wireless",
+    "description": "Wireless gaming headset with industry-leading 300-hour battery life, dual chamber drivers, and exceptional comfort for marathon gaming sessions.",
+    "price": 199,
+    "originalPrice": 229,
+    "category": "Gaming Headsets",
+    "brand": "HyperX",
+    "features": [
+      "300-hour battery life",
+      "Dual chamber drivers",
+      "DTS Headphone:X Spatial Audio",
+      "Detachable noise-cancelling mic",
+      "Memory foam ear cushions",
+      "Durable aluminum frame",
+      "50mm drivers"
+    ],
+    "compatibility": ["pc", "ps5", "ps4"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "driverSize": 50,
+      "surroundSound": ["stereo", "virtual"],
+      "noiseCancellation": "passive",
+      "micType": ["detachable", "boom"],
+      "connection": ["wireless-24ghz"]
+    }
+  },
+  {
+    "name": "Audio-Technica ATH-M50x",
+    "slug": "audio-technica-ath-m50x",
+    "description": "Professional studio monitor headphones perfect for gaming and music production. Exceptional sound quality with 45mm large-aperture drivers.",
+    "price": 149,
+    "category": "Gaming Headsets",
+    "brand": "Audio-Technica",
+    "features": [
+      "45mm large-aperture drivers",
+      "Professional studio sound",
+      "90° swiveling earcups",
+      "Detachable cables (3 included)",
+      "Exceptional clarity",
+      "Collapsible design",
+      "Proprietary 45mm drivers"
+    ],
+    "compatibility": ["pc", "mobile"],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.9,
+    "categoryAttributes": {
+      "driverSize": 45,
+      "surroundSound": ["stereo"],
+      "noiseCancellation": "passive",
+      "micType": ["fixed"],
+      "connection": ["3.5mm"]
+    }
+  },
+  {
+    "name": "Secretlab Titan Evo 2022",
+    "slug": "secretlab-titan-evo-2022",
+    "description": "Premium gaming chair with next-gen ergonomics, magnetic memory foam head pillow, and patented 4-way L-ADAPT lumbar support.",
+    "price": 549,
+    "category": "Gaming Chairs",
+    "brand": "Secretlab",
+    "features": [
+      "NEO Hybrid Leatherette",
+      "4-way L-ADAPT lumbar support",
+      "Magnetic memory foam pillow",
+      "4D armrests",
+      "165° recline",
+      "Cold-cure foam",
+      "Available in 3 sizes"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.9,
+    "categoryAttributes": {
+      "material": ["pu-leather"],
+      "maxWeight": 285,
+      "lumbarSupport": "adjustable",
+      "armrestType": ["4d"],
+      "reclineAngle": "155-180"
+    }
+  },
+  {
+    "name": "Herman Miller X Logitech G Embody",
+    "slug": "herman-miller-embody",
+    "description": "The ultimate ergonomic gaming chair designed in partnership with Logitech G. Science-backed comfort for 12+ hour gaming sessions.",
+    "price": 1595,
+    "category": "Gaming Chairs",
+    "brand": "Herman Miller",
+    "features": [
+      "Science-backed ergonomics",
+      "Copper-infused cooling foam",
+      "BackFit adjustment",
+      "Pixelated support system",
+      "4D armrests",
+      "12-year warranty",
+      "Sustainable materials"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 5.0,
+    "categoryAttributes": {
+      "material": ["fabric", "mesh"],
+      "maxWeight": 300,
+      "lumbarSupport": "adjustable",
+      "armrestType": ["4d"],
+      "reclineAngle": "90-120"
+    }
+  },
+  {
+    "name": "Corsair T3 Rush",
+    "slug": "corsair-t3-rush",
+    "description": "Affordable gaming chair with breathable fabric upholstery, class 4 gas lift, and premium comfort without breaking the bank.",
+    "price": 299,
+    "category": "Gaming Chairs",
+    "brand": "Corsair",
+    "features": [
+      "Breathable soft fabric",
+      "Class 4 gas lift",
+      "Wide, plush seat cushion",
+      "Adjustable armrests",
+      "180° recline",
+      "Memory foam lumbar pillow",
+      "3-year warranty"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.5,
+    "categoryAttributes": {
+      "material": ["fabric"],
+      "maxWeight": 264,
+      "lumbarSupport": "pillow",
+      "armrestType": ["2d"],
+      "reclineAngle": "155-180"
+    }
+  },
+  {
+    "name": "Razer Gigantus V2",
+    "slug": "razer-gigantus-v2",
+    "description": "Extended cloth gaming mouse pad with textured micro-weave cloth surface for pixel-precise tracking and optimized control.",
+    "price": 29,
+    "category": "Mouse Pads",
+    "brand": "Razer",
+    "features": [
+      "Extended size (940 x 410mm)",
+      "Textured micro-weave cloth",
+      "Optimized for all sensitivity",
+      "Anti-slip rubber base",
+      "3mm thickness",
+      "Stitched edges",
+      "Machine washable"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.6,
+    "categoryAttributes": {
+      "size": ["extended"],
+      "surfaceType": ["cloth-control"],
+      "thickness": 3,
+      "stitchedEdges": true,
+      "rgbLighting": false
+    }
+  },
+  {
+    "name": "SteelSeries QcK Prism",
+    "slug": "steelseries-qck-prism",
+    "description": "Premium RGB mouse pad with dual-textured surface and 12-zone RGB lighting. Choose between speed or control surfaces.",
+    "price": 59,
+    "category": "Mouse Pads",
+    "brand": "SteelSeries",
+    "features": [
+      "Dual-textured surface",
+      "12-zone RGB lighting",
+      "Medium size (320 x 270mm)",
+      "USB powered",
+      "Durable cloth surface",
+      "Anti-slip rubber base",
+      "Compatible with SteelSeries Engine"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "size": ["medium"],
+      "surfaceType": ["cloth-balanced"],
+      "thickness": 4,
+      "stitchedEdges": true,
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "Artisan Hien Soft",
+    "slug": "artisan-hien-soft",
+    "description": "Premium Japanese mouse pad with unique CORDURA fabric surface. The gold standard for competitive FPS gaming.",
+    "price": 55,
+    "category": "Mouse Pads",
+    "brand": "Artisan",
+    "features": [
+      "CORDURA fabric surface",
+      "Mid size (330 x 280mm)",
+      "Soft foam base",
+      "Unmatched durability",
+      "Fast glide surface",
+      "Anti-slip backing",
+      "Made in Japan"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.9,
+    "categoryAttributes": {
+      "size": ["medium"],
+      "surfaceType": ["cloth-speed"],
+      "thickness": 4,
+      "stitchedEdges": false,
+      "rgbLighting": false
+    }
+  },
+  {
+    "name": "Blue Yeti X",
+    "slug": "blue-yeti-x",
+    "description": "Professional USB condenser microphone with four-capsule array and Blue VO!CE effects. Perfect for streaming and content creation.",
+    "price": 169,
+    "category": "Gaming Microphones",
+    "brand": "Blue Yeti",
+    "features": [
+      "Four-capsule condenser array",
+      "Four pickup patterns",
+      "High-res LED metering",
+      "Blue VO!CE effects",
+      "24-bit/48kHz audio",
+      "Multi-function smart knob",
+      "Headphone output with monitoring"
+    ],
+    "compatibility": ["pc", "mac"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "polarPattern": ["cardioid", "omnidirectional", "bidirectional", "multi-pattern"],
+      "sampleRate": ["48khz"],
+      "mountType": ["desktop"],
+      "connection": ["usb"]
+    }
+  },
+  {
+    "name": "Shure SM7B",
+    "slug": "shure-sm7b",
+    "description": "Legendary broadcast-quality dynamic microphone used by professionals worldwide. Smooth, warm sound with excellent noise rejection.",
+    "price": 399,
+    "category": "Gaming Microphones",
+    "brand": "Shure",
+    "features": [
+      "Dynamic cardioid microphone",
+      "Flat, wide-range frequency response",
+      "Bass roll-off and mid-range emphasis",
+      "Internal shock mount",
+      "Detachable windscreen",
+      "Professional XLR output",
+      "Made in USA"
+    ],
+    "compatibility": [],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 5.0,
+    "categoryAttributes": {
+      "polarPattern": ["cardioid"],
+      "sampleRate": ["48khz"],
+      "mountType": ["boom-arm", "shock-mount"],
+      "connection": ["xlr"]
+    }
+  },
+  {
+    "name": "Elgato Wave:3",
+    "slug": "elgato-wave-3",
+    "description": "Premium USB condenser microphone designed for streaming with Wave Link app for advanced mixing and multi-source control.",
+    "price": 149,
+    "category": "Gaming Microphones",
+    "brand": "Elgato",
+    "features": [
+      "Premium condenser capsule",
+      "Cardioid polar pattern",
+      "24-bit/96kHz audio",
+      "Clipguard technology",
+      "Capacitive mute button",
+      "Wave Link software included",
+      "Stream deck integration"
+    ],
+    "compatibility": ["pc", "mac"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.8,
+    "categoryAttributes": {
+      "polarPattern": ["cardioid"],
+      "sampleRate": ["96khz"],
+      "mountType": ["desktop", "boom-arm"],
+      "connection": ["usb"]
+    }
+  },
+  {
+    "name": "Logitech G560",
+    "slug": "logitech-g560",
+    "description": "2.1 gaming speakers with DTS:X Ultra surround sound and screen-reactive LIGHTSYNC RGB lighting for immersive gaming.",
+    "price": 199,
+    "originalPrice": 229,
+    "category": "Gaming Speakers",
+    "brand": "Logitech",
+    "features": [
+      "2.1 configuration with subwoofer",
+      "240W peak power",
+      "DTS:X Ultra surround sound",
+      "Screen-reactive RGB",
+      "Four lighting zones per speaker",
+      "Bluetooth connectivity",
+      "3.5mm and USB inputs"
+    ],
+    "compatibility": ["pc"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.6,
+    "categoryAttributes": {
+      "configuration": ["2.1"],
+      "powerOutput": 120,
+      "rgbLighting": true,
+      "connection": ["usb", "3.5mm", "bluetooth"],
+      "features": ["remote", "bass-boost"]
+    }
+  },
+  {
+    "name": "Razer Nommo Pro",
+    "slug": "razer-nommo-pro",
+    "description": "Premium 2.1 THX certified gaming speakers with Dolby Virtual Surround Sound and customizable Chroma RGB.",
+    "price": 499,
+    "category": "Gaming Speakers",
+    "brand": "Razer",
+    "features": [
+      "THX certified",
+      "Dolby Virtual Surround",
+      "Down-firing subwoofer",
+      "3-inch full range drivers",
+      "6.5-inch subwoofer",
+      "Razer Chroma RGB",
+      "Automatic bass calibration"
+    ],
+    "compatibility": ["pc"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "configuration": ["2.1"],
+      "powerOutput": 200,
+      "rgbLighting": true,
+      "connection": ["usb", "optical", "3.5mm"],
+      "features": ["bass-boost", "volume-knob"]
+    }
+  },
+  {
+    "name": "Creative Pebble V3",
+    "slug": "creative-pebble-v3",
+    "description": "Minimalist 2.0 USB-powered desktop speakers with RGB lighting and 8W RMS power. Perfect for small setups.",
+    "price": 29,
+    "category": "Gaming Speakers",
+    "brand": "Creative",
+    "features": [
+      "Compact 2.0 design",
+      "8W RMS total power",
+      "USB-C powered",
+      "45° elevated drivers",
+      "Built-in gain control",
+      "RGB lighting",
+      "3.5mm aux and Bluetooth 5.0"
+    ],
+    "compatibility": ["pc", "mobile"],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": true,
+    "rating": 4.5,
+    "categoryAttributes": {
+      "configuration": ["2.0"],
+      "powerOutput": 8,
+      "rgbLighting": true,
+      "connection": ["usb", "3.5mm", "bluetooth"],
+      "features": ["volume-knob"]
+    }
+  },
+  {
+    "name": "Xbox Elite Wireless Controller Series 2",
+    "slug": "xbox-elite-series-2",
+    "description": "Premium customizable Xbox controller with adjustable-tension thumbsticks, interchangeable components, and up to 40 hours of battery life.",
+    "price": 179,
+    "category": "Gaming Controllers",
+    "brand": "Xbox",
+    "features": [
+      "Adjustable-tension thumbsticks",
+      "Interchangeable components",
+      "Wrap-around rubberized grip",
+      "Shorter hair trigger locks",
+      "40-hour rechargeable battery",
+      "Wireless and Bluetooth",
+      "Carrying case included"
+    ],
+    "compatibility": ["pc", "xbox-series", "xbox-one"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": false,
+    "rating": 4.7,
+    "categoryAttributes": {
+      "customizable": true,
+      "controllerType": ["pro"],
+      "backButtons": true,
+      "connection": ["wireless-24ghz", "bluetooth", "wired-usb"],
+      "rgbLighting": false
+    }
+  },
+  {
+    "name": "PlayStation 5 DualSense Edge",
+    "slug": "ps5-dualsense-edge",
+    "description": "Customizable high-performance PS5 controller with replaceable stick modules, back buttons, and adjustable triggers.",
+    "price": 199,
+    "category": "Gaming Controllers",
+    "brand": "PlayStation",
+    "features": [
+      "Replaceable stick modules",
+      "Back buttons",
+      "Adjustable trigger travel",
+      "Trigger stop switches",
+      "USB-C braided cable",
+      "Carrying case",
+      "Three stick cap sets"
+    ],
+    "compatibility": ["pc", "ps5"],
+    "inStock": true,
+    "isFeatured": true,
+    "isNew": true,
+    "rating": 4.8,
+    "categoryAttributes": {
+      "customizable": true,
+      "controllerType": ["pro"],
+      "backButtons": true,
+      "connection": ["bluetooth", "wired-usb"],
+      "rgbLighting": true
+    }
+  },
+  {
+    "name": "8BitDo Pro 2",
+    "slug": "8bitdo-pro-2",
+    "description": "Versatile wireless controller with customizable buttons, back paddles, and compatibility with Switch, PC, Android, and more.",
+    "price": 49,
+    "category": "Gaming Controllers",
+    "brand": "8BitDo",
+    "features": [
+      "Multi-platform support",
+      "Customizable button mapping",
+      "Back buttons",
+      "20-hour battery life",
+      "Software customization",
+      "Ergonomic design",
+      "USB-C charging"
+    ],
+    "compatibility": ["pc", "switch", "mobile"],
+    "inStock": true,
+    "isFeatured": false,
+    "isNew": false,
+    "rating": 4.6,
+    "categoryAttributes": {
+      "customizable": true,
+      "controllerType": ["standard"],
+      "backButtons": true,
+      "connection": ["bluetooth", "wired-usb"],
+      "rgbLighting": false
+    }
+  }
+]

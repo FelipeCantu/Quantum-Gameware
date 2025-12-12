@@ -1,5 +1,68 @@
 // File: src/types/index.ts (ADD TO YOUR EXISTING TYPES OR CREATE NEW)
 
+export interface CategoryAttributes {
+  // Gaming Keyboards
+  switchType?: string[];
+  keyboardSize?: string;
+  hotSwappable?: boolean;
+
+  // Gaming Mice
+  dpiRange?: number;
+  weight?: number;
+  sensorType?: string;
+  handOrientation?: string;
+
+  // Gaming Headsets
+  driverSize?: number;
+  surroundSound?: string[];
+  noiseCancellation?: string;
+  micType?: string[];
+
+  // Gaming Monitors
+  screenSize?: number;
+  refreshRate?: number;
+  resolution?: string[];
+  panelType?: string[];
+  responseTime?: string;
+  curved?: boolean;
+  hdr?: string[];
+
+  // Gaming Controllers
+  customizable?: boolean;
+  controllerType?: string[];
+  backButtons?: boolean;
+
+  // Gaming Chairs
+  material?: string[];
+  maxWeight?: number;
+  lumbarSupport?: string;
+  armrestType?: string[];
+  reclineAngle?: string;
+
+  // Mouse Pads
+  size?: string[];
+  surfaceType?: string[];
+  thickness?: number;
+  stitchedEdges?: boolean;
+
+  // Gaming Microphones
+  polarPattern?: string[];
+  sampleRate?: string[];
+  mountType?: string[];
+
+  // Gaming Speakers
+  configuration?: string[];
+  powerOutput?: number;
+  features?: string[];
+
+  // Common attributes
+  connection?: string[];
+  rgbLighting?: boolean;
+
+  // Gaming Accessories
+  accessoryType?: string[];
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -16,6 +79,7 @@ export interface Product {
   inStock: boolean;
   isNew?: boolean;
   rating?: number;
+  categoryAttributes?: CategoryAttributes;
 }
 
 export interface CartItem extends Product {

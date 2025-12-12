@@ -20,6 +20,7 @@ const productFields = `
   isNew,
   rating,
   "slug": slug.current,
+  categoryAttributes,
   _createdAt,
   _updatedAt
 `;

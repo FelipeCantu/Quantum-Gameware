@@ -20,15 +20,9 @@ function SettingsPageContent() {
     emailNotifications: user?.preferences?.emailNotifications ?? true,
     smsNotifications: user?.preferences?.smsNotifications ?? false,
     marketingEmails: user?.preferences?.marketingEmails ?? false,
-    theme: theme,
     currency: user?.preferences?.currency || 'USD',
     language: user?.preferences?.language || 'en'
   });
-
-  // Sync formData theme with context theme
-  useEffect(() => {
-    setFormData(prev => ({ ...prev, theme }));
-  }, [theme]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -38,11 +32,6 @@ function SettingsPageContent() {
       ...prev,
       [name]: newValue
     }));
-
-    // Update theme in context immediately for real-time preview
-    if (name === 'theme') {
-      setTheme(value as 'light' | 'dark');
-    }
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -58,7 +47,6 @@ function SettingsPageContent() {
           emailNotifications: formData.emailNotifications,
           smsNotifications: formData.smsNotifications,
           marketingEmails: formData.marketingEmails,
-          theme: formData.theme as 'light' | 'dark',
           currency: formData.currency,
           language: formData.language
         }
@@ -209,19 +197,6 @@ function SettingsPageContent() {
                   <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Display Preferences</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Theme</label>
-                      <select
-                        name="theme"
-                        value={formData.theme}
-                        onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                      >
-                        <option value="light" className="bg-gray-800">Light</option>
-                        <option value="dark" className="bg-gray-800">Dark</option>
-                      </select>
-                    </div>
-
-                    <div>
                       <label className="block text-white font-medium mb-2 text-sm sm:text-base">Currency</label>
                       <select
                         name="currency"
@@ -250,6 +225,25 @@ function SettingsPageContent() {
                         <option value="de" className="bg-gray-800">Deutsch</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Theme Selector */}
+                  <div className="mt-6">
+                    <label className="block text-white font-medium mb-2 text-sm sm:text-base">Theme</label>
+                    <select
+                      value={theme}
+                      onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                    >
+                      <option value="system" className="bg-gray-800">System (Auto)</option>
+                      <option value="light" className="bg-gray-800">Light</option>
+                      <option value="dark" className="bg-gray-800">Dark</option>
+                    </select>
+                    <p className="text-white/60 text-xs sm:text-sm mt-2">
+                      {theme === 'system'
+                        ? 'Theme will automatically match your system preference'
+                        : `Theme is set to ${theme} mode`}
+                    </p>
                   </div>
                 </div>
 

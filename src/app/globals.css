@@ -1,6 +1,15 @@
 /* src/app/globals.css */
 @import "tailwindcss";
 
+/* ===== ALLOW BROWSER THEME PREFERENCE ===== */
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  color-scheme: light dark;
+}
+
 /* ===== CSS VARIABLES ===== */
 :root {
   /* Light theme colors */
@@ -36,6 +45,7 @@
   --space-2xl: 3rem;
 }
 
+/* Dark mode CSS variables - activated by browser preference */
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 248, 250, 252;
