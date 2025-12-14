@@ -23,7 +23,7 @@ export default async function Home() {
         {/* <Hero /> */}
 
         {/* Themed product sections */}
-        <HomeContent featuredProducts={featuredProducts} products={products} />
+        <HomeContent featuredProducts={featuredProducts} />
       </div>
     );
     
@@ -34,7 +34,7 @@ export default async function Home() {
       <div>
         {/* Even in error state, show the 3D Hero */}
         <Hero3D />
-        <HomeContent featuredProducts={[]} products={[]} />
+        <HomeContent featuredProducts={[]} />
       </div>
     );
   }

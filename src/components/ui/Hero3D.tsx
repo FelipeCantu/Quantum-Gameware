@@ -55,28 +55,28 @@ function HeadphonesModel({
         // Remove background/wall elements
         const backgroundNames = ['background', 'wall', 'floor', 'plane', 'backdrop', 'ground', 'base'];
         const childName = child.name.toLowerCase();
-        
+
         const isBackground = backgroundNames.some(name => childName.includes(name));
-        
+
         if (child.geometry) {
           const box = new THREE.Box3().setFromObject(child);
           const size = new THREE.Vector3();
           box.getSize(size);
-          
+
           const isLargeFlatPlane = (
-            (size.x > 10 || size.y > 10 || size.z > 10) && 
+            (size.x > 10 || size.y > 10 || size.z > 10) &&
             (size.x < 0.5 || size.y < 0.5 || size.z < 0.5)
           );
-          
+
           if (isBackground || isLargeFlatPlane) {
             child.visible = false;
             return;
           }
         }
-        
+
         child.castShadow = true;
         child.receiveShadow = true;
-        
+
         if (child.material instanceof THREE.MeshStandardMaterial) {
           child.material.envMapIntensity = 0.5;
           child.material.roughness = 0.4;
@@ -319,11 +319,11 @@ export default function Hero() {
           animation: counter-up 0.8s ease-out forwards;
         }
       `}</style>
-      
+
       <section className="relative overflow-hidden">
         {/* Animated moving gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 animate-gradient-xy">
-          
+
           {/* Underwater effect - floating bubbles */}
           <div className="absolute inset-0 overflow-hidden">
             {/* Small bubbles */}
@@ -339,30 +339,30 @@ export default function Hero() {
                 } as CustomCSSProperties}
               />
             ))}
-            
+
             {/* Underwater plants/kelp effect */}
-            <div 
+            <div
               className="absolute bottom-0 left-1/4 w-1 h-32 bg-gradient-to-t from-green-600/30 to-transparent animate-sway"
               style={{
-                '--sway-distance': '15px', 
-                '--sway-duration': '4s', 
+                '--sway-distance': '15px',
+                '--sway-duration': '4s',
                 '--sway-rotation': '3deg'
-              } as CustomCSSProperties} 
+              } as CustomCSSProperties}
             />
-            <div 
+            <div
               className="absolute bottom-0 right-1/4 w-1 h-36 bg-gradient-to-t from-teal-600/30 to-transparent animate-sway"
               style={{
-                '--sway-distance': '12px', 
-                '--sway-duration': '4.5s', 
+                '--sway-distance': '12px',
+                '--sway-duration': '4.5s',
                 '--sway-rotation': '4deg'
-              } as CustomCSSProperties} 
+              } as CustomCSSProperties}
             />
           </div>
-        
+
           {/* Floating orbs */}
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animate-float"></div>
-          <div 
-            className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animate-float" 
+          <div
+            className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animate-float"
             style={{ animationDelay: '2s' } as CSSProperties}
           ></div>
         </div>
@@ -388,12 +388,12 @@ export default function Hero() {
               intensity={0.6}
               color="#b8b8ff"
             />
-            <directionalLight 
-              position={[-5, 3, -5]} 
-              intensity={0.3} 
-              color="#8b5cf6" 
+            <directionalLight
+              position={[-5, 3, -5]}
+              intensity={0.3}
+              color="#8b5cf6"
             />
-            
+
             <Environment preset="city" environmentIntensity={0.3} />
 
             <Suspense fallback={null}>
@@ -403,7 +403,7 @@ export default function Hero() {
                 isTablet={isTablet}
               />
             </Suspense>
-            
+
             <ContactShadows
               position={[0, -2, 0]}
               opacity={0.2}
@@ -412,7 +412,7 @@ export default function Hero() {
               far={4}
               color="#000033"
             />
-            
+
             <OrbitControls
               enableZoom={false}
               enablePan={false}
@@ -524,7 +524,7 @@ export default function Hero() {
           {/* Mobile & Tablet: Vertical Layout */}
           <div className="lg:hidden flex flex-col items-center justify-center px-6 text-center space-y-6 py-20 min-h-screen">
             {/* Badge */}
-            <div 
+            <div
               className={`inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm font-medium transition-all duration-800 ${
                 animationStarted ? 'translate-y-0 opacity-100' : '-translate-y-20 opacity-0'
               }`}
@@ -535,7 +535,7 @@ export default function Hero() {
             </div>
 
             {/* Main heading */}
-            <h1 
+            <h1
               className={`font-brand text-3xl font-bold text-white leading-tight transition-all duration-1000 ${
                 animationStarted ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
               }`}
@@ -548,7 +548,7 @@ export default function Hero() {
             </h1>
 
             {/* Description */}
-            <p 
+            <p
               className={`text-lg text-white/80 leading-relaxed transition-all duration-800 ${
                 animationStarted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
               }`}
@@ -559,8 +559,8 @@ export default function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col space-y-3 w-full max-w-sm">
-              <Link 
-                href="/products" 
+              <Link
+                href="/products"
                 className={`group relative inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 ${
                   animationStarted ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
                 }`}
@@ -574,8 +574,8 @@ export default function Hero() {
                 </span>
               </Link>
 
-              <Link 
-                href="/categories" 
+              <Link
+                href="/categories"
                 className={`group inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white border-2 border-white/30 rounded-xl backdrop-blur-sm hover:border-white hover:bg-white/10 transition-all duration-800 ${
                   animationStarted ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
                 }`}
@@ -590,7 +590,7 @@ export default function Hero() {
           <div className="hidden lg:block w-full h-full min-h-screen">
             {/* Left Side - Main Content */}
             <div className="absolute left-12 top-1/2 transform -translate-y-1/2 max-w-lg z-20">
-              <h1 
+              <h1
                 className={`font-brand text-4xl font-bold text-white mb-6 leading-tight transition-all duration-1000 ${
                   animationStarted ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
                 }`}
@@ -602,7 +602,7 @@ export default function Hero() {
                 </span>
               </h1>
 
-              <p 
+              <p
                 className={`text-xl text-white/80 mb-8 leading-relaxed transition-all duration-800 ${
                   animationStarted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                 }`}
@@ -612,8 +612,8 @@ export default function Hero() {
               </p>
 
               <div className="flex space-x-4">
-                <Link 
-                  href="/products" 
+                <Link
+                  href="/products"
                   className={`group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 ${
                     animationStarted ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'
                   }`}
@@ -627,8 +627,8 @@ export default function Hero() {
                   </span>
                 </Link>
 
-                <Link 
-                  href="/categories" 
+                <Link
+                  href="/categories"
                   className={`group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white border-2 border-white/30 rounded-xl backdrop-blur-sm hover:border-white hover:bg-white/10 transition-all duration-800 ${
                     animationStarted ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'
                   }`}
@@ -641,7 +641,7 @@ export default function Hero() {
 
             {/* Right Side - Feature Cards */}
             <div className="absolute right-12 top-1/2 transform -translate-y-1/2 max-w-xs z-20 space-y-4">
-              <div 
+              <div
                 className={`bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20 transition-all duration-800 hover:bg-white/15 ${
                   animationStarted ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
                 }`}
@@ -658,7 +658,7 @@ export default function Hero() {
                 <p className="text-white/70 text-sm">Quality gear at prices that won't empty your wallet.</p>
               </div>
 
-              <div 
+              <div
                 className={`bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20 transition-all duration-800 hover:bg-white/15 ${
                   animationStarted ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
                 }`}
@@ -679,7 +679,7 @@ export default function Hero() {
         </div>
 
         {/* Statistics Section */}
-        <div 
+        <div
           className={`relative z-20 bg-white/5 backdrop-blur-md border-t border-white/10 transition-all duration-1000 ${
             animationStarted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
@@ -689,7 +689,7 @@ export default function Hero() {
             {/* Mobile: Stacked Layout */}
             <div className="block lg:hidden space-y-4">
               {/* 15K+ Happy Customers */}
-              <div 
+              <div
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
                 }`}
@@ -714,7 +714,7 @@ export default function Hero() {
               </div>
 
               {/* 4.8★ Average Rating */}
-              <div 
+              <div
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
                 }`}
@@ -739,7 +739,7 @@ export default function Hero() {
               </div>
 
               {/* Free Shipping $50+ */}
-              <div 
+              <div
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
                 }`}
@@ -767,7 +767,7 @@ export default function Hero() {
             {/* Desktop: Grid Layout */}
             <div className="hidden lg:grid grid-cols-3 gap-12 text-center">
               {/* 15K+ Happy Customers */}
-              <div 
+              <div
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
                 }`}
@@ -783,7 +783,7 @@ export default function Hero() {
               </div>
 
               {/* 4.8★ Average Rating */}
-              <div 
+              <div
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
                 }`}
@@ -799,7 +799,7 @@ export default function Hero() {
               </div>
 
               {/* Free Shipping $50+ */}
-              <div 
+              <div
                 className={`group transition-all duration-800 hover:scale-105 ${
                   animationStarted ? 'animate-counter-up' : 'opacity-0'
                 }`}
@@ -817,7 +817,7 @@ export default function Hero() {
           </div>
 
           {/* Scroll indicator - moved inside statistics section */}
-          <div 
+          <div
             className={`flex flex-col items-center pb-8 transition-all duration-1000 ${
               animationStarted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
             }`}
