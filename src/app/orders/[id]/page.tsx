@@ -195,7 +195,7 @@ function OrderDetailContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="min-h-screen bg-blue-950">
         <Header />
         <div className="flex items-center justify-center min-h-screen pt-20">
           <div className="text-center">
@@ -210,7 +210,7 @@ function OrderDetailContent() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="min-h-screen bg-blue-950">
         <Header />
         <div className="pt-24 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -234,7 +234,7 @@ function OrderDetailContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-blue-950">
       <Header />
       
       <main className="pt-24 pb-16">
@@ -274,8 +274,8 @@ function OrderDetailContent() {
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
 
-                {/* Temporary testing button - remove in production */}
-                {order.status !== 'delivered' && (
+                {/* Testing button - the API rejects non-admins in production */}
+                {process.env.NODE_ENV !== 'production' && order.status !== 'delivered' && (
                   <button
                     onClick={async () => {
                       if (confirm('Mark this order as delivered? (For testing returns)')) {
@@ -310,7 +310,7 @@ function OrderDetailContent() {
                 {order.status === 'shipped' && (
                   <Link
                     href={`/tracking/${order.id}`}
-                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 text-center"
+                    className="px-6 py-2 text-white rounded-xl font-medium transition-all duration-300 text-center bg-blue-500 hover:bg-blue-600"
                   >
                     Track Package
                   </Link>
@@ -473,7 +473,7 @@ function OrderDetailContent() {
 
                 <Link
                   href="/support"
-                  className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-colors"
+                  className="w-full flex items-center justify-center px-6 py-3 text-white rounded-xl font-medium transition-colors bg-blue-500 hover:bg-blue-600"
                 >
                   Need Help?
                 </Link>

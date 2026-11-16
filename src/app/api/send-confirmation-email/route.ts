@@ -1,9 +1,15 @@
 // File: src/app/api/send-confirmation-email/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rateLimit';
+import { escapeHtmlDeep } from '@/lib/escapeHtml';
 
 export async function POST(request: NextRequest) {
   try {
     console.log('🔍 API route called');
+
+    // Unauthenticated (guest checkout uses it), so cap how often one client can send
+    const limited = rateLimit(request, 'send-confirmation-email', 3, 60 * 60 * 1000);
+    if (limited) return limited;
     
     // Check environment variables first
     if (!process.env.RESEND_API_KEY) {
@@ -20,7 +26,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('📦 Request body received:', { orderId: body.order?.id, email: body.order?.shipping?.email });
     
-    const { order } = body;
+    // Order data comes from the client, so escape it before it reaches the HTML template
+    const order = escapeHtmlDeep(body.order);
 
     // Validate required fields
     if (!order || !order.id || !order.shipping?.email) {
@@ -73,8 +80,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error',
-        details: error instanceof Error ? error.stack : 'No additional details'
+        error: 'Internal server error'
       },
       { status: 500 }
     );

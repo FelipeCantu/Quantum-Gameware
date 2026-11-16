@@ -58,7 +58,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -106,9 +106,9 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-white mb-1">Email</h3>
-                      <a href="mailto:info@quantumgameware.com" className="text-white/80 hover:text-blue-300 transition-colors">
-                        info@quantumgameware.com
-                      </a>
+                      <p className="text-white/80">
+                        Use the form on this page
+                      </p>
                       <p className="text-sm text-white/60 mt-1">We reply within 24 hours</p>
                     </div>
                   </div>
@@ -360,11 +360,7 @@ export default function ContactPage() {
                     type="submit"
                     disabled={isSubmitting}
                     className={`
-                      w-full px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95
-                      ${isSubmitting 
-                        ? 'bg-gray-600 text-white cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl'
-                      }
+                      w-full px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${isSubmitting ? 'bg-gray-600 text-white cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl' }
                     `}
                   >
                     {isSubmitting ? (
@@ -448,7 +444,7 @@ export default function ContactPage() {
           </div>
 
           {/* Support Options */}
-          <div className="mt-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 lg:p-12 text-white">
+          <div className="mt-20 bg-blue-500 rounded-3xl p-8 lg:p-12 text-white">
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold mb-6">
                 Need Immediate Help?

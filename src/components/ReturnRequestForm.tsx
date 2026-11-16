@@ -189,7 +189,7 @@ export default function ReturnRequestForm({ order, onSuccess, onCancel }: Return
                       onClick={() => handleItemToggle(item.id, item.quantity)}
                       className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all duration-300 cursor-pointer group ${
                         isSelected
-                          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-400/50 shadow-lg shadow-blue-500/20'
+                          ? 'bg-blue-500/20 border-blue-400/50 shadow-lg shadow-blue-500/20'
                           : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'
                       }`}
                     >
@@ -281,11 +281,7 @@ export default function ReturnRequestForm({ order, onSuccess, onCancel }: Return
                     key={r.value}
                     type="button"
                     onClick={() => setReason(r.value)}
-                    className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                      reason === r.value
-                        ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-400/50 shadow-lg shadow-purple-500/20'
-                        : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'
-                    }`}
+                    className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 text-left ${ reason === r.value ? 'bg-blue-500/20 border-blue-400/50 shadow-lg shadow-blue-500/20' : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10' }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{r.icon}</span>

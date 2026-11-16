@@ -8,7 +8,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -32,7 +32,7 @@ export default function AboutPage() {
 
           {/* Hero Section */}
           <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl overflow-hidden mb-16">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+            <div className="absolute inset-0 bg-blue-500/20"></div>
             <div className="relative z-10 px-8 py-16 lg:px-16 lg:py-24 text-center text-white">
               <h1 className="text-4xl lg:text-6xl font-bold mb-6">
                 About Quantum Gameware
@@ -71,7 +71,7 @@ export default function AboutPage() {
               {/* Enhanced mascot display with multiple visual layers */}
               <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 h-96 flex items-center justify-center overflow-hidden hover:border-white/30 transition-all duration-500">
                 {/* Animated background elements */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-indigo-500/10"></div>
+                <div className="absolute inset-0 bg-blue-500/10"></div>
                 <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
                 <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-purple-400/20 rounded-full blur-xl animate-pulse animation-delay-1000"></div>
                 
@@ -79,7 +79,7 @@ export default function AboutPage() {
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
                   <div className="relative group-hover:scale-105 transition-transform duration-500 ease-out">
                     {/* Glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-purple-400/30 rounded-full blur-3xl scale-110 opacity-60 animate-pulse"></div>
+                    <div className="absolute inset-0 bg-blue-500/30 rounded-full blur-3xl scale-110 opacity-60 animate-pulse"></div>
                     
                     {/* Main mascot image */}
                     <div className="relative bg-white/20 backdrop-blur-sm rounded-3xl p-6 border border-white/30">
@@ -96,7 +96,7 @@ export default function AboutPage() {
                       
                       {/* Decorative elements */}
                       <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-80 animate-ping"></div>
-                      <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-gradient-to-br from-green-400 to-blue-500 rounded-full opacity-60 animate-pulse animation-delay-2000"></div>
+                      <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-blue-300 rounded-full opacity-60 animate-pulse animation-delay-2000"></div>
                     </div>
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export default function AboutPage() {
               </div>
               
               {/* Additional glow effect outside the container */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-3xl blur-xl scale-105 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-blue-500/20 rounded-3xl blur-xl scale-105 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
             </div>
           </div>
 
@@ -163,8 +163,8 @@ export default function AboutPage() {
               </div>
 
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-green-500/20 border border-green-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-blue-500/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -175,8 +175,8 @@ export default function AboutPage() {
               </div>
 
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-yellow-500/20 border border-yellow-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-purple-500/20 border border-purple-400/30 rounded-2xl flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
@@ -187,8 +187,8 @@ export default function AboutPage() {
               </div>
 
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-red-500/20 border border-red-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-blue-500/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mb-6">
+                  <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
@@ -255,7 +255,7 @@ export default function AboutPage() {
                 }
               ].map((member, index) => (
                 <div key={index} className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                  <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
                     {member.avatar}
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">{member.name}</h3>
@@ -267,7 +267,7 @@ export default function AboutPage() {
           </div>
 
           {/* CTA Section */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 lg:p-16 text-center text-white">
+          <div className="bg-blue-500 rounded-3xl p-8 lg:p-16 text-center text-white">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
               Ready to Upgrade Without Going Broke?
             </h2>

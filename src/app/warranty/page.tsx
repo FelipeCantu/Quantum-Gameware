@@ -5,7 +5,7 @@ export default function WarrantyPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -277,7 +277,7 @@ export default function WarrantyPage() {
           </div>
 
           {/* Contact CTA */}
-          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-lg rounded-3xl border border-blue-400/30 p-8 text-center">
+          <div className="bg-blue-500/20 backdrop-blur-lg rounded-3xl border border-blue-400/30 p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">Need Help with a Warranty Claim?</h3>
             <p className="text-white/80 mb-6 max-w-2xl mx-auto">
               Our support team is ready to help you with warranty claims, troubleshooting, and product questions. Get expert assistance when you need it most.

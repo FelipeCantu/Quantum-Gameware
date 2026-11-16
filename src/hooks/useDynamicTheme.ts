@@ -20,8 +20,8 @@ export function useDynamicTheme(isScrolled: boolean) {
       themeColorMeta.content = '#f6f4f9';
     } else {
       // Gradient color when header is transparent over hero
-      // Using a representative color from your blue-purple gradient
-      themeColorMeta.content = '#23378e'; // Indigo-500 from your gradient
+      // Solid brand electric blue
+      themeColorMeta.content = '#3B82F6'; // brand electric blue
     }
   }, [isScrolled]);
 }

@@ -70,7 +70,7 @@ export default function HelpPage() {
     },
     {
       question: "How do I contact customer support?",
-      answer: "You can reach us via live chat (available 24/7), email at support@quantumgameware.com, or phone at (123) 456-7890 during business hours."
+      answer: "You can reach us via live chat (available 24/7), our contact form, or phone at (123) 456-7890 during business hours."
     }
   ];
 
@@ -82,7 +82,7 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -321,7 +321,7 @@ export default function HelpPage() {
           </div>
 
           {/* Contact Support */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-center text-white">
+          <div className="bg-blue-500 rounded-3xl p-8 text-center text-white">
             <h2 className="text-3xl font-bold mb-4">Still Need Help?</h2>
             <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
               Can't find what you're looking for? Our support team is available 24/7 to help you with any questions or issues.
@@ -350,7 +350,7 @@ export default function HelpPage() {
                 <h3 className="font-semibold mb-2">Email Support</h3>
                 <p className="text-blue-100 text-sm mb-4">Response within 24 hours</p>
                 <a
-                  href="mailto:support@quantumgameware.com"
+                  href="/contact"
                   className="bg-white text-blue-600 hover:bg-gray-100 px-4 py-2 rounded-lg transition-colors font-medium inline-block"
                 >
                   Send Email

@@ -1,31 +1,9 @@
 // src/app/api/orders/[id]/update-status/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyAuthToken } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import mongoose from 'mongoose';
-
-async function verifyAuthToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
-  }
-
-  const token = authHeader.substring(7);
-
-  try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    );
-
-    const { payload } = await jwtVerify(token, secret);
-    return payload;
-  } catch (error) {
-    console.error('JWT verification failed:', error);
-    throw new Error('Invalid token');
-  }
-}
 
 // PATCH /api/orders/[id]/update-status - Update order status
 export async function PATCH(
@@ -46,6 +24,19 @@ export async function PATCH(
     // Verify authentication
     const userPayload = await verifyAuthToken(request);
     console.log('✅ User authenticated:', userPayload.email);
+
+    // Only admins may change order status. Outside production, owners may
+    // update their own orders so returns can be tested end to end.
+    const isAdmin = userPayload.role === 'admin';
+    if (!isAdmin && process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { success: false, message: 'Not authorized to update order status' },
+        { status: 403 }
+      );
+    }
+    const ownerFilter = isAdmin
+      ? {}
+      : { userId: new mongoose.Types.ObjectId(userPayload.userId) };
 
     // Get the new status from request body
     const body = await request.json();
@@ -77,7 +68,7 @@ export async function PATCH(
     if (mongoose.Types.ObjectId.isValid(id)) {
       order = await Order.findOne({
         _id: new mongoose.Types.ObjectId(id),
-        userId: new mongoose.Types.ObjectId(userPayload.userId as string)
+        ...ownerFilter
       });
     }
 
@@ -85,7 +76,7 @@ export async function PATCH(
     if (!order) {
       order = await Order.findOne({
         orderNumber: id,
-        userId: new mongoose.Types.ObjectId(userPayload.userId as string)
+        ...ownerFilter
       });
     }
 

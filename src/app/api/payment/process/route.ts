@@ -1,5 +1,6 @@
 // src/app/api/payment/process/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { SITE_URL } from '@/config/site';
 
 interface PaymentRequest {
   amount: number;
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         processedAt: new Date().toISOString(),
         receipt: {
           receiptId: 'rcpt_' + Date.now(),
-          receiptUrl: `https://quantumgameware.com/receipts/rcpt_${Date.now()}`
+          receiptUrl: `${SITE_URL}/receipts/rcpt_${Date.now()}`
         }
       };
 

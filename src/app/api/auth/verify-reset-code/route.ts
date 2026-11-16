@@ -1,7 +1,9 @@
 // src/app/api/auth/verify-reset-code/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
-import { User } from '@/models/User';
+import { User, hashResetCode, MAX_RESET_CODE_ATTEMPTS } from '@/models/User';
+import { rateLimit } from '@/lib/rateLimit';
+import { timingSafeEqual } from 'crypto';
 import jwt from 'jsonwebtoken';
 
 /**
@@ -12,6 +14,9 @@ import jwt from 'jsonwebtoken';
 export async function POST(request: NextRequest) {
   try {
     console.log('🔐 Verify reset code API called');
+
+    const limited = rateLimit(request, 'verify-reset-code', 10, 15 * 60 * 1000);
+    if (limited) return limited;
 
     // Connect to database
     await connectDB();
@@ -37,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { message: 'Invalid email format' },
@@ -55,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Find user with reset code
     const user = await User.findOne({ email: email.toLowerCase() })
-      .select('+passwordResetCode +passwordResetExpires');
+      .select('+passwordResetCode +passwordResetExpires +passwordResetAttempts');
 
     if (!user) {
       return NextResponse.json(
@@ -80,8 +85,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the code
-    if (user.passwordResetCode !== resetCode) {
+    // Verify the code (stored as a SHA-256 hash, compared in constant time)
+    const expected = Buffer.from(user.passwordResetCode, 'hex');
+    const actual = Buffer.from(hashResetCode(resetCode), 'hex');
+    if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+      const attempts = (user.passwordResetAttempts || 0) + 1;
+
+      // Too many wrong guesses: burn the code so it cannot be brute-forced
+      if (attempts >= MAX_RESET_CODE_ATTEMPTS) {
+        user.passwordResetCode = undefined;
+        user.passwordResetExpires = undefined;
+        user.passwordResetAttempts = 0;
+        await user.save({ validateBeforeSave: false });
+        return NextResponse.json(
+          { message: 'Too many incorrect attempts. Please request a new reset code.' },
+          { status: 400 }
+        );
+      }
+
+      user.passwordResetAttempts = attempts;
+      await user.save({ validateBeforeSave: false });
       return NextResponse.json(
         { message: 'Invalid reset code' },
         { status: 400 }

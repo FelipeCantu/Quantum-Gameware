@@ -1,12 +1,12 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Temporarily bypass build errors to get authentication deployed
+  // TODO: remove both once `tsc --noEmit` and `eslint` pass. These hide real
+  // errors (including API routes that crash at runtime), so keep them short-lived.
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Bypass TypeScript errors during builds
     ignoreBuildErrors: true,
   },
   images: {
@@ -34,20 +34,6 @@ const nextConfig = {
       }
     }
     return config
-  },
-  
-  // Optional: Add if you need to handle CORS or other issues
-  async headers() {
-    return [
-      {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
-        ],
-      },
-    ];
   },
 }
 

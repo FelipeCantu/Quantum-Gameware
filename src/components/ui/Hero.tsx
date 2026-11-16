@@ -34,22 +34,22 @@ export default function Hero() {
       <style jsx global>{`
         @keyframes gradient-xy {
           0%, 100% {
-            background: linear-gradient(45deg, #1e3a8a, #581c87, #312e81, #1e40af);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 0% 50%;
           }
           25% {
-            background: linear-gradient(135deg, #581c87, #312e81, #1e40af, #7c3aed);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 100% 0%;
           }
           50% {
-            background: linear-gradient(225deg, #312e81, #1e40af, #7c3aed, #1e3a8a);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 100% 100%;
           }
           75% {
-            background: linear-gradient(315deg, #1e40af, #7c3aed, #1e3a8a, #581c87);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 0% 100%;
           }
@@ -171,7 +171,7 @@ export default function Hero() {
       
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Animated moving gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 animate-gradient-xy">
+        <div className="absolute inset-0 bg-blue-950">
           
           {/* Underwater effect - floating bubbles */}
           <div className="absolute inset-0 overflow-hidden">
@@ -303,7 +303,7 @@ export default function Hero() {
             transitionDelay: animationStarted ? '0ms' : '2000ms',
             transitionTimingFunction: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
             background: animationStarted 
-              ? 'linear-gradient(45deg, #1e3a8a, #581c87, #312e81)' 
+              ? '#172554' 
               : 'linear-gradient(135deg, #0f172a, #1e293b, #334155)'
           } as CSSProperties}
         >
@@ -339,7 +339,7 @@ export default function Hero() {
             {/* Large Axolotl Mascot */}
             <div className="relative mb-12">
               {/* Glow effect behind mascot */}
-              <div className="absolute inset-0 w-80 h-80 mx-auto bg-gradient-to-br from-blue-400 to-purple-600 rounded-full blur-3xl opacity-40 animate-pulse"></div>
+              <div className="absolute inset-0 w-80 h-80 mx-auto bg-blue-500 rounded-full blur-3xl opacity-40 animate-pulse"></div>
               
               <img 
                 src="/qg-axolotl-rbg.png" 
@@ -350,10 +350,10 @@ export default function Hero() {
 
             {/* Header-style logo and brand name */}
             <div className="flex items-center justify-center space-x-6">
-              <div className="relative w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-3 shadow-2xl">
+              <div className="relative w-24 h-24 bg-blue-500 rounded-2xl p-3 shadow-2xl">
                 <div className="w-full h-full bg-white rounded-xl flex items-center justify-center">
                   <img
-                    src="/nextgens-logo.png"
+                    src="/nextgens-logo-blue.png"
                     alt="Quantum Gameware Logo"
                     className="w-16 h-16 object-contain p-2"
                   />
@@ -361,7 +361,7 @@ export default function Hero() {
               </div>
               
               <div>
-                <span className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <span className="text-5xl font-bold text-blue-500">
                   Quantum
                 </span>
                 <div className="text-2xl text-white/80 -mt-2">Gameware</div>
@@ -370,7 +370,7 @@ export default function Hero() {
 
             {/* Animated underline */}
             <div className="relative w-32 h-1 mx-auto mt-4 mb-6">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 bg-blue-500 rounded-full animate-pulse"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent rounded-full opacity-50 animate-ping"></div>
             </div>
 
@@ -413,7 +413,7 @@ export default function Hero() {
               style={{ transitionDelay: '2400ms' } as CSSProperties}
             >
               Level Up Your
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="block text-blue-500">
                 Gaming Experience
               </span>
             </h1>
@@ -433,9 +433,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-16">
               <Link 
                 href="/products" 
-                className={`group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 w-full sm:w-auto ${
-                  animationStarted ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'
-                }`}
+                className={`group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white rounded-2xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 w-full sm:w-auto ${ animationStarted ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0' } bg-blue-500 hover:bg-blue-600`}
                 style={{ transitionDelay: '2800ms' } as CSSProperties}
               >
                 <span className="relative z-10 flex items-center">

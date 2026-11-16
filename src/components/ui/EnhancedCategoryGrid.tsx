@@ -78,7 +78,7 @@ const CategoryCard = ({ category, index, productCount }: CategoryCardProps) => {
           onLoad={() => setImageLoaded(true)}
         />
         {!imageLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-purple-100 animate-pulse" />
+          <div className="absolute inset-0 bg-blue-100 animate-pulse" />
         )}
       </div>
 

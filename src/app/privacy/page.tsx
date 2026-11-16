@@ -5,7 +5,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -152,7 +152,7 @@ export default function PrivacyPage() {
                     <li>Manage your communication preferences in your account settings</li>
                   </ul>
 
-                  <p className="mt-4">To exercise these rights, please contact us at privacy@quantumgameware.com.</p>
+                  <p className="mt-4">To exercise these rights, please contact us through our contact page.</p>
                 </div>
               </section>
 
@@ -207,7 +207,7 @@ export default function PrivacyPage() {
                 <h2 className="text-2xl font-bold text-white mb-4">9. Children's Privacy</h2>
                 <div className="text-white/90 space-y-4">
                   <p>Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information promptly.</p>
-                  <p className="mt-4">If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@quantumgameware.com so we can take appropriate action.</p>
+                  <p className="mt-4">If you are a parent or guardian and believe your child has provided us with personal information, please contact us through our contact page so we can take appropriate action.</p>
                 </div>
               </section>
 
@@ -232,7 +232,7 @@ export default function PrivacyPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <h4 className="font-semibold text-white mb-2">Email</h4>
-                        <p>privacy@quantumgameware.com</p>
+                        <p><a href="/contact" className="hover:text-white underline">Contact form</a></p>
                       </div>
                       <div>
                         <h4 className="font-semibold text-white mb-2">Mail</h4>

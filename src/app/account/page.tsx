@@ -689,14 +689,14 @@ function AccountPageContent() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-blue-950 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-blue-950">
       <Header />
       
       <main className="pt-24 pb-16">
@@ -738,7 +738,7 @@ function AccountPageContent() {
           </div>
 
           {/* Mobile Horizontal Scrolling Navigation */}
-          <div className="lg:hidden mb-3 -mx-4 sticky top-[72px] z-[70] bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 py-3">
+          <div className="lg:hidden mb-3 -mx-4 sticky top-[72px] z-[70] bg-blue-950 py-3">
             <div className="px-4">
               {/* Scrollable container with custom scrollbar */}
               <div
@@ -1067,7 +1067,7 @@ function AccountPageContent() {
                     {!isEditing ? (
                       <button
                         onClick={handleEdit}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium text-sm sm:text-base w-full sm:w-auto"
+                        className="px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium text-sm sm:text-base w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
                       >
                         Edit Profile
                       </button>
@@ -1082,7 +1082,7 @@ function AccountPageContent() {
                         <button
                           onClick={handleSave}
                           disabled={isSaving}
-                          className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 text-sm sm:text-base"
+                          className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium disabled:opacity-50 text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
                         >
                           {isSaving ? 'Saving...' : 'Save Changes'}
                         </button>
@@ -1384,7 +1384,7 @@ function AccountPageContent() {
                           <button
                             type="submit"
                             disabled={isChangingPassword}
-                            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-3 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
                           >
                             {isChangingPassword ? 'Updating...' : 'Update Password'}
                           </button>
@@ -1488,7 +1488,7 @@ function AccountPageContent() {
                                 <button
                                   type="submit"
                                   disabled={isChangingEmail}
-                                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="px-6 py-3 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
                                 >
                                   {isChangingEmail ? 'Sending Code...' : 'Send Verification Code'}
                                 </button>
@@ -1710,7 +1710,7 @@ function AccountPageContent() {
                     {!isEditing ? (
                       <button
                         onClick={handleEdit}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium text-sm sm:text-base w-full sm:w-auto"
+                        className="px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium text-sm sm:text-base w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
                       >
                         Edit Preferences
                       </button>
@@ -1725,7 +1725,7 @@ function AccountPageContent() {
                         <button
                           onClick={handleSave}
                           disabled={isSaving}
-                          className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-medium disabled:opacity-50 text-sm sm:text-base"
+                          className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium disabled:opacity-50 text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
                         >
                           {isSaving ? 'Saving...' : 'Save Changes'}
                         </button>

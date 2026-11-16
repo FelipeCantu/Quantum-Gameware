@@ -46,7 +46,7 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
         <div className="text-center mt-8 md:mt-12">
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg bg-blue-500 hover:bg-blue-600"
           >
             View All Products
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

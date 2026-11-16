@@ -1,4 +1,5 @@
 // File: src/services/resendEmailService.ts
+import { emailFrom, SITE_URL } from '@/config/site';
 import { EmailService, type EmailOrder } from './emailService';
 
 // Simple Resend API client without the full SDK to avoid dependencies
@@ -60,7 +61,7 @@ export class ResendEmailService extends EmailService {
       
       // Send email via Resend
       const { data, error } = await resend.send({
-        from: `QuantumGameware Orders <orders@${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}>`,
+        from: emailFrom('Quantum Gameware Orders'),
         to: [order.shipping.email],
         subject: `Order Confirmed! #${order.id} - Your Gaming Gear is On Its Way`,
         html: htmlContent,
@@ -106,7 +107,7 @@ export class ResendEmailService extends EmailService {
       }
 
       const { data, error } = await resend.send({
-        from: `QuantumGameware Test <test@${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}>`,
+        from: emailFrom('Quantum Gameware Test'),
         to: [testEmail],
         subject: 'Email Configuration Test - QuantumGameware',
         html: `
@@ -117,7 +118,7 @@ export class ResendEmailService extends EmailService {
               <h3 style="margin: 0 0 10px 0; color: #2d3748;">Test Details:</h3>
               <ul style="margin: 0; padding-left: 20px;">
                 <li><strong>Service:</strong> Resend</li>
-                <li><strong>Domain:</strong> ${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}</li>
+                <li><strong>Site:</strong> ${SITE_URL}</li>
                 <li><strong>Status:</strong> <span style="color: #38a169; font-weight: bold;">Active</span></li>
                 <li><strong>Test Date:</strong> ${new Date().toLocaleString()}</li>
               </ul>

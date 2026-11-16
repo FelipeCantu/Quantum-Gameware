@@ -81,7 +81,7 @@ export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) 
   const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
     isScrolled
       ? effectiveTheme === 'light'
-        ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+        ? 'hover:bg-blue-50'
         : 'hover:bg-white/10'
       : 'hover:bg-white/10'
   }`;
@@ -101,11 +101,7 @@ export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) 
       <>
         <Link
           href="/auth/signin"
-          className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
-            isScrolled
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
-              : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border border-white/30'
-          }`}
+          className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${ isScrolled ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border border-white/30' }`}
         >
           Sign In
         </Link>
@@ -115,7 +111,7 @@ export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) 
           className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
             isScrolled
               ? effectiveTheme === 'light'
-                ? 'text-blue-600 hover:bg-blue-50 border border-blue-200'
+                ? 'text-blue-500 hover:bg-blue-50 border border-blue-300'
                 : 'text-gray-200 hover:bg-white/10 border border-gray-600'
               : 'text-white hover:bg-white/10 border border-white/30'
           }`}
@@ -165,7 +161,7 @@ export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) 
           className={`hidden sm:block h-4 w-4 transition-all duration-200 ${
             isOpen ? 'rotate-180' : ''
           } ${
-            isScrolled ? 'text-gray-600' : 'text-white'
+            isScrolled ? 'text-blue-500' : 'text-white'
           }`} 
           fill="none" 
           viewBox="0 0 24 24" 
@@ -190,7 +186,7 @@ export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) 
           }}
         >
           {/* User Info Header */}
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+          <div className="p-4 bg-blue-50 border-b border-gray-100">
             <div className="flex items-center space-x-3">
               {user.avatar ? (
                 <img 

@@ -64,7 +64,7 @@ export default function CategoriesContent({ productCategories, productCounts }: 
                     style={{ animationDelay: `${(categories.length + index) * 100}ms` }}
                   >
                     {/* Category Image with Overlay */}
-                    <div className="relative h-56 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
+                    <div className="relative h-56 bg-blue-50 overflow-hidden">
                       {category.image && category.image !== '/placeholder-category.jpg' ? (
                         <img
                           src={category.image}
@@ -78,7 +78,7 @@ export default function CategoriesContent({ productCategories, productCounts }: 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                        <div className="absolute inset-0 flex items-center justify-center bg-blue-100">
                           <div className="text-8xl opacity-40">
                             {categoryData?.icon || '🎮'}
                           </div>
@@ -123,7 +123,7 @@ export default function CategoriesContent({ productCategories, productCounts }: 
                           {category.products.slice(0, 4).map((product, i) => (
                             <div
                               key={product._id}
-                              className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center"
+                              className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md bg-blue-100 flex items-center justify-center"
                               style={{ zIndex: 4 - i }}
                               title={product.name}
                             >
@@ -141,13 +141,13 @@ export default function CategoriesContent({ productCategories, productCounts }: 
                             </div>
                           ))}
                           {category.count > 4 && (
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 border-2 border-white flex items-center justify-center text-xs font-bold text-white shadow-md">
+                            <div className="w-10 h-10 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center text-xs font-bold text-white shadow-md">
                               +{category.count - 4}
                             </div>
                           )}
                         </div>
 
-                        <button className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 text-gray-700 hover:text-white rounded-xl font-medium transition-all duration-300 text-sm group-hover:shadow-lg">
+                        <button className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 hover:text-white rounded-xl font-medium transition-all duration-300 text-sm group-hover:shadow-lg bg-blue-500 hover:bg-blue-600">
                           View All
                           <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -175,7 +175,7 @@ export default function CategoriesContent({ productCategories, productCounts }: 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/products"
-              className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
+              className="inline-flex items-center text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg bg-blue-500 hover:bg-blue-600"
             >
               <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

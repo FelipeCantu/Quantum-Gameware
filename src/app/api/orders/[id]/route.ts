@@ -1,31 +1,9 @@
 // src/app/api/orders/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyAuthToken } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import mongoose from 'mongoose';
-
-async function verifyAuthToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
-  }
-
-  const token = authHeader.substring(7);
-
-  try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    );
-
-    const { payload } = await jwtVerify(token, secret);
-    return payload;
-  } catch (error) {
-    console.error('JWT verification failed:', error);
-    throw new Error('Invalid token');
-  }
-}
 
 // GET /api/orders/[id] - Get single order details
 export async function GET(

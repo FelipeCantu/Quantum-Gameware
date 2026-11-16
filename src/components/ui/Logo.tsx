@@ -13,14 +13,14 @@ export default function Logo({ isScrolled, effectiveTheme }: LogoProps) {
       <Link href="/" className="group flex items-center space-x-3 transition-transform hover:scale-105">
         <div className={`relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 ${
           isScrolled 
-            ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
+            ? 'bg-blue-500' 
             : 'bg-white/20 backdrop-blur-sm'
         }`}>
           <div className={`w-full h-full rounded-lg flex items-center justify-center ${
             isScrolled ? 'bg-white' : 'bg-white/90 backdrop-blur-sm'
           }`}>
             <Image
-              src="/nextgens-logo.png"
+              src="/nextgens-logo-blue.png"
               alt="Quantum Gameware Logo"
               width={40}
               height={40}
@@ -36,16 +36,12 @@ export default function Logo({ isScrolled, effectiveTheme }: LogoProps) {
           </div>
         </div>
         <div className="hidden sm:block">
-          <span className={`font-brand text-lg sm:text-xl md:text-2xl font-bold leading-none ${
-            isScrolled
-              ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent'
-              : 'text-white'
-          }`}>
+          <span className={`font-brand text-lg sm:text-xl md:text-2xl font-bold leading-none ${isScrolled ? 'text-blue-500' : 'text-white'}`}>
             Quantum
           </span>
           <div className={`font-brand text-xs sm:text-sm font-medium leading-none ${
             isScrolled
-              ? effectiveTheme === 'light' ? 'text-gray-600' : 'text-gray-300'
+              ? effectiveTheme === 'light' ? 'text-blue-500' : 'text-gray-300'
               : 'text-white/80'
           }`}>
             Gameware

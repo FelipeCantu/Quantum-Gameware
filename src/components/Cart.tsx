@@ -55,7 +55,7 @@ export default function Cart() {
           {/* Header - FIXED AT TOP */}
           <div className={`flex items-center justify-between p-6 border-b flex-shrink-0 ${
             effectiveTheme === 'light'
-              ? 'border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50'
+              ? 'border-gray-100 bg-blue-50'
               : 'border-gray-700 bg-gradient-to-r from-gray-800 to-gray-800'
           }`}>
             <div>
@@ -90,8 +90,8 @@ export default function Cart() {
                 <div className="text-center max-w-sm">
                   <div className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center ${
                     effectiveTheme === 'light'
-                      ? 'bg-gradient-to-br from-blue-100 to-purple-100'
-                      : 'bg-gradient-to-br from-blue-900/30 to-purple-900/30'
+                      ? 'bg-blue-100'
+                      : 'bg-blue-900/30'
                   }`}>
                     <svg className={`w-12 h-12 ${effectiveTheme === 'light' ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -105,7 +105,7 @@ export default function Cart() {
                   </p>
                   <button
                     onClick={closeCart}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="w-full text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl bg-blue-500 hover:bg-blue-600"
                   >
                     Start Shopping
                   </button>
@@ -264,7 +264,7 @@ export default function Cart() {
                     <Link
                       href="/cart"
                       onClick={closeCart}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-center block"
+                      className="w-full text-white px-6 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-center block bg-blue-500 hover:bg-blue-600"
                     >
                       View Cart & Checkout
                     </Link>
@@ -319,7 +319,7 @@ export default function Cart() {
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #2563eb, #7c3aed);
+          background: #2563eb;
         }
       `}</style>
     </div>

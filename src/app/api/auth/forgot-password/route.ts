@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { EmailService } from '@/services/emailService';
+import { rateLimit } from '@/lib/rateLimit';
 
 /**
  * POST /api/auth/forgot-password - Request password reset
@@ -11,6 +12,9 @@ import { EmailService } from '@/services/emailService';
 export async function POST(request: NextRequest) {
   try {
     console.log('🔐 Forgot password API called');
+
+    const limited = rateLimit(request, 'forgot-password', 5, 15 * 60 * 1000);
+    if (limited) return limited;
 
     // Connect to database
     await connectDB();
@@ -35,8 +39,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Limit reset emails per address, not just per IP
+    const emailLimited = rateLimit(request, 'forgot-password-email', 3, 60 * 60 * 1000, String(email).toLowerCase());
+    if (emailLimited) return emailLimited;
+
     // Validate email format
-    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { message: 'Invalid email format' },
@@ -76,11 +84,8 @@ export async function POST(request: NextRequest) {
       );
       console.log('✅ Password reset email sent to:', user.email);
     } catch (emailError) {
+      // Respond the same as success so the endpoint can't reveal which emails have accounts
       console.error('⚠️ Failed to send password reset email:', emailError);
-      return NextResponse.json(
-        { message: 'Failed to send password reset email. Please try again.' },
-        { status: 500 }
-      );
     }
 
     return NextResponse.json({

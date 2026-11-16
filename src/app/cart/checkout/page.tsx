@@ -452,7 +452,7 @@ export default function CheckoutPage() {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background with gradient and pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+        <div className="absolute inset-0 bg-blue-950">
           {/* Animated background elements */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0" style={{
@@ -482,7 +482,7 @@ export default function CheckoutPage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         {/* Animated background elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
@@ -997,7 +997,7 @@ export default function CheckoutPage() {
                       <button
                         type="submit"
                         disabled={isProcessing}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg"
                       >
                         {isProcessing ? (
                           <div className="flex items-center">

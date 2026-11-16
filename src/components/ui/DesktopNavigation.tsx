@@ -31,7 +31,7 @@ export default function DesktopNavigation({ isScrolled, effectiveTheme }: Deskto
   const navLinkClasses = `relative px-4 py-2.5 transition-all duration-300 font-medium rounded-xl group overflow-hidden text-center whitespace-nowrap ${
     isScrolled
       ? effectiveTheme === 'light'
-        ? 'text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+        ? 'text-blue-500 hover:text-blue-600 hover:bg-blue-50'
         : 'text-gray-200 hover:text-white hover:bg-white/10'
       : 'text-white/90 hover:text-white hover:bg-white/10'
   }`;
@@ -39,8 +39,8 @@ export default function DesktopNavigation({ isScrolled, effectiveTheme }: Deskto
   const underlineClasses = `absolute bottom-0 left-1/2 w-0 h-0.5 group-hover:w-full group-hover:left-0 transition-all duration-300 ${
     isScrolled
       ? effectiveTheme === 'light'
-        ? 'bg-gradient-to-r from-blue-600 to-purple-600'
-        : 'bg-gradient-to-r from-blue-400 to-purple-400'
+        ? 'bg-blue-500'
+        : 'bg-blue-400'
       : 'bg-white'
   }`;
 
@@ -78,7 +78,7 @@ export default function DesktopNavigation({ isScrolled, effectiveTheme }: Deskto
       isMobile ? 'w-full' : 'w-96'
     }`}>
       {/* Header */}
-      <div className="p-5 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+      <div className="p-5 bg-blue-50 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-gray-900 text-lg">Browse Categories</h3>
@@ -134,7 +134,7 @@ export default function DesktopNavigation({ isScrolled, effectiveTheme }: Deskto
           <Link
             href="/categories"
             onClick={handleCategoriesClose}
-            className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 transition-colors font-medium"
+            className="flex items-center justify-center w-full px-4 py-3 text-white rounded-xl active:bg-blue-700 transition-colors font-medium bg-blue-500 hover:bg-blue-600"
             role="menuitem"
           >
             View All Categories

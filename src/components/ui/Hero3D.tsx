@@ -9,6 +9,7 @@ import {
   Float,
   Environment,
   ContactShadows,
+  Lightformer,
 } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -36,7 +37,7 @@ function HeadphonesModel({
   isMobile: boolean;
   isTablet: boolean;
 }) {
-  const { scene } = useGLTF('/174-headphones.gltf');
+  const { scene } = useGLTF('/headphones.glb');
   const modelRef = useRef<THREE.Group>(null);
   const [hasSlideAnimated, setHasSlideAnimated] = useState(false);
 
@@ -77,12 +78,8 @@ function HeadphonesModel({
         child.castShadow = true;
         child.receiveShadow = true;
 
-        if (child.material instanceof THREE.MeshStandardMaterial) {
-          child.material.envMapIntensity = 0.5;
-          child.material.roughness = 0.4;
-          child.material.metalness = 0.7;
-          child.material.color = new THREE.Color(0xb8b8ff);
-        }
+        // Materials (soft-touch plastic, leather cushions, anodized blue slider,
+        // gunmetal ring) are authored in headphones.glb, so keep them as-is.
       }
     });
   }, [scene]);
@@ -132,7 +129,7 @@ function HeadphonesModel({
 
 // Preload the model
 if (typeof window !== 'undefined') {
-  useGLTF.preload('/174-headphones.gltf');
+  useGLTF.preload('/headphones.glb');
 }
 
 export default function Hero() {
@@ -196,22 +193,22 @@ export default function Hero() {
       <style jsx global>{`
         @keyframes gradient-xy {
           0%, 100% {
-            background: linear-gradient(45deg, #1e3a8a, #581c87, #312e81, #1e40af);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 0% 50%;
           }
           25% {
-            background: linear-gradient(135deg, #581c87, #312e81, #1e40af, #7c3aed);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 100% 0%;
           }
           50% {
-            background: linear-gradient(225deg, #312e81, #1e40af, #7c3aed, #1e3a8a);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 100% 100%;
           }
           75% {
-            background: linear-gradient(315deg, #1e40af, #7c3aed, #1e3a8a, #581c87);
+            background: #172554;
             background-size: 400% 400%;
             background-position: 0% 100%;
           }
@@ -322,7 +319,7 @@ export default function Hero() {
 
       <section className="relative overflow-hidden">
         {/* Animated moving gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 animate-gradient-xy">
+        <div className="absolute inset-0 bg-blue-950">
 
           {/* Underwater effect - floating bubbles */}
           <div className="absolute inset-0 overflow-hidden">
@@ -382,19 +379,19 @@ export default function Hero() {
               toneMappingExposure: 1.2
             }}
           >
-            <ambientLight intensity={0.3} />
-            <directionalLight
-              position={[5, 5, 5]}
-              intensity={0.6}
-              color="#b8b8ff"
-            />
-            <directionalLight
-              position={[-5, 3, -5]}
-              intensity={0.3}
-              color="#8b5cf6"
-            />
+            {/* Studio lighting: key, fill and a brand-blue rim light */}
+            <ambientLight intensity={0.15} />
+            <directionalLight position={[4, 5, 5]} intensity={1.6} />
+            <directionalLight position={[-5, 2, 3]} intensity={0.5} />
+            <directionalLight position={[-3, 3, -5]} intensity={1.2} color="#3B82F6" />
 
-            <Environment preset="city" environmentIntensity={0.3} />
+            {/* Softbox reflections built locally (no HDRI download) */}
+            <Environment resolution={256} environmentIntensity={0.9}>
+              <Lightformer form="rect" intensity={3} position={[0, 5, -2]} scale={[10, 3, 1]} rotation-x={Math.PI / 2} />
+              <Lightformer form="rect" intensity={2} position={[-5, 1, 1]} scale={[3, 6, 1]} rotation-y={Math.PI / 2} />
+              <Lightformer form="rect" intensity={2} position={[5, 1, 1]} scale={[3, 6, 1]} rotation-y={-Math.PI / 2} />
+              <Lightformer form="ring" intensity={1.5} color="#3B82F6" position={[0, 1, -6]} scale={4} />
+            </Environment>
 
             <Suspense fallback={null}>
               <HeadphonesModel
@@ -436,7 +433,7 @@ export default function Hero() {
           } as CSSProperties}
         >
           {/* Smooth Animated Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 animate-gradient-xy"></div>
+          <div className="absolute inset-0 bg-blue-950"></div>
 
           {/* Smooth Floating Orbs */}
           <div className="absolute inset-0">
@@ -481,7 +478,7 @@ export default function Hero() {
           >
             {/* Large Axolotl Mascot */}
             <div className="relative mb-8 animate-float">
-              <div className="absolute inset-0 w-64 h-64 mx-auto bg-gradient-to-br from-blue-400 via-purple-500 to-pink-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+              <div className="absolute inset-0 w-64 h-64 mx-auto bg-blue-500 rounded-full blur-3xl opacity-50 animate-pulse"></div>
               <img
                 src="/qg-axolotl-rbg.png"
                 alt="QG Axolotl Mascot"
@@ -491,10 +488,10 @@ export default function Hero() {
 
             {/* Header-style logo and brand name */}
             <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-2xl p-2 shadow-2xl">
+              <div className="relative w-20 h-20 bg-blue-500 rounded-2xl p-2 shadow-2xl">
                 <div className="w-full h-full bg-white rounded-xl flex items-center justify-center transition-transform duration-300 hover:scale-105">
                   <img
-                    src="/nextgens-logo.png"
+                    src="/nextgens-logo-blue.png"
                     alt="Quantum Gameware Logo"
                     className="w-14 h-14 object-contain p-2"
                   />
@@ -502,14 +499,14 @@ export default function Hero() {
               </div>
 
               <div className="flex flex-col">
-                <span className="font-brand text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="font-brand text-3xl font-bold text-blue-500">
                   Quantum
                 </span>
                 <span className="font-brand text-xl text-white/90 tracking-wide">Gameware</span>
               </div>
             </div>
 
-            <div className="relative w-32 h-1 mx-auto mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full overflow-hidden">
+            <div className="relative w-32 h-1 mx-auto mb-6 bg-blue-500 rounded-full overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse"></div>
             </div>
 
@@ -542,7 +539,7 @@ export default function Hero() {
               style={{ transitionDelay: '2400ms' } as CustomCSSProperties}
             >
               Quality Gaming Gear
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="block text-blue-500">
                 Without the Premium Price
               </span>
             </h1>
@@ -561,9 +558,7 @@ export default function Hero() {
             <div className="flex flex-col space-y-3 w-full max-w-sm">
               <Link
                 href="/products"
-                className={`group relative inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 ${
-                  animationStarted ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
-                }`}
+                className={`group relative inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white rounded-xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 ${ animationStarted ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0' } bg-blue-500 hover:bg-blue-600`}
                 style={{ transitionDelay: '2800ms' } as CustomCSSProperties}
               >
                 <span className="relative z-10 flex items-center">
@@ -597,7 +592,7 @@ export default function Hero() {
                 style={{ transitionDelay: '2400ms' } as CustomCSSProperties}
               >
                 Quality Gaming Gear
-                <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="block text-blue-500">
                   Without the Premium Price
                 </span>
               </h1>
@@ -614,9 +609,7 @@ export default function Hero() {
               <div className="flex space-x-4">
                 <Link
                   href="/products"
-                  className={`group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 ${
-                    animationStarted ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'
-                  }`}
+                  className={`group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white rounded-xl overflow-hidden transition-all duration-800 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 ${ animationStarted ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0' } bg-blue-500 hover:bg-blue-600`}
                   style={{ transitionDelay: '2800ms' } as CustomCSSProperties}
                 >
                   <span className="relative z-10 flex items-center">
@@ -648,7 +641,7 @@ export default function Hero() {
                 style={{ transitionDelay: '3000ms' } as CustomCSSProperties}
               >
                 <div className="flex items-center mb-2">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mr-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -696,14 +689,14 @@ export default function Hero() {
                 style={{ animationDelay: '3400ms' } as CSSProperties}
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 group-hover:border-white/30 transition-all duration-300">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-3xl font-bold text-white mb-1">15K+</div>
                         <div className="text-sm text-white/80 font-medium">Happy Customers</div>
                       </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -774,7 +767,7 @@ export default function Hero() {
                 style={{ animationDelay: '3400ms' } as CSSProperties}
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 group-hover:border-white/20 transition-all duration-300">
                     <div className="text-4xl font-bold text-white mb-2">15K+</div>
                     <div className="text-sm text-white/80 font-medium">Happy Customers</div>

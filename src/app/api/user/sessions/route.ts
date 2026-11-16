@@ -1,6 +1,6 @@
 // src/app/api/user/sessions/route.ts - Manage active user sessions
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyToken } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 
@@ -15,11 +15,7 @@ async function verifyAuthToken(request: NextRequest) {
 
   // Verify JWT tokens
   try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    );
-
-    const { payload } = await jwtVerify(token, secret);
+    const payload = await verifyToken(token);
     return { payload, token };
   } catch (error) {
     console.error('JWT verification failed:', error);

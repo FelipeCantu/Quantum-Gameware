@@ -1,6 +1,5 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
@@ -14,7 +13,12 @@ import ThemeWrapper from '@/components/ThemeWrapper';
 import './globals.css';
 import ScrollBehavior from '@/components/ui/ScrollBehavior';
 
-const inter = Inter({ subsets: ['latin'] });
+// Inter is bundled locally (public/fonts) so dev builds don't depend on reaching Google Fonts
+const inter = localFont({
+  src: '../../public/fonts/inter-latin-variable.woff2',
+  weight: '100 900',
+  display: 'swap',
+});
 
 // Custom brand font - Ethnocentric
 const brandFont = localFont({
@@ -45,7 +49,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#23378e',
+  themeColor: '#3B82F6',
   colorScheme: 'light',
 };
 

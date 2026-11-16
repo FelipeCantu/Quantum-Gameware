@@ -25,7 +25,7 @@ export default function ProductsContent({ products }: { products: Product[] }) {
               </p>
               <Link
                 href="/"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg inline-block"
+                className="text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg inline-block bg-blue-500 hover:bg-blue-600"
               >
                 Return to Home
               </Link>

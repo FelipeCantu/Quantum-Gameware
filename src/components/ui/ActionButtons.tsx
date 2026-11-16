@@ -26,13 +26,7 @@ const AnimatedMenuButton = ({
   <button
     onClick={onClick}
     className={`
-      lg:hidden p-2 sm:p-2.5 rounded-xl transition-all duration-300
-      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2
-      active:scale-95 flex-shrink-0 ${
-        isScrolled
-          ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
-          : 'hover:bg-white/10'
-      }
+      lg:hidden p-2 sm:p-2.5 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${isScrolled ? 'hover:bg-blue-50' : 'hover:bg-white/10'}
     `}
     aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
     aria-expanded={isOpen}
@@ -43,7 +37,7 @@ const AnimatedMenuButton = ({
         absolute left-0 w-full h-0.5 rounded-full
         transition-all duration-300 ease-out origin-center
         ${isScrolled
-          ? effectiveTheme === 'light' ? 'bg-gray-600' : 'bg-gray-200'
+          ? effectiveTheme === 'light' ? 'bg-blue-500' : 'bg-gray-200'
           : 'bg-white'
         }
         ${isOpen
@@ -57,7 +51,7 @@ const AnimatedMenuButton = ({
         absolute left-0 top-[9.5px] w-full h-0.5 rounded-full
         transition-all duration-300 ease-out
         ${isScrolled
-          ? effectiveTheme === 'light' ? 'bg-gray-600' : 'bg-gray-200'
+          ? effectiveTheme === 'light' ? 'bg-blue-500' : 'bg-gray-200'
           : 'bg-white'
         }
         ${isOpen
@@ -71,7 +65,7 @@ const AnimatedMenuButton = ({
         absolute left-0 w-full h-0.5 rounded-full
         transition-all duration-300 ease-out origin-center
         ${isScrolled
-          ? effectiveTheme === 'light' ? 'bg-gray-600' : 'bg-gray-200'
+          ? effectiveTheme === 'light' ? 'bg-blue-500' : 'bg-gray-200'
           : 'bg-white'
         }
         ${isOpen
@@ -103,7 +97,7 @@ export default function ActionButtons({ isScrolled, effectiveTheme, isMenuOpen, 
   const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
     isScrolled
       ? effectiveTheme === 'light'
-        ? 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50'
+        ? 'hover:bg-blue-50'
         : 'hover:bg-white/10'
       : 'hover:bg-white/10'
   }`;
@@ -121,7 +115,7 @@ export default function ActionButtons({ isScrolled, effectiveTheme, isMenuOpen, 
             className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
               isScrolled
                 ? effectiveTheme === 'light'
-                  ? 'text-gray-600 group-hover:text-blue-600'
+                  ? 'text-blue-500 group-hover:text-blue-600'
                   : 'text-gray-200 group-hover:text-white'
                 : 'text-white group-hover:text-white'
             }`}
@@ -153,7 +147,7 @@ export default function ActionButtons({ isScrolled, effectiveTheme, isMenuOpen, 
           className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
             isScrolled
               ? effectiveTheme === 'light'
-                ? 'text-gray-600 group-hover:text-blue-600'
+                ? 'text-blue-500 group-hover:text-blue-600'
                 : 'text-gray-200 group-hover:text-white'
               : 'text-white group-hover:text-white'
           }`} 

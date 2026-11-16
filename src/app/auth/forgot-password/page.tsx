@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-blue-950">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
@@ -77,10 +77,10 @@ export default function ForgotPasswordPage() {
             {/* Header */}
             <div className="text-center mb-8">
               <Link href="/" className="inline-flex items-center space-x-3 mb-6 group">
-                <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 bg-blue-500">
                   <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
                     <Image
-                      src="/nextgens-logo.png"
+                      src="/nextgens-logo-blue.png"
                       alt="Quantum Gameware Logo"
                       width={40}
                       height={40}
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold leading-none bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold leading-none text-blue-500">
                     Quantum
                   </span>
                   <div className="text-xs sm:text-sm font-medium leading-none text-gray-500">
@@ -140,7 +140,7 @@ export default function ForgotPasswordPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-500 disabled:to-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="w-full disabled:from-gray-500 disabled:to-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100 bg-blue-500 hover:bg-blue-600"
                   >
                     {isSubmitting ? (
                       <div className="flex items-center justify-center">

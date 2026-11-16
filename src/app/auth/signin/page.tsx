@@ -86,13 +86,13 @@ function SignInForm() {
   // If already authenticated, show message with manual redirect button
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
+      <div className="min-h-screen bg-blue-950 flex items-center justify-center pt-20">
         <div className="text-center bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
           <h2 className="text-2xl font-bold text-white mb-4">Already Signed In</h2>
           <p className="text-white/70 mb-6">You are already authenticated.</p>
           <button
             onClick={() => window.location.href = redirectTo}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300"
+            className="px-6 py-3 text-white rounded-xl font-semibold transition-all duration-300 bg-blue-500 hover:bg-blue-600"
           >
             Go to {redirectTo}
           </button>
@@ -102,7 +102,7 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-blue-950">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -115,10 +115,10 @@ function SignInForm() {
             
             <div className="text-center mb-8">
               <Link href="/" className="inline-flex items-center space-x-3 mb-6 group">
-                <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 overflow-hidden rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300 bg-blue-500">
                   <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
                     <Image
-                      src="/nextgens-logo.png"
+                      src="/nextgens-logo-blue.png"
                       alt="Quantum Gameware Logo"
                       width={40}
                       height={40}
@@ -134,7 +134,7 @@ function SignInForm() {
                   </div>
                 </div>
                 <div className="hidden sm:block">
-                  <span className="font-brand text-lg sm:text-xl md:text-2xl font-bold leading-none bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="font-brand text-lg sm:text-xl md:text-2xl font-bold leading-none text-blue-500">
                     Quantum
                   </span>
                   <div className="font-brand text-xs sm:text-sm font-medium leading-none text-gray-500">
@@ -257,7 +257,7 @@ function SignInForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-500 disabled:to-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full disabled:from-gray-500 disabled:to-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100 bg-blue-500 hover:bg-blue-600"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center">
@@ -307,7 +307,7 @@ function SignInForm() {
 
 function SignInPageFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
+    <div className="min-h-screen bg-blue-950 flex items-center justify-center pt-20">
       <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
     </div>
   );

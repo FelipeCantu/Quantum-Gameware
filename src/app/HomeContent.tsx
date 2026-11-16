@@ -23,7 +23,7 @@ export default function HomeContent({
       <section className={`${getBgClass()} py-20 relative overflow-hidden`}>
         {/* Fixed background gradient layer for depth */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent pointer-events-none">
-          <div className={`absolute inset-0 ${effectiveTheme === 'light' ? 'bg-gradient-to-br from-blue-50/50 to-purple-50/50' : 'bg-gradient-to-br from-slate-900/30 to-slate-800/30'}`}></div>
+          <div className={`absolute inset-0 ${effectiveTheme === 'light' ? 'bg-blue-50/50' : 'bg-gradient-to-br from-slate-900/30 to-slate-800/30'}`}></div>
         </div>
 
         {/* Animated grid pattern background with parallax */}

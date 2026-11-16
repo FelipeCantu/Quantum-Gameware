@@ -22,9 +22,9 @@ html {
   --primary-purple: 139, 92, 246;
   --primary-indigo: 99, 102, 241;
   
-  /* Gaming theme gradients */
-  --gradient-gaming: linear-gradient(135deg, rgb(59, 130, 246), rgb(139, 92, 246), rgb(99, 102, 241));
-  --gradient-gaming-dark: linear-gradient(135deg, rgb(30, 41, 59), rgb(55, 48, 163), rgb(67, 56, 202));
+  /* Brand accent (solid electric blue) */
+  --gradient-gaming: rgb(59, 130, 246);
+  --gradient-gaming-dark: rgb(37, 99, 235);
   
   /* Glass morphism variables */
   --glass-bg: rgba(255, 255, 255, 0.1);

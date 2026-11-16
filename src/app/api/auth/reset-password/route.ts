@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     let decoded: { userId: string; email: string; purpose: string };
     try {
-      decoded = jwt.verify(resetToken, jwtSecret) as { userId: string; email: string; purpose: string };
+      decoded = jwt.verify(resetToken, jwtSecret, { algorithms: ['HS256'] }) as { userId: string; email: string; purpose: string };
     } catch (error) {
       return NextResponse.json(
         { message: 'Invalid or expired reset token. Please verify your code again.' },

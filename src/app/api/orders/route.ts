@@ -1,41 +1,14 @@
 // src/app/api/orders/route.ts - Real database implementation
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyAuthToken } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import mongoose from 'mongoose';
+import { client } from '@/sanity/lib/client';
 
-async function verifyAuthToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
-  }
-
-  const token = authHeader.substring(7);
-  
-  // Handle demo tokens
-  if (token.startsWith('demo_token_')) {
-    return {
-      userId: 'demo_user',
-      email: 'demo@quantumgameware.com',
-      role: 'customer'
-    };
-  }
-
-  // Verify JWT tokens
-  try {
-    const secret = new TextEncoder().encode(
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    );
-    
-    const { payload } = await jwtVerify(token, secret);
-    return payload;
-  } catch (error) {
-    console.error('JWT verification failed:', error);
-    throw new Error('Invalid token');
-  }
-}
+// Must match the totals shown on the checkout page
+const TAX_RATE = 0.08;
+const SHIPPING_COST = 0;
 
 // GET /api/orders - Fetch all orders for a user
 export async function GET(request: NextRequest) {
@@ -156,8 +129,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Price the order server-side from Sanity; never trust client prices or totals
+    const productIds: string[] = orderData.items.map((item: any) => String(item.productId || item.id));
+    const products: Array<{ _id: string; price: number; inStock?: boolean }> = await client.fetch(
+      `*[_type == "product" && _id in $ids]{ _id, price, inStock }`,
+      { ids: productIds }
+    );
+    const productById = new Map(products.map(p => [p._id, p]));
+
+    const pricedItems = [];
+    for (const item of orderData.items) {
+      const product = productById.get(String(item.productId || item.id));
+      const quantity = Number(item.quantity);
+      if (!product || product.inStock === false) {
+        return NextResponse.json(
+          { success: false, message: `Product unavailable: ${item.name || item.productId}` },
+          { status: 400 }
+        );
+      }
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+        return NextResponse.json(
+          { success: false, message: 'Invalid item quantity' },
+          { status: 400 }
+        );
+      }
+      pricedItems.push({ ...item, productId: product._id, price: product.price, quantity });
+    }
+
+    const roundCents = (n: number) => Math.round(n * 100) / 100;
+    const subtotal = roundCents(pricedItems.reduce((sum, item) => sum + item.price * item.quantity, 0));
+    const shippingCost = SHIPPING_COST;
+    const tax = roundCents(subtotal * TAX_RATE);
+    const total = roundCents(subtotal + shippingCost + tax);
+
     // Calculate reward points (1 point per dollar spent)
-    const rewardPointsEarned = Math.floor(orderData.total || 0);
+    const rewardPointsEarned = Math.floor(total);
 
     const userId = new mongoose.Types.ObjectId(userPayload.userId as string);
     console.log('👤 Creating order for userId:', userId.toString());
@@ -165,8 +171,8 @@ export async function POST(request: NextRequest) {
     // Create real order in database
     const newOrder = await Order.create({
       userId: userId,
-      items: orderData.items.map((item: any) => ({
-        productId: item.productId || item.id,
+      items: pricedItems.map((item: any) => ({
+        productId: item.productId,
         productSlug: item.productSlug || item.slug || '',
         name: item.name,
         price: item.price,
@@ -174,10 +180,10 @@ export async function POST(request: NextRequest) {
         image: item.image,
         variant: item.variant
       })),
-      subtotal: orderData.subtotal || orderData.total || 0,
-      shippingCost: orderData.shippingCost || orderData.shipping?.cost || 0,
-      tax: orderData.tax || 0,
-      total: orderData.total,
+      subtotal,
+      shippingCost,
+      tax,
+      total,
       status: 'confirmed',
       shipping: {
         address: {
@@ -190,13 +196,13 @@ export async function POST(request: NextRequest) {
           phone: orderData.shipping.phone
         },
         method: orderData.shipping.method || 'Standard Shipping',
-        cost: orderData.shippingCost || orderData.shipping?.cost || 0
+        cost: shippingCost
       },
+      // No payment processor is integrated yet, so payment is never marked
+      // completed from client input. A verified payment webhook should do that.
       payment: {
         method: orderData.payment?.method || 'credit_card',
-        status: orderData.payment?.status || 'completed',
-        transactionId: orderData.payment?.transactionId,
-        paidAt: orderData.payment?.paidAt ? new Date(orderData.payment.paidAt) : new Date()
+        status: 'pending'
       },
       rewardPointsEarned,
       notes: orderData.notes

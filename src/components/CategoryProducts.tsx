@@ -188,7 +188,7 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Decorative gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                   {/* Product Image */}
                   <Link
@@ -247,7 +247,7 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                     <div>
                       {/* Brand and Category */}
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="px-3 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 text-blue-700 rounded-lg text-sm font-semibold shadow-sm">
+                        <span className="px-3 py-1 bg-blue-50 border border-blue-200/50 text-blue-700 rounded-lg text-sm font-semibold shadow-sm">
                           {product.brand}
                         </span>
                         <span className="px-3 py-1 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200/50 text-purple-700 rounded-lg text-sm font-medium shadow-sm">
@@ -258,7 +258,7 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                       {/* Product Name and Wishlist */}
                       <div className="flex items-start justify-between gap-4 mb-5">
                         <Link href={`/products/${encodeURIComponent(product.slug)}`} className="flex-1">
-                          <h3 className="text-2xl font-bold text-gray-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300 leading-tight">
+                          <h3 className="text-2xl font-bold text-gray-900 group-hover:text-transparent group-hover:bg-clip-text transition-all duration-300 leading-tight text-blue-500">
                             {product.name}
                           </h3>
                         </Link>
@@ -290,7 +290,7 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                       <div className="mb-5 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200/50">
                         {product.originalPrice && product.originalPrice > product.price ? (
                           <div className="flex items-baseline gap-3 flex-wrap">
-                            <span className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            <span className="text-4xl font-black text-blue-500">
                               ${product.price?.toFixed(2)}
                             </span>
                             <span className="text-xl text-gray-400 line-through font-medium">${product.originalPrice?.toFixed(2)}</span>
@@ -299,7 +299,7 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                             </span>
                           </div>
                         ) : (
-                          <span className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          <span className="text-4xl font-black text-blue-500">
                             ${product.price?.toFixed(2)}
                           </span>
                         )}
@@ -349,11 +349,7 @@ export default function CategoryProducts({ products, categoryName }: CategoryPro
                         onClick={handleAddToCart}
                         disabled={!product.inStock}
                         className={`
-                          w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2
-                          ${product.inStock
-                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-105'
-                            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                          }
+                          w-full px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${product.inStock ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105' : 'bg-gray-200 text-gray-500 cursor-not-allowed' }
                         `}
                       >
                         {product.inStock ? (

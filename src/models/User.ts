@@ -1,6 +1,13 @@
 // src/models/User.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { createHash } from 'crypto';
+
+export const MAX_RESET_CODE_ATTEMPTS = 5;
+
+export function hashResetCode(code: string): string {
+  return createHash('sha256').update(code).digest('hex');
+}
 
 export interface UserAddress {
   street: string;
@@ -61,7 +68,8 @@ export interface IUser extends Document {
   emailChangeCode?: string;
   emailChangeExpires?: Date;
   passwordResetToken?: string;
-  passwordResetCode?: string;
+  passwordResetCode?: string; // SHA-256 hash of the 6-digit code
+  passwordResetAttempts?: number;
   passwordResetExpires?: Date;
   lastLogin?: Date;
   createdAt: Date;
@@ -223,6 +231,11 @@ const userSchema = new Schema<IUser>({
     type: String,
     select: false
   },
+  passwordResetAttempts: {
+    type: Number,
+    default: 0,
+    select: false
+  },
   passwordResetExpires: {
     type: Date,
     select: false
@@ -331,7 +344,7 @@ userSchema.methods.generatePasswordResetCode = function(this: IUser): string {
   const crypto = require('crypto');
 
   // Generate 6-digit reset code
-  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const resetCode = crypto.randomInt(100000, 1000000).toString();
 
   // Generate random token for URL (optional fallback)
   const resetToken = crypto.randomBytes(32).toString('hex');
@@ -341,7 +354,9 @@ userSchema.methods.generatePasswordResetCode = function(this: IUser): string {
     .update(resetToken)
     .digest('hex');
 
-  this.passwordResetCode = resetCode;
+  // Store only a hash so a database leak does not expose live codes
+  this.passwordResetCode = hashResetCode(resetCode);
+  this.passwordResetAttempts = 0;
 
   // Code expires in 15 minutes (shorter for security)
   this.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
@@ -354,7 +369,7 @@ userSchema.methods.generateEmailVerificationCode = function(this: IUser): string
   const crypto = require('crypto');
 
   // Generate 6-digit verification code
-  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCode = crypto.randomInt(100000, 1000000).toString();
 
   // Generate random token for URL
   const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -377,7 +392,7 @@ userSchema.methods.generateEmailChangeCode = function(this: IUser): string {
   const crypto = require('crypto');
 
   // Generate 6-digit verification code
-  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCode = crypto.randomInt(100000, 1000000).toString();
 
   // Generate random token for URL
   const changeToken = crypto.randomBytes(32).toString('hex');

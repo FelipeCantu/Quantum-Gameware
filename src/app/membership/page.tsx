@@ -81,11 +81,11 @@ export default function MembershipPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-blue-950">
       <Header />
 
       {/* Account Navigation - Mobile/Tablet Only */}
-      <div className="lg:hidden sticky top-16 z-40 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-6 pb-3">
+      <div className="lg:hidden sticky top-16 z-40 bg-blue-950 pt-6 pb-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Scrollable container with custom scrollbar */}
           <div
@@ -324,7 +324,7 @@ export default function MembershipPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/auth/signup"
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-colors font-semibold text-lg"
+                className="px-8 py-4 text-white rounded-xl transition-colors font-semibold text-lg bg-blue-500 hover:bg-blue-600"
               >
                 Sign Up Now
               </Link>

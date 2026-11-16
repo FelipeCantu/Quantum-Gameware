@@ -290,10 +290,10 @@ export default function AIAssistant() {
       ? 'bg-gray-200 text-gray-400'
       : 'bg-gray-700 text-gray-500',
   };
-  const gradientPrimary = 'bg-gradient-to-r from-blue-600 to-purple-600';
-  const gradientPrimaryHover = 'hover:from-blue-700 hover:to-purple-700';
-  const gradientSecondary = 'bg-gradient-to-r from-blue-500 to-purple-500';
-  const gradientSecondaryHover = 'hover:from-blue-600 hover:to-purple-600';
+  const gradientPrimary = 'bg-blue-500';
+  const gradientPrimaryHover = 'hover:bg-blue-600';
+  const gradientSecondary = 'bg-blue-500';
+  const gradientSecondaryHover = 'hover:bg-blue-600';
   const accentGradient = isLight ? gradientPrimary : gradientSecondary;
   const accentGradientHover = isLight ? gradientPrimaryHover : gradientSecondaryHover;
 
@@ -343,7 +343,7 @@ export default function AIAssistant() {
           }}
         >
           {/* Header */}
-          <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-[length:200%_100%] animate-gradient px-4 py-4 sm:px-6 flex items-center justify-between shadow-lg">
+          <div className="relative bg-blue-500 px-4 py-4 sm:px-6 flex items-center justify-between shadow-lg">
             {/* Animated shimmer overlay for premium look */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
 
@@ -416,7 +416,7 @@ export default function AIAssistant() {
 
                     <div
                       className={`relative z-10 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl
-                      ${isUser ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white px-4 py-2.5 rounded-br-none' : `${themeClasses.messageBoxAssistant} px-4 py-3 rounded-tl-none`}`}
+                      ${isUser ? 'bg-blue-500 text-white px-4 py-2.5 rounded-br-none' : `${themeClasses.messageBoxAssistant} px-4 py-3 rounded-tl-none`}`}
                     >
                       <div className={`whitespace-pre-wrap break-words ${isUser ? 'text-[15px] leading-snug' : 'text-sm leading-relaxed'}`}>
                         {parseMessageContent(message.content).map((part, idx) => (

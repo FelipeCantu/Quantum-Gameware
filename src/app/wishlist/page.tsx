@@ -97,7 +97,7 @@ function WishlistContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-blue-950">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -141,7 +141,7 @@ function WishlistContent() {
                     <button
                       onClick={handleAddAllToCart}
                       disabled={isAddingAll || wishlistItems.every(item => !item.inStock)}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 text-white rounded-lg transition-colors text-sm sm:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
                     >
                       {isAddingAll ? (
                         <>
@@ -251,11 +251,7 @@ function WishlistContent() {
                                 <button
                                   onClick={() => handleAddToCart(item)}
                                   disabled={!item.inStock}
-                                  className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-300 text-sm sm:text-base ${
-                                    item.inStock
-                                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white hover:scale-105'
-                                      : 'bg-white/20 text-white/60 cursor-not-allowed'
-                                  }`}
+                                  className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-300 text-sm sm:text-base ${ item.inStock ? 'bg-blue-500 hover:bg-blue-600 text-white hover:scale-105' : 'bg-white/20 text-white/60 cursor-not-allowed' }`}
                                 >
                                   {item.inStock ? (
                                     <>
@@ -315,7 +311,7 @@ function WishlistContent() {
                 </p>
                 <Link
                   href="/products"
-                  className="inline-flex items-center px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 text-sm sm:text-base"
+                  className="inline-flex items-center px-5 sm:px-6 py-2.5 sm:py-3 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
                 >
                   Explore Products
                   <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

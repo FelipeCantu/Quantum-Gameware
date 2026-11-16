@@ -300,14 +300,7 @@ export default function ProductCard({
               onClick={handleAddToCart}
               disabled={!product.inStock}
               className={`
-                flex-1 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-semibold text-[10px] sm:text-xs md:text-sm transition-all duration-300
-                transform active:scale-95 flex items-center justify-center gap-1 sm:gap-2 relative z-20
-                ${product.inStock
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]'
-                  : effectiveTheme === 'light'
-                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300'
-                    : 'bg-slate-700/50 text-gray-400 cursor-not-allowed border border-slate-600'
-                }
+                flex-1 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-semibold text-[10px] sm:text-xs md:text-sm transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-1 sm:gap-2 relative z-20 ${product.inStock ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]' : effectiveTheme === 'light' ? 'bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300' : 'bg-slate-700/50 text-gray-400 cursor-not-allowed border border-slate-600' }
               `}
             >
               {product.inStock ? (

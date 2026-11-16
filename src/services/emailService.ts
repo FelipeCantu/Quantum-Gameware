@@ -1,4 +1,6 @@
 // File: src/services/emailService.ts
+import { SITE_NAME, SITE_URL, EMAIL_FROM_ADDRESS, CONTACT_PAGE_URL } from '@/config/site';
+
 export interface EmailOrder {
   id: string;
   items: Array<{
@@ -38,10 +40,11 @@ export interface EmailOrder {
 
 export class EmailService {
   private static readonly COMPANY_INFO = {
-    name: "Quantum Gameware",
-    email: "support@quantumgameware.com",
+    name: SITE_NAME,
+    email: EMAIL_FROM_ADDRESS,
+    contactUrl: CONTACT_PAGE_URL,
     phone: "1-800-QUANTUM",
-    website: "https://quantumgameware.com",
+    website: SITE_URL,
     address: {
       street: "123 Gaming Street",
       city: "Tech Valley",
@@ -98,7 +101,7 @@ export class EmailService {
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3B82F6;
             color: white;
             padding: 30px;
             text-align: center;
@@ -266,7 +269,7 @@ export class EmailService {
         }
 
         .next-steps {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3B82F6;
             color: white;
             padding: 25px;
             border-radius: 12px;
@@ -320,7 +323,7 @@ export class EmailService {
 
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3B82F6;
             color: white !important;
             padding: 15px 30px;
             text-decoration: none;
@@ -553,7 +556,7 @@ export class EmailService {
                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
                                         <tr>
                                             <td style="text-align: center; vertical-align: middle;">
-                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
                                             </td>
                                         </tr>
                                     </table>
@@ -612,7 +615,7 @@ export class EmailService {
                                     <tr>
                                         <td style="text-align: center; vertical-align: middle;">
                                             ${item.image && item.image !== '' ? 
-                                                `<img src="${item.image.includes('://') ? item.image : 'https://quantumgameware.com' + (item.image.startsWith('/') ? item.image : '/' + item.image)}" alt="${item.name}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; display: block;" />` :
+                                                `<img src="${item.image.includes('://') ? item.image : SITE_URL + (item.image.startsWith('/') ? item.image : '/' + item.image)}" alt="${item.name}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px; display: block;" />` :
                                                 `<div style="color: #a0aec0; font-size: 24px;">📦</div>`
                                             }
                                         </td>
@@ -735,7 +738,7 @@ export class EmailService {
                                         <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
                                             <tr>
                                                 <td style="text-align: center; vertical-align: middle;">
-                                                    <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                    <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
                                                 </td>
                                             </tr>
                                         </table>
@@ -755,7 +758,7 @@ export class EmailService {
                     ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}<br>
                     <br>
                     Questions? Contact us:<br>
-                    Email: <a href="mailto:${this.COMPANY_INFO.email}">${this.COMPANY_INFO.email}</a><br>
+                    Contact: <a href="${this.COMPANY_INFO.contactUrl}">${this.COMPANY_INFO.contactUrl}</a><br>
                     Phone: <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}">${this.COMPANY_INFO.phone}</a>
                 </div>
                 
@@ -837,7 +840,7 @@ WHAT'S NEXT?
 NEED HELP?
 ==========
 Track your order: ${this.COMPANY_INFO.website}/cart/orders
-Contact us: ${this.COMPANY_INFO.email} or ${this.COMPANY_INFO.phone}
+Contact us: ${this.COMPANY_INFO.contactUrl} or ${this.COMPANY_INFO.phone}
 
 Thanks for choosing Quantum Gameware!
 
@@ -964,7 +967,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                 <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                        <td style="background: #3B82F6; padding: 40px; text-align: center;">
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                                 <tr>
                                     <td style="vertical-align: middle; padding-right: 12px;">
@@ -974,7 +977,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1007,7 +1010,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <!-- Verification Code Box -->
                             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
                                 <tr>
-                                    <td align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                    <td align="center" style="background: #3B82F6; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
                                         <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                                             Your Verification Code
                                         </p>
@@ -1031,7 +1034,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                         <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                             <tr>
                                                 <td style="width: 36px; vertical-align: top; padding-right: 12px;">
-                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: #3B82F6; border-radius: 50%;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
                                                                 1
@@ -1046,7 +1049,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                             </tr>
                                             <tr>
                                                 <td style="width: 36px; vertical-align: top; padding-right: 12px;">
-                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: #3B82F6; border-radius: 50%;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
                                                                 2
@@ -1079,7 +1082,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
                                 <tr>
                                     <td class="support-button" style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
-                                        <a href="mailto:${this.COMPANY_INFO.email}" class="support-button-text" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                        <a href="${this.COMPANY_INFO.contactUrl}" class="support-button-text" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
                                             Need Help? Contact Support →
                                         </a>
                                     </td>
@@ -1099,7 +1102,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1118,7 +1121,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                 ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
                             </div>
                             <p style="margin: 0; color: #718096; font-size: 12px;">
-                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                Questions? Reach us through <a href="${this.COMPANY_INFO.contactUrl}" style="color: #4299e1; text-decoration: none;">our contact page</a><br>
                                 or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
                             </p>
                         </td>
@@ -1191,7 +1194,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                 <table cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                        <td style="background: #3B82F6; padding: 40px; text-align: center;">
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                                 <tr>
                                     <td style="vertical-align: middle; padding-right: 12px;">
@@ -1201,7 +1204,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1325,8 +1328,8 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                     <td style="padding-right: 10px;">
                                         <table cellpadding="0" cellspacing="0" border="0">
                                             <tr>
-                                                <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 15px 30px;">
-                                                    <a href="mailto:${this.COMPANY_INFO.email}" style="color: white; text-decoration: none; font-weight: 600; font-size: 14px; display: block;">
+                                                <td style="background: #3B82F6; border-radius: 8px; padding: 15px 30px;">
+                                                    <a href="${this.COMPANY_INFO.contactUrl}" style="color: white; text-decoration: none; font-weight: 600; font-size: 14px; display: block;">
                                                         Contact Support
                                                     </a>
                                                 </td>
@@ -1360,7 +1363,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1379,7 +1382,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                 ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
                             </div>
                             <p style="margin: 0; color: #718096; font-size: 12px;">
-                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                Questions? Reach us through <a href="${this.COMPANY_INFO.contactUrl}" style="color: #4299e1; text-decoration: none;">our contact page</a><br>
                                 or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
                             </p>
                         </td>
@@ -1446,7 +1449,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                 <table cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                        <td style="background: #3B82F6; padding: 40px; text-align: center;">
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                                 <tr>
                                     <td style="vertical-align: middle; padding-right: 12px;">
@@ -1456,7 +1459,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1489,7 +1492,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <!-- Verification Code Box -->
                             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
                                 <tr>
-                                    <td align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                    <td align="center" style="background: #3B82F6; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
                                         <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                                             Your Verification Code
                                         </p>
@@ -1527,7 +1530,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                         <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                             <tr>
                                                 <td style="width: 36px; vertical-align: top; padding-right: 12px;">
-                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: #3B82F6; border-radius: 50%;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
                                                                 1
@@ -1542,7 +1545,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                             </tr>
                                             <tr>
                                                 <td style="width: 36px; vertical-align: top; padding-right: 12px;">
-                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: #3B82F6; border-radius: 50%;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
                                                                 2
@@ -1578,7 +1581,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
                                 <tr>
                                     <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
-                                        <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                        <a href="${this.COMPANY_INFO.contactUrl}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
                                             Need Help? Contact Support →
                                         </a>
                                     </td>
@@ -1598,7 +1601,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1617,7 +1620,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                 ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
                             </div>
                             <p style="margin: 0; color: #718096; font-size: 12px;">
-                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                Questions? Reach us through <a href="${this.COMPANY_INFO.contactUrl}" style="color: #4299e1; text-decoration: none;">our contact page</a><br>
                                 or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
                             </p>
                         </td>
@@ -1664,7 +1667,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
   ): Promise<boolean> {
     try {
       const htmlContent = this.generatePasswordChangeEmail(userName, userEmail);
-      const textContent = `Hi ${userName},\n\nThis is a confirmation that your password for your Quantum Gameware account (${userEmail}) has been successfully changed.\n\nChanged on: ${new Date().toLocaleString()}\n\nIf you did not make this change, please contact our support team immediately at ${this.COMPANY_INFO.email}.\n\nBest regards,\nQuantum Gameware Team`;
+      const textContent = `Hi ${userName},\n\nThis is a confirmation that your password for your Quantum Gameware account (${userEmail}) has been successfully changed.\n\nChanged on: ${new Date().toLocaleString()}\n\nIf you did not make this change, please contact our support team immediately at ${this.COMPANY_INFO.contactUrl}.\n\nBest regards,\nQuantum Gameware Team`;
 
       return await this.sendEmail(
         userEmail,
@@ -1750,7 +1753,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" class="email-container" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                     <!-- Header -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                        <td style="background: #3B82F6; padding: 40px; text-align: center;">
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                                 <tr>
                                     <td style="vertical-align: middle; padding-right: 12px;">
@@ -1760,7 +1763,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 36px; height: 36px; background: white; border-radius: 6px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 24px; height: 24px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1793,7 +1796,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <!-- Reset Code Box -->
                             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
                                 <tr>
-                                    <td align="center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                                    <td align="center" style="background: #3B82F6; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
                                         <p style="margin: 0 0 10px 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                                             Your Verification Code
                                         </p>
@@ -1817,7 +1820,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                         <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                             <tr>
                                                 <td style="width: 36px; vertical-align: top; padding-right: 12px;">
-                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: #3B82F6; border-radius: 50%;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
                                                                 1
@@ -1832,7 +1835,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                             </tr>
                                             <tr>
                                                 <td style="width: 36px; vertical-align: top; padding-right: 12px;">
-                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                                                    <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: #3B82F6; border-radius: 50%;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">
                                                                 2
@@ -1865,7 +1868,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                             <table cellpadding="0" cellspacing="0" border="0" style="margin: 30px auto 0 auto;">
                                 <tr>
                                     <td style="background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px 30px; text-align: center;">
-                                        <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                        <a href="${this.COMPANY_INFO.contactUrl}" style="color: #4a5568; text-decoration: none; font-weight: 600; font-size: 14px;">
                                             Need Help? Contact Support →
                                         </a>
                                     </td>
@@ -1885,7 +1888,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                                     <table cellpadding="0" cellspacing="0" border="0" style="width: 24px; height: 24px; background: white; border-radius: 4px;">
                                                         <tr>
                                                             <td style="text-align: center; vertical-align: middle;">
-                                                                <img src="https://quantumgameware.com/nextgens-logo.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
+                                                                <img src="${SITE_URL}/nextgens-logo-blue.png" alt="QG" style="width: 16px; height: 16px; display: block; margin: 0 auto;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1904,7 +1907,7 @@ ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COM
                                 ${this.COMPANY_INFO.address.city}, ${this.COMPANY_INFO.address.state} ${this.COMPANY_INFO.address.zipCode}
                             </div>
                             <p style="margin: 0; color: #718096; font-size: 12px;">
-                                Questions? Email us at <a href="mailto:${this.COMPANY_INFO.email}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.email}</a><br>
+                                Questions? Reach us through <a href="${this.COMPANY_INFO.contactUrl}" style="color: #4299e1; text-decoration: none;">our contact page</a><br>
                                 or call <a href="tel:${this.COMPANY_INFO.phone.replace(/\D/g, '')}" style="color: #4299e1; text-decoration: none;">${this.COMPANY_INFO.phone}</a>
                             </p>
                         </td>

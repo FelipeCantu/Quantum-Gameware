@@ -1,12 +1,19 @@
 // src/app/api/contact/route.ts
 //
-// Email configuration: Using verified domain support@quantumgameware.com
-// If emails are not being delivered, verify DNS records at https://resend.com/domains
+// Email sender and recipient come from src/config/site.ts (EMAIL_FROM / ADMIN_EMAIL env vars).
 //
 import { NextRequest, NextResponse } from 'next/server';
+import { emailFrom, ADMIN_EMAIL, SITE_URL } from '@/config/site';
+import { rateLimit } from '@/lib/rateLimit';
+import { escapeHtml } from '@/lib/escapeHtml';
+
+const MAX_LENGTHS = { name: 100, email: 254, subject: 200, message: 5000 };
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, 'contact', 5, 60 * 60 * 1000);
+    if (limited) return limited;
+
     const body = await request.json();
     const { name, email, subject, message } = body;
 
@@ -18,6 +25,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    for (const [field, max] of Object.entries(MAX_LENGTHS)) {
+      if (typeof body[field] !== 'string' || body[field].length > max) {
+        return NextResponse.json(
+          { success: false, message: `${field} must be text of at most ${max} characters` },
+          { status: 400 }
+        );
+      }
+    }
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -27,9 +43,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Escape everything interpolated into the HTML emails below
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
       console.error('⚠️  RESEND_API_KEY not configured');
+      return NextResponse.json(
+        { success: false, message: 'Email service not configured' },
+        { status: 500 }
+      );
+    }
+
+    if (!ADMIN_EMAIL) {
+      console.error('⚠️  ADMIN_EMAIL not configured');
       return NextResponse.json(
         { success: false, message: 'Email service not configured' },
         { status: 500 }
@@ -44,34 +74,35 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Quantum Gameware <support@quantumgameware.com>',
-        to: [process.env.ADMIN_EMAIL || 'felipe@quantumgameware.com'],
-        subject: `Contact Form: ${subject}`,
+        from: emailFrom(),
+        to: [ADMIN_EMAIL],
+        reply_to: email,
+        subject: `Contact Form: ${safeSubject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 10px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <div style="background: #3B82F6; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 24px;">New Contact Form Submission</h1>
           </div>
 
           <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
               <h2 style="color: #374151; font-size: 18px; margin: 0 0 10px 0;">Contact Information</h2>
-              <p style="margin: 5px 0; color: #6b7280;"><strong>Name:</strong> ${name}</p>
-              <p style="margin: 5px 0; color: #6b7280;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #667eea; text-decoration: none;">${email}</a></p>
-              <p style="margin: 5px 0; color: #6b7280;"><strong>Subject:</strong> ${subject}</p>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>Name:</strong> ${safeName}</p>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>Email:</strong> <a href="mailto:${safeEmail}" style="color: #3B82F6; text-decoration: none;">${safeEmail}</a></p>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>Subject:</strong> ${safeSubject}</p>
             </div>
 
             <div style="margin-top: 20px;">
               <h2 style="color: #374151; font-size: 18px; margin: 0 0 10px 0;">Message</h2>
               <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; color: #374151; line-height: 1.6;">
-                ${message.replace(/\n/g, '<br>')}
+                ${safeMessage}
               </div>
             </div>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 14px;">
               <p>This message was sent from the Quantum Gameware contact form</p>
               <p style="margin-top: 10px;">
-                <a href="mailto:${email}" style="color: #667eea; text-decoration: none; font-weight: bold;">Reply to ${name}</a>
+                <a href="mailto:${safeEmail}" style="color: #3B82F6; text-decoration: none; font-weight: bold;">Reply to ${safeName}</a>
               </p>
             </div>
           </div>
@@ -101,18 +132,18 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Quantum Gameware <support@quantumgameware.com>',
+        from: emailFrom(),
         to: [email],
         subject: 'Thank you for contacting Quantum Gameware!',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb; border-radius: 10px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <div style="background: #3B82F6; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px;">Thank You!</h1>
           </div>
 
           <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-              Hi <strong>${name}</strong>,
+              Hi <strong>${safeName}</strong>,
             </p>
 
             <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
@@ -121,9 +152,9 @@ export async function POST(request: NextRequest) {
 
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h2 style="color: #374151; font-size: 18px; margin: 0 0 15px 0;">Your Message:</h2>
-              <p style="margin: 5px 0; color: #6b7280;"><strong>Subject:</strong> ${subject}</p>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>Subject:</strong> ${safeSubject}</p>
               <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; color: #6b7280; line-height: 1.6;">
-                ${message.replace(/\n/g, '<br>')}
+                ${safeMessage}
               </div>
             </div>
 
@@ -132,21 +163,16 @@ export async function POST(request: NextRequest) {
             </p>
 
             <ul style="color: #6b7280; font-size: 15px; line-height: 1.8; margin-top: 10px;">
-              <li>Browse our <a href="https://quantumgameware.com/products" style="color: #667eea; text-decoration: none;">latest products</a></li>
-              <li>Check out our <a href="https://quantumgameware.com/help" style="color: #667eea; text-decoration: none;">help center</a></li>
+              <li>Browse our <a href="${SITE_URL}/products" style="color: #3B82F6; text-decoration: none;">latest products</a></li>
+              <li>Check out our <a href="${SITE_URL}/help" style="color: #3B82F6; text-decoration: none;">help center</a></li>
               <li>Follow us on social media for updates</li>
             </ul>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; text-align: center;">
               <p style="color: #374151; font-weight: bold; margin-bottom: 10px;">Best regards,</p>
-              <p style="color: #667eea; font-size: 18px; font-weight: bold; margin: 0;">Quantum Gameware Team</p>
+              <p style="color: #3B82F6; font-size: 18px; font-weight: bold; margin: 0;">Quantum Gameware Team</p>
             </div>
 
-            <div style="margin-top: 30px; padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
-              <p style="color: #92400e; font-size: 14px; margin: 0;">
-                <strong>💡 Tip:</strong> Add support@quantumgameware.com to your contacts to ensure our emails don't go to spam!
-              </p>
-            </div>
           </div>
         </div>
       `,

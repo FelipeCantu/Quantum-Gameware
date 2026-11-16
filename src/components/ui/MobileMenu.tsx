@@ -205,8 +205,8 @@ export default function MobileMenu({ isMenuOpen, closeMenu, effectiveTheme }: Mo
       <div 
         ref={menuRef}
         className={`
-          fixed right-0 top-0 bottom-0 w-full max-w-sm bg-gradient-to-br 
-          from-slate-900 via-purple-900 to-blue-900 shadow-2xl
+          fixed right-0 top-0 bottom-0 w-full max-w-sm bg-blue-950
+          shadow-2xl
           transform transition-transform duration-300 ease-out
           ${isClosing ? 'translate-x-full' : 'translate-x-0'}
         `}
@@ -228,7 +228,7 @@ export default function MobileMenu({ isMenuOpen, closeMenu, effectiveTheme }: Mo
               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl p-1.5 shadow-lg">
                 <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
                   <Image
-                    src="/nextgens-logo.png"
+                    src="/nextgens-logo-blue.png"
                     alt="Logo"
                     width={36}
                     height={36}
@@ -333,8 +333,8 @@ export default function MobileMenu({ isMenuOpen, closeMenu, effectiveTheme }: Mo
                   <Link
                     href="/auth/signup"
                     onClick={handleClose}
-                    className="px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 
-                             hover:from-blue-600 hover:to-purple-600 rounded-xl text-white 
+                    className="px-4 py-3 bg-blue-500
+                             hover:bg-blue-600 rounded-xl text-white 
                              font-medium text-center transition-all duration-200"
                   >
                     Sign Up
@@ -396,8 +396,8 @@ export default function MobileMenu({ isMenuOpen, closeMenu, effectiveTheme }: Mo
                     <Link
                       href="/categories"
                       onClick={handleClose}
-                      className="flex items-center justify-center p-3 mt-2 bg-gradient-to-r from-blue-500 to-purple-500 
-                               hover:from-blue-600 hover:to-purple-600 rounded-xl transition-all duration-200 group"
+                      className="flex items-center justify-center p-3 mt-2 bg-blue-500
+                               hover:bg-blue-600 rounded-xl transition-all duration-200 group"
                     >
                       <span className="text-white text-sm font-medium">
                         View All Categories

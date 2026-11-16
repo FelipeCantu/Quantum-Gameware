@@ -68,7 +68,7 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
       {/* Alert Modal */}
       <div className="fixed top-0 left-0 right-0 bottom-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-none">
         <div
-          className={`relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl w-full max-w-[90vw] sm:max-w-lg mx-auto border-2 border-white/30 overflow-hidden transform transition-all duration-500 pointer-events-auto ${
+          className={`relative bg-blue-500 rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-2xl w-full max-w-[90vw] sm:max-w-lg mx-auto border-2 border-white/30 overflow-hidden transform transition-all duration-500 pointer-events-auto ${
             isVisible ? 'scale-100 opacity-100 translate-y-0' : 'scale-90 opacity-0 translate-y-8'
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -120,7 +120,7 @@ export default function SignInAlert({ isOpen, onClose, message }: SignInAlertPro
             <div className="mb-5 sm:mb-6 lg:mb-8 flex justify-center">
               <div className="relative">
                 {/* Animated glow - larger and more vibrant */}
-                <div className="absolute -inset-3 sm:-inset-4 bg-gradient-to-r from-pink-400 via-blue-400 to-purple-400 rounded-full blur-2xl opacity-70 animate-pulse"></div>
+                <div className="absolute -inset-3 sm:-inset-4 bg-blue-500 rounded-full blur-2xl opacity-70 animate-pulse"></div>
 
                 {/* Icon container with better sizing */}
                 <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-pink-500 via-red-500 to-rose-600 rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/20 backdrop-blur-sm">

@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="absolute inset-0 bg-blue-950">
         {/* Pattern */}
         <div className="absolute inset-0 opacity-20">
           <div

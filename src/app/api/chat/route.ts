@@ -1,14 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProducts, getBrands } from '@/sanity/lib/queries';
-import { categories } from '@/data/categories';
+import { rateLimit } from '@/lib/rateLimit';
+
+// Each request calls a paid LLM API, so bound both frequency and size
+const MAX_MESSAGES = 20;
+const MAX_MESSAGE_CHARS = 2000;
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, 'chat', 20, 10 * 60 * 1000);
+    if (limited) return limited;
+
     const { messages } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
         { error: 'Invalid request: messages array is required' },
+        { status: 400 }
+      );
+    }
+
+    if (
+      messages.length > MAX_MESSAGES ||
+      messages.some((m: any) => typeof m?.content !== 'string' || m.content.length > MAX_MESSAGE_CHARS)
+    ) {
+      return NextResponse.json(
+        { error: 'Conversation is too long. Please start a new chat.' },
         { status: 400 }
       );
     }
@@ -24,7 +41,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     // Get product categories
-    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+    const productCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
 
     // Get brand names and details
     const brandNames = brands.map(b => b.name).join(', ');
@@ -46,13 +63,13 @@ export async function POST(request: NextRequest) {
     };
 
     // Category breakdown
-    const categoryBreakdown = categories.map(cat => {
+    const categoryBreakdown = productCategories.map(cat => {
       const count = products.filter(p => p.category === cat).length;
       return `${cat} (${count} items)`;
     }).join(', ');
 
     // Popular products by category
-    const productsByCategory = categories.slice(0, 5).map(cat => {
+    const productsByCategory = productCategories.slice(0, 5).map(cat => {
       const categoryProducts = products
         .filter(p => p.category === cat)
         .slice(0, 3)
@@ -151,7 +168,6 @@ ${featuredProducts}
 - Related products suggestions
 
 📞 SUPPORT & CONTACT (/contact):
-- Email: support@quantumgameware.com
 - Contact form available
 - FAQ section
 - Live chat (this assistant)
@@ -440,7 +456,7 @@ Remember: You're a gaming expert helping gamers find their perfect gear. Be know
     // Categories
     if (lastMessage.includes('categories') || lastMessage.includes('what do you sell')) {
       return NextResponse.json({
-        message: `We sell quality gaming gear at great prices! 🎮\n\nCategories: ${categories.join(', ')}\n\nWe have ${products.length} products available.\n\n[Browse Catalog](/products)`
+        message: `We sell quality gaming gear at great prices! 🎮\n\nCategories: ${productCategories.join(', ')}\n\nWe have ${products.length} products available.\n\n[Browse Catalog](/products)`
       });
     }
 

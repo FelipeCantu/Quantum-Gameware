@@ -38,7 +38,7 @@ function ReturnsStatusContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center pt-20">
+      <div className="min-h-screen bg-blue-950 flex items-center justify-center pt-20">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white text-lg">Loading your returns...</p>
@@ -48,7 +48,7 @@ function ReturnsStatusContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 pt-24 pb-16">
+    <div className="min-h-screen bg-blue-950 pt-24 pb-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-white/80 mb-6 sm:mb-8 text-xs sm:text-sm overflow-x-auto">
@@ -86,7 +86,7 @@ function ReturnsStatusContent() {
             </p>
             <Link
               href="/orders"
-              className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg text-sm sm:text-base"
+              className="inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg text-sm sm:text-base"
             >
               View My Orders
             </Link>
@@ -240,7 +240,7 @@ function ReturnsStatusContent() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all text-sm sm:text-base"
+              className="inline-flex items-center justify-center text-white px-6 py-3 rounded-xl font-semibold transition-all text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

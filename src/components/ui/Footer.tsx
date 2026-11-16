@@ -22,7 +22,7 @@ export default function Footer() {
     <footer className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+        <div className="absolute inset-0 bg-blue-500/20"></div>
         <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="footer-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
@@ -41,10 +41,10 @@ export default function Footer() {
             {/* Company Info */}
             <div className="lg:col-span-1">
               <Link href="/" className="flex items-center space-x-3 mb-6 group">
-                <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <div className="relative w-12 h-12 bg-blue-500 rounded-xl p-1.5 shadow-lg group-hover:shadow-xl transition-all duration-300">
                   <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
                     <Image
-                      src="/nextgens-logo.png"
+                      src="/nextgens-logo-blue.png"
                       alt="Quantum Gameware Logo"
                       width={40}
                       height={40}
@@ -60,7 +60,7 @@ export default function Footer() {
                   </div>
                 </div>
                 <div>
-                  <span className="font-brand text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  <span className="font-brand text-xl font-bold text-blue-500">
                     Quantum
                   </span>
                   <div className="font-brand text-sm text-gray-300 -mt-1">Gameware</div>
@@ -146,7 +146,7 @@ export default function Footer() {
 
             {/* Quick Links */}
             <div className="lg:col-span-1">
-              <h4 className="text-lg font-semibold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h4 className="text-lg font-semibold mb-6 text-blue-500">
                 Quick Links
               </h4>
               <ul className="space-y-3">
@@ -173,7 +173,7 @@ export default function Footer() {
 
             {/* Support */}
             <div className="lg:col-span-1">
-              <h4 className="text-lg font-semibold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h4 className="text-lg font-semibold mb-6 text-blue-500">
                 Support
               </h4>
               <ul className="space-y-3">
@@ -200,7 +200,7 @@ export default function Footer() {
 
             {/* Newsletter & Contact */}
             <div className="lg:col-span-1">
-              <h4 className="text-lg font-semibold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h4 className="text-lg font-semibold mb-6 text-blue-500">
                 Stay Connected
               </h4>
               
@@ -223,7 +223,7 @@ export default function Footer() {
                   <button
                     type="submit"
                     disabled={isSubscribed}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full text-white px-4 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
                   >
                     {isSubscribed ? '✓ Subscribed!' : 'Subscribe'}
                   </button>
@@ -236,8 +236,8 @@ export default function Footer() {
                   <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <a href="mailto:info@quantumgameware.com" className="hover:text-white transition-colors">
-                    info@quantumgameware.com
+                  <a href="/contact" className="hover:text-white transition-colors">
+                    Contact us
                   </a>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
