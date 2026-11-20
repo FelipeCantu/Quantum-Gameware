@@ -257,3 +257,25 @@ Every page that still used the old dark glass cards moves onto the system, batch
   1-2 in another, and Express (7 to 12 days) is slower than Standard's lower bound; membership's
   Silver tier lists free standard shipping, which every order already gets; terms still show the
   "123 Gaming Street" legal address.
+
+## Cart and checkout (pass 6, 2026-11-20)
+
+Flow: cart drawer -> /cart -> /cart/checkout (shipping, payment) -> /cart/checkout/success.
+- **Shared pieces** (`components/commerce/Shop.tsx`, `styles/commerce.css`): a four-step strip in mono
+  (gill marker on the current step), the quantity stepper, line items on white plates, and the
+  receipt: every line in mono and the total as the single big number.
+- **Drawer** (`components/Cart.tsx`): wipes in from the right like the menu; a real modal (Escape,
+  focus in and back to the cart button).
+- **Checkout:** contact and address sections, payment methods as radio rows (gill edge on the chosen
+  one), card brand read out in mono; the receipt is sticky on desktop and a "Show summary" fold with
+  the total on phones. Order and payment logic unchanged.
+- **Order placed:** the title arrives as cobalt and gill ghosts that collapse into one line, then
+  order number, arrival date and total paid as a stats row.
+- Removed: a cart promo-code box that applied nothing, a hard-coded "you might also like" product, a
+  1-800-QUANTUM number, links to /support, share buttons that did nothing, a random order number shown
+  when the order was missing. `/checkout` (an unlinked copy whose success page did not exist) now
+  redirects to /cart/checkout.
+
+### Owner to decide
+- Payment is simulated: card details are only format-checked and the order is recorded as paid after
+  a delay; PayPal, Apple Pay and Google Pay are timers. No payment provider is called.

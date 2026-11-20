@@ -9,6 +9,7 @@
 @import "../styles/about.css";
 @import "../styles/forms.css";
 @import "../styles/pages.css";
+@import "../styles/commerce.css";
 @import "../styles/legacy.css";
 
 /* `dark:` follows the signed-in user's preference (.dark on <html>), never the OS. */
