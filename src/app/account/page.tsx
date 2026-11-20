@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
-import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 
 interface UserStats {
@@ -697,7 +696,6 @@ function AccountPageContent() {
 
   return (
     <div className="min-h-screen bg-blue-950">
-      <Header />
       
       <main className="pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

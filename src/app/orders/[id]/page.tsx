@@ -6,7 +6,6 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
-import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 import ReturnRequestForm from '@/components/ReturnRequestForm';
 import { ReturnService } from '@/services/returnService';
@@ -196,7 +195,6 @@ function OrderDetailContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-blue-950">
-        <Header />
         <div className="flex items-center justify-center min-h-screen pt-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
@@ -211,7 +209,6 @@ function OrderDetailContent() {
   if (error || !order) {
     return (
       <div className="min-h-screen bg-blue-950">
-        <Header />
         <div className="pt-24 pb-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-8">
@@ -235,7 +232,6 @@ function OrderDetailContent() {
 
   return (
     <div className="min-h-screen bg-blue-950">
-      <Header />
       
       <main className="pt-24 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

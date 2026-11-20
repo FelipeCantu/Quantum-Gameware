@@ -61,54 +61,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('theme', newTheme);
   };
 
-  // Helper functions to get appropriate classes
-  const getBgClass = () => {
-    return effectiveTheme === 'light'
-      ? 'bg-gradient-to-br from-gray-50 to-gray-100'
-      : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
-  };
-
-  const getCardBgClass = () => {
-    return effectiveTheme === 'light'
-      ? 'bg-white'
-      : 'bg-slate-800/50';
-  };
-
-  const getTextClass = () => {
-    return effectiveTheme === 'light'
-      ? 'text-gray-900'
-      : 'text-gray-50';
-  };
-
-  const getSecondaryTextClass = () => {
-    return effectiveTheme === 'light'
-      ? 'text-gray-600'
-      : 'text-gray-300';
-  };
-
-  const getMutedTextClass = () => {
-    return effectiveTheme === 'light'
-      ? 'text-gray-500'
-      : 'text-gray-400';
-  };
-
-  const getBorderClass = () => {
-    return effectiveTheme === 'light'
-      ? 'border-gray-200'
-      : 'border-slate-700';
-  };
-
-  const getInputBgClass = () => {
-    return effectiveTheme === 'light'
-      ? 'bg-white border-gray-300'
-      : 'bg-slate-800 border-slate-600';
-  };
-
-  const getHoverBgClass = () => {
-    return effectiveTheme === 'light'
-      ? 'hover:bg-gray-50'
-      : 'hover:bg-slate-700/50';
-  };
+  // Helper classes read the design tokens (src/styles/tokens.css), which already switch on
+  // .dark, so light and dark return the same class.
+  const getBgClass = () => 'bg-[var(--c-bg)]';
+  const getCardBgClass = () => 'bg-[var(--c-paper)]';
+  const getTextClass = () => 'text-[var(--c-fg)]';
+  const getSecondaryTextClass = () => 'text-[var(--c-muted)]';
+  const getMutedTextClass = () => 'text-[var(--c-muted)]';
+  const getBorderClass = () => 'border-[var(--c-line)]';
+  const getInputBgClass = () => 'bg-[var(--c-paper)] border-[var(--c-line-strong)]';
+  const getHoverBgClass = () => 'hover:bg-[var(--c-line)]';
 
   return (
     <ThemeContext.Provider value={{

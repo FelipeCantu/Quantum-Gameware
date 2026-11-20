@@ -4,7 +4,6 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import Header from '@/components/ui/Header';
 import Footer from '@/components/ui/Footer';
 
 export default function MembershipPage() {
@@ -82,7 +81,6 @@ export default function MembershipPage() {
 
   return (
     <div className="min-h-screen bg-blue-950">
-      <Header />
 
       {/* Account Navigation - Mobile/Tablet Only */}
       <div className="lg:hidden sticky top-16 z-40 bg-blue-950 pt-6 pb-3">

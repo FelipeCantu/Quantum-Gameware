@@ -1,94 +1,88 @@
-// src/app/categories/page.tsx
-import { getProducts } from '@/sanity/lib/queries';
+// src/app/categories/page.tsx: the department atlas (DESIGN.md, catalog pages). One sticky split
+// per department: name, count and blurb pinned left; its categories as index rows and a strip of
+// photographed products on the right. Only stocked categories are listed.
+import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '@/types';
-import { categories } from '@/data/categories';
-import CategoriesContent from './CategoriesContent';
+import PageHead from '@/components/ui/PageHead';
+import { getProducts } from '@/sanity/lib/queries';
+import { catalogTree } from '@/data/taxonomy';
+import { hasPhoto } from '@/lib/catalog';
 
-// Server-side function to group products by category
-function groupProductsByCategory(products: Product[]) {
-  const categoryMap = new Map<string, Product[]>();
+export const revalidate = 60;
 
-  products.forEach(product => {
-    if (!categoryMap.has(product.category)) {
-      categoryMap.set(product.category, []);
-    }
-    categoryMap.get(product.category)!.push(product);
-  });
+export const metadata: Metadata = {
+  title: 'Shop by department',
+  description: 'Control, audio, display and the rest of the setup: every category we stock, with what is in it right now.',
+};
 
-  return Array.from(categoryMap.entries()).map(([name, products]) => ({
-    name,
-    products,
-    count: products.length,
-    image: products[0]?.image || '/placeholder-category.jpg'
-  }));
-}
+const plural = (n: number) => `${n} product${n === 1 ? '' : 's'}`;
 
 export default async function CategoriesPage() {
-  try {
-    // Fetch products server-side
-    const products = await getProducts();
-    const productCategories = groupProductsByCategory(products);
+  const products = await getProducts();
+  const tree = catalogTree(products);
+  const leafCount = tree.reduce((n, d) => n + d.leaves.length, 0);
 
-    // Create product count map
-    const productCounts: { [key: string]: number } = {};
-    productCategories.forEach(pc => {
-      const matchingCategory = categories.find(c =>
-        c.name.toLowerCase().includes(pc.name.toLowerCase().split(' ')[1]) ||
-        pc.name.toLowerCase().includes(c.name.toLowerCase())
-      );
-      if (matchingCategory) {
-        productCounts[matchingCategory.slug] = pc.count;
-      }
-    });
+  return (
+    <>
+      <PageHead
+        crumbs={[{ label: 'Home', href: '/' }, { label: 'Categories' }]}
+        title="Shop by department"
+        text="Four departments, one desk. Start with what your hands touch and work outward."
+        meta={`${products.length} products in ${leafCount} categories`}
+      />
 
-    return (
-      <div className="min-h-screen">
-        {/* Hero Section - Same gradient background as home */}
-        <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-blue-950">
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-              }}></div>
-            </div>
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-            <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-            <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-          </div>
+      <div className="atlas">
+        {tree.map((d) => {
+          const shots = products.filter((p) => p.department === d.slug && hasPhoto(p)).slice(0, 4);
+          return (
+            <section key={d.slug} className="atlas__dept" aria-labelledby={`dept-${d.slug}`}>
+              <div className="atlas__aside">
+                <h2 id={`dept-${d.slug}`} className="atlas__name" data-split="lines">{d.name}</h2>
+                <p className="atlas__count mono">{plural(d.count)}</p>
+                <p className="atlas__blurb">{d.blurb}</p>
+                <Link href={`/categories/${d.slug}`} className="text-link">
+                  See all {d.name.toLowerCase()}
+                </Link>
+              </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pt-32">
-            <div className="text-center">
-              {/* Breadcrumb */}
-              <nav className="flex items-center justify-center space-x-2 text-white/80 mb-8">
-                <Link href="/" className="hover:text-white transition-colors">Home</Link>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <span className="text-white font-medium">Categories</span>
-              </nav>
+              <div className="atlas__body">
+                <ul className="atlas__rows">
+                  {d.leaves.map((c) => (
+                    <li key={c.slug}>
+                      <Link href={`/categories/${c.slug}`} className="index__row">
+                        <span className="index__name">{c.name}</span>
+                        <span className="index__count mono">{plural(c.count)}</span>
+                        {c.preview && (
+                          <span className="index__thumb" aria-hidden="true">
+                            <Image src={c.preview} alt="" fill sizes="64px" />
+                          </span>
+                        )}
+                        <svg className="index__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
 
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-                Shop by Category
-              </h1>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Discover premium gaming gear organized by category. Hover to see them in action.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Categories Grid Section */}
-        <CategoriesContent productCategories={productCategories} productCounts={productCounts} />
+                {shots.length > 0 && (
+                  <ul className="atlas__strip" aria-label={`From ${d.name.toLowerCase()}`}>
+                    {shots.map((p) => (
+                      <li key={p._id} data-reveal="up">
+                        <Link href={`/products/${p.slug}`} className="atlas__item">
+                          <span className="atlas__plate">
+                            <Image src={p.image} alt="" fill sizes="(min-width: 1024px) 14vw, 45vw" />
+                          </span>
+                          <span className="atlas__plate-name">{p.name}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+          );
+        })}
       </div>
-    );
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-
-    return (
-      <div className="min-h-screen">
-        {/* Error state omitted for brevity - keep your existing error handling */}
-      </div>
-    );
-  }
+    </>
+  );
 }

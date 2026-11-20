@@ -1,0 +1,67 @@
+/* DESIGN TOKENS (DESIGN.md). Role names are the contract; site.css and engine.css read only these.
+   Light is the default; .dark on <html> is the signed-in user's explicit preference. */
+
+:root {
+  /* Color, by role */
+  --c-bg: #eceef2;          /* ground: instrument-panel grey */
+  --c-fg: #0a0c14;          /* ink */
+  --c-muted: #4f5566;       /* secondary text, 6.6:1 on ground */
+  --c-line: rgb(10 12 20 / 0.12);
+  --c-line-strong: rgb(10 12 20 / 0.3);
+  --c-control: #6e7384;     /* form control boundaries: 3:1+ on paper and ground (WCAG 1.4.11) */
+  --c-accent: #2633ff;     /* quantum cobalt: CTAs, links, first ghost. 6:1 on ground */
+  --c-accent-ink: #ffffff;  /* text on accent, 7:1 */
+  --c-gill: #ff4f9a;        /* axolotl gill pink: second ghost, observed marker. Never text on ground */
+  --c-paper: #ffffff;       /* inputs, panels */
+  --c-plate: #ffffff;       /* product plates: stays white in dark mode, photos are shot on white */
+  --c-curtain: var(--c-fg);
+  --c-ok: #12803f;
+  --c-warn: #d92d3f;
+
+  /* Type families (next/font variables from src/app/fonts.ts) */
+  --f-display: var(--font-archivo), 'Arial Narrow', system-ui, sans-serif;
+  --f-body: var(--font-archivo), system-ui, sans-serif;
+  --f-mono: var(--font-jetbrains), ui-monospace, 'SFMono-Regular', monospace;
+  --f-brand: var(--font-brand), Arial, sans-serif;
+
+  /* Fluid type scale (min @ 375px → max @ 1440px) */
+  --t-mega: clamp(3.4rem, 0.9rem + 10.6vw, 11.5rem);
+  --t-xl: clamp(2.4rem, 1.3rem + 4.6vw, 5.75rem);
+  --t-l: clamp(1.65rem, 1.25rem + 1.7vw, 2.75rem);
+  --t-m: clamp(1.2rem, 1.08rem + 0.5vw, 1.5rem);
+  --t-body: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --t-s: 0.875rem;
+  --t-xs: 0.75rem;
+
+  /* Space */
+  --u: clamp(0.5rem, 0.35rem + 0.6vw, 1rem);
+  --gutter: clamp(1rem, 0.6rem + 1.6vw, 2.5rem);
+  --header-h: 4.25rem;
+  --max: 1600px;
+
+  /* Shape: one radius rule */
+  --radius: 2px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  /* Layers */
+  --z-content: 1;
+  --z-header: 100;
+  --z-curtain: 900;
+}
+
+.dark {
+  --c-bg: #07080d;
+  --c-fg: #e8eaf0;
+  --c-muted: #9aa0b2;
+  --c-line: rgb(232 234 240 / 0.12);
+  --c-line-strong: rgb(232 234 240 / 0.3);
+  --c-control: #80869a;
+  --c-accent: #7c86ff;
+  --c-accent-ink: #07080d;
+  --c-gill: #ff5fa6;
+  --c-paper: #11131b;
+  --c-curtain: #e8eaf0;
+}

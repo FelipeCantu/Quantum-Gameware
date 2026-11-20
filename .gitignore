@@ -43,3 +43,9 @@ next-env.d.ts
 
 .vercel
 .env*
+/.next-dev/
+/.next-qa/
+
+# QA screenshots
+/.shots/
+/.shots-baseline/

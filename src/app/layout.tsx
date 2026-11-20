@@ -1,6 +1,5 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from 'next';
-import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
@@ -10,120 +9,98 @@ import Footer from '@/components/ui/Footer';
 import Cart from '@/components/Cart';
 import AIAssistant from '@/components/AIAssistant';
 import ThemeWrapper from '@/components/ThemeWrapper';
+import Motion from '@/components/Motion';
+import { site } from '@/data/site';
+import { getProducts } from '@/sanity/lib/queries';
+import { stockedSlugs } from '@/data/taxonomy';
+import { archivo, brand, jetbrains } from './fonts';
 import './globals.css';
-import ScrollBehavior from '@/components/ui/ScrollBehavior';
-
-// Inter is bundled locally (public/fonts) so dev builds don't depend on reaching Google Fonts
-const inter = localFont({
-  src: '../../public/fonts/inter-latin-variable.woff2',
-  weight: '100 900',
-  display: 'swap',
-});
-
-// Custom brand font - Ethnocentric
-const brandFont = localFont({
-  src: '../../public/fonts/ethnocentric.regular.woff2',
-  variable: '--font-brand',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
-  title: 'Quantum Gameware - Premium Gaming Accessories',
-  description: 'High-quality gaming accessories for professional gamers',
+  metadataBase: new URL(site.url),
+  title: { default: `${site.name}: gaming and streaming gear at one honest price`, template: `%s | ${site.name}` },
+  description: site.description,
+  alternates: { canonical: './' },
+  openGraph: { type: 'website', siteName: site.name, images: ['/og.png'] },
+  twitter: { card: 'summary_large_image' },
   manifest: '/site.webmanifest',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
     ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-    other: [
-      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#3B82F6',
-  colorScheme: 'light',
+  themeColor: '#eceef2',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Before first paint: the signed-in user's theme preference (light unless they chose dark),
+// then the motion flags. Hidden-until-revealed styles only apply when JS and motion are on.
+const headScript = `(function(){try{var d=document.documentElement;d.classList.remove('dark');var u=localStorage.getItem('userData'),t=localStorage.getItem('authToken');if(u&&t){var p=JSON.parse(u);if(p&&p.preferences&&p.preferences.theme==='dark')d.classList.add('dark');}}catch(e){}document.documentElement.classList.add('js');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('motion');})();`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'OnlineStore',
+  name: site.name,
+  url: site.url,
+  description: site.description,
+  logo: `${site.url}/nextgens-logo-blue.png`,
+  telephone: site.phone.label,
+};
+
+// The menus read the stocked categories, so they refresh with the catalog.
+export const revalidate = 60;
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Menus list only categories with products in them (DESIGN.md, catalog structure).
+  const stocked = stockedSlugs(await getProducts());
   return (
-    <html lang="en" className={brandFont.variable}>
-      {/* REMOVED scroll-smooth class - this was preventing instant scroll to top */}
+    <html lang="en" className={`${archivo.variable} ${jetbrains.variable} ${brand.variable}`} suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="light only" />
-        {/* Theme initialization script - IGNORES browser/system preferences */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  // ALWAYS start by removing dark class
-                  document.documentElement.classList.remove('dark');
-
-                  // Check if user is logged in
-                  const userData = localStorage.getItem('userData');
-                  const authToken = localStorage.getItem('authToken');
-                  const isLoggedIn = userData && authToken;
-
-                  if (!isLoggedIn) {
-                    // User is NOT logged in - FORCE light mode, ignore system preference
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                  } else {
-                    // User IS logged in - ONLY use their explicit preference
-                    const user = JSON.parse(userData);
-                    const userTheme = user?.preferences?.theme;
-
-                    // Only add dark class if user EXPLICITLY chose dark mode
-                    if (userTheme === 'dark') {
-                      document.documentElement.classList.add('dark');
-                      localStorage.setItem('theme', 'dark');
-                    } else {
-                      // Default to light for logged-in users too
-                      document.documentElement.classList.remove('dark');
-                      localStorage.setItem('theme', 'light');
-                    }
-                  }
-                } catch (e) {
-                  // If anything fails, FORCE light mode
-                  document.documentElement.classList.remove('dark');
-                  localStorage.setItem('theme', 'light');
-                }
-              })();
-            `,
-          }}
-        />
-        {/* Favicons - no system dark mode detection */}
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
+        <script dangerouslySetInnerHTML={{ __html: headScript }} />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body>
+        <a className="skip-link" href="#main">Skip to content</a>
+        <div id="curtain" aria-hidden="true">
+          <div className="curtain__ghost curtain__ghost--q" />
+          <div className="curtain__ghost curtain__ghost--g" />
+          <div className="curtain__panel"><span className="curtain__label" /></div>
+        </div>
+        {/* Duotone filters for the superposition ghosts: dark pixels become cobalt or gill, white stays white. */}
+        <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
+          <filter id="ghost-q" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0" />
+            <feComponentTransfer>
+              <feFuncR type="table" tableValues="0.149 1" />
+              <feFuncG type="table" tableValues="0.2 1" />
+              <feFuncB type="table" tableValues="1 1" />
+            </feComponentTransfer>
+          </filter>
+          <filter id="ghost-g" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0" />
+            <feComponentTransfer>
+              <feFuncR type="table" tableValues="1 1" />
+              <feFuncG type="table" tableValues="0.31 1" />
+              <feFuncB type="table" tableValues="0.604 1" />
+            </feComponentTransfer>
+          </filter>
+        </svg>
         <AuthProvider>
           <ThemeProvider>
             <WishlistProvider>
               <CartProvider>
-                <ScrollBehavior />
                 <ThemeWrapper>
-                  <Header />
-                  <main className="flex-1">
+                  <Header stocked={stocked} />
+                  <main id="main" tabIndex={-1} className="flex-1">
                     {children}
                   </main>
-                  <Footer />
+                  <Footer stocked={stocked} />
                   <Cart />
                   <AIAssistant />
                 </ThemeWrapper>
@@ -131,6 +108,8 @@ export default function RootLayout({
             </WishlistProvider>
           </ThemeProvider>
         </AuthProvider>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+        <Motion />
       </body>
     </html>
   );

@@ -1,0 +1,71 @@
+/* ENGINE + FOUNDATION (from the awwwards engine, trimmed: no WebGL, loader or cursor follower).
+   Layered as base so Tailwind utilities still win on legacy pages. */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    background: var(--c-bg);
+    color: var(--c-fg);
+    color-scheme: light;
+  }
+  html.dark { color-scheme: dark; }
+  body {
+    min-height: 100dvh;
+    background: var(--c-bg);
+    color: var(--c-fg);
+    font-family: var(--f-body);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-kerning: normal;
+    overflow-x: clip;
+  }
+  h1, h2, h3, h4 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  ::selection { background: var(--c-accent); color: var(--c-accent-ink); }
+
+  /* Accessibility */
+  :focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; border-radius: var(--radius); }
+  #main:focus { outline: none; }
+}
+
+@layer components {
+  .skip-link {
+    position: fixed; left: var(--gutter); top: 0.75rem; z-index: calc(var(--z-curtain) + 1);
+    padding: 0.6em 1em; background: var(--c-fg); color: var(--c-bg); border-radius: var(--radius);
+    translate: 0 -200%;
+  }
+  .skip-link:focus-visible { translate: none; }
+
+  /* Lenis */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+  .lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
+
+  #main { position: relative; z-index: var(--z-content); }
+
+  /* Hidden-until-revealed (only when motion is allowed and JS runs) */
+  .motion [data-split], .motion [data-reveal] { visibility: hidden; }
+  .split-line { padding-bottom: 0.08em; margin-bottom: -0.08em; }
+  [data-split] > *, [data-split] > * > * { text-indent: 0; }
+  [data-split] > :first-child, [data-split] > :first-child > :first-child { text-indent: inherit; }
+
+  /* Curtain (page transitions): no CSS transform on GSAP targets; #curtain visibility hides it. */
+  #curtain { position: fixed; inset: 0; z-index: var(--z-curtain); pointer-events: none; visibility: hidden; overflow: hidden; }
+  .curtain__panel, .curtain__ghost { position: absolute; inset: 0; }
+  .curtain__ghost--q { background: var(--c-accent); }
+  .curtain__ghost--g { background: var(--c-gill); }
+  .curtain__panel { background: var(--c-curtain); display: grid; align-content: end; padding: var(--gutter); }
+  .curtain__label {
+    font-family: var(--f-mono); font-size: var(--t-s); color: var(--c-bg);
+    font-variant-numeric: tabular-nums; opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

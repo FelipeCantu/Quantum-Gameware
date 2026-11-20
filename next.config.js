@@ -1,6 +1,8 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // NEXT_DIST_DIR lets a second server (e.g. dev beside a running build) use its own output folder.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   // TODO: remove both once `tsc --noEmit` and `eslint` pass. These hide real
   // errors (including API routes that crash at runtime), so keep them short-lived.
   eslint: {

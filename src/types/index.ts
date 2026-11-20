@@ -71,7 +71,12 @@ export interface Product {
   image: string;
   images?: string[];
   brand: string;
+  /** Leaf category display name (data/categories.ts), set by data/taxonomy.ts. */
   category: string;
+  /** Leaf category slug, e.g. "mice". */
+  categorySlug?: string;
+  /** Department slug, e.g. "control". */
+  department?: string;
   slug: string;
   description: string;
   features?: string[];

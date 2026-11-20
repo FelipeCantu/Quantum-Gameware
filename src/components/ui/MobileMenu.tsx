@@ -1,463 +1,226 @@
-// src/components/ui/MobileMenu.tsx - Professional Version WITHOUT Icons
+// src/components/ui/MobileMenu.tsx: the phone menu (DESIGN.md). A full-height sheet under the
+// header: primary links at display size, departments as an accordion, search, account and contact.
+// Links arrive as offset ghosts and collapse into place. Header.tsx owns the open state, the
+// scroll lock and Escape. While open, everything outside the menu and the menu button is inert,
+// so focus stays inside; focus returns to the menu button on close unless a link was followed.
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { gsap } from 'gsap';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { categories } from '@/data/categories';
-import { createPortal } from 'react-dom';
+import { prefersReducedMotion } from '@/engine';
+import { navigate } from '@/engine/next';
+import { nav, site } from '@/data/site';
+import type { NavGroup } from '@/data/taxonomy';
 
 interface MobileMenuProps {
   isMenuOpen: boolean;
   closeMenu: () => void;
   effectiveTheme: 'light' | 'dark';
+  groups: NavGroup[];
 }
 
-// Animated Menu/Close Button Component
-const AnimatedMenuButton = ({ 
-  isOpen, 
-  onClick, 
-  className = "" 
-}: { 
-  isOpen: boolean; 
-  onClick: () => void; 
-  className?: string;
-}) => (
-  <button
-    onClick={onClick}
-    className={`relative p-3 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 
-               transition-all duration-200 group touch-manipulation ${className}`}
-    aria-label={isOpen ? "Close menu" : "Open menu"}
-  >
-    <div className="w-6 h-6 relative">
-      <span className={`
-        absolute left-0 w-full h-0.5 bg-white rounded-full transition-all duration-300 ease-out
-        ${isOpen ? 'top-[11px] rotate-45' : 'top-1'}
-      `} />
-      <span className={`
-        absolute left-0 top-[11px] w-full h-0.5 bg-white rounded-full transition-all duration-300 ease-out
-        ${isOpen ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}
-      `} />
-      <span className={`
-        absolute left-0 w-full h-0.5 bg-white rounded-full transition-all duration-300 ease-out
-        ${isOpen ? 'top-[11px] -rotate-45' : 'top-[22px]'}
-      `} />
-    </div>
-  </button>
-);
+const isCurrent = (pathname: string, href: string) =>
+  href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
-// Simple Menu Link Component
-const MenuLink = ({ 
-  href, 
-  children, 
-  onClick, 
-  className = "" 
-}: { 
-  href: string; 
-  children: React.ReactNode; 
-  onClick?: () => void; 
-  className?: string;
-}) => (
-  <Link
-    href={href}
-    onClick={onClick}
-    className={`
-      flex items-center justify-between px-6 py-4 text-white hover:bg-white/10 
-      active:bg-white/20 transition-all duration-200 rounded-2xl 
-      group touch-manipulation ${className}
-    `}
-  >
-    <span className="text-lg">{children}</span>
-    <svg 
-      className="w-5 h-5 text-white/30 transition-all duration-200 group-hover:text-white/50 group-hover:translate-x-1" 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      stroke="currentColor"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-    </svg>
-  </Link>
-);
-
-export default function MobileMenu({ isMenuOpen, closeMenu, effectiveTheme }: MobileMenuProps) {
+export default function MobileMenu({ isMenuOpen, closeMenu, groups }: MobileMenuProps) {
+  const pathname = usePathname();
   const { toggleCart, getCartCount } = useCart();
   const { user, isAuthenticated, signOut } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
-  const [isClosing, setIsClosing] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
-  const menuRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef(0);
+  const [query, setQuery] = useState('');
+  const panelRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
+  const followed = useRef(false);
   const cartCount = getCartCount();
 
+  useEffect(() => setMounted(true), []);
+
+  // Focus in on open; back to the menu button on close, unless the close came from following a link
+  // (the new page owns focus then).
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setIsClosing(true);
-    setTimeout(() => {
-      closeMenu();
-      setIsClosing(false);
-      setActiveSubmenu(null);
-      setSearchQuery('');
-    }, 300);
-  }, [closeMenu]);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMenuOpen) {
-        handleClose();
-      }
-    };
-
     if (isMenuOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+      wasOpen.current = true;
+      followed.current = false;
+      panelRef.current?.querySelector<HTMLElement>('a, button, input, summary')?.focus({ preventScroll: true });
+    } else if (wasOpen.current) {
+      wasOpen.current = false;
+      if (!followed.current) document.querySelector<HTMLElement>('.menu-btn')?.focus({ preventScroll: true });
     }
-  }, [isMenuOpen, handleClose]);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    if (isMenuOpen) {
-      scrollPositionRef.current = window.pageYOffset;
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollPositionRef.current}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-      
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        document.body.style.WebkitOverflowScrolling = 'touch';
-        document.documentElement.style.WebkitOverflowScrolling = 'touch';
-      }
-    } else {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.paddingRight = '';
-      document.body.style.WebkitOverflowScrolling = '';
-      document.documentElement.style.WebkitOverflowScrolling = '';
-
-      // Don't restore scroll position - let ScrollBehavior component handle it
-      // This ensures pages always start at the top when navigating
-    }
-
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.paddingRight = '';
-    };
   }, [isMenuOpen, mounted]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-      handleClose();
+  // Modal containment: make every sibling along the menu button's ancestor chain inert (main,
+  // footer, the rest of the header, floating widgets), leaving only the button and the menu live.
+  useEffect(() => {
+    const panel = panelRef.current;
+    const btn = document.querySelector<HTMLElement>('.menu-btn');
+    if (!isMenuOpen || !panel || !btn) return;
+    const made: HTMLElement[] = [];
+    for (let node: HTMLElement | null = btn; node && node !== document.body; node = node.parentElement) {
+      const parent: HTMLElement | null = node.parentElement;
+      if (!parent) break;
+      for (const sib of Array.from(parent.children) as HTMLElement[]) {
+        if (sib === node || sib === panel || sib.contains(panel) || sib.inert || sib.tagName === 'SCRIPT') continue;
+        sib.inert = true;
+        made.push(sib);
+      }
     }
-  };
+    return () => made.forEach((el) => { el.inert = false; });
+  }, [isMenuOpen, mounted]);
 
-  const toggleSubmenu = useCallback((menu: string) => {
-    setActiveSubmenu(activeSubmenu === menu ? null : menu);
-  }, [activeSubmenu]);
+  // The menu only exists below 1024px: close it if the viewport grows past that.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => { if (mq.matches) closeMenu(); };
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [isMenuOpen, closeMenu]);
 
-  const handleCartClick = () => {
-    toggleCart();
-    handleClose();
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    handleClose();
-  };
+  // Opening motion: each item arrives as an offset ghost and collapses into place.
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!isMenuOpen || !panel || prefersReducedMotion()) return;
+    const items = panel.querySelectorAll<HTMLElement>('[data-menu-item]');
+    const tween = gsap.fromTo(
+      items,
+      { x: -14, opacity: 0, textShadow: '-6px 0 0 rgb(38 51 255 / 0.55), 6px 0 0 rgb(255 79 154 / 0.55)' },
+      { x: 0, opacity: 1, textShadow: '0px 0 0 rgb(38 51 255 / 0), 0px 0 0 rgb(255 79 154 / 0)', duration: 0.7, ease: 'expo.out', stagger: 0.04, clearProps: 'textShadow' },
+    );
+    return () => { tween.kill(); };
+  }, [isMenuOpen, mounted]);
 
   if (!mounted || !isMenuOpen) return null;
 
-  const menuContent = (
-    <div className="fixed inset-0 z-[200] lg:hidden">
-      {/* Backdrop */}
-      <div 
-        className={`
-          fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300
-          ${isClosing ? 'opacity-0' : 'opacity-100'}
-        `}
-        onClick={handleClose}
-        aria-hidden="true"
-      />
-      
-      {/* Menu Panel */}
-      <div 
-        ref={menuRef}
-        className={`
-          fixed right-0 top-0 bottom-0 w-full max-w-sm bg-blue-950
-          shadow-2xl
-          transform transition-transform duration-300 ease-out
-          ${isClosing ? 'translate-x-full' : 'translate-x-0'}
-        `}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Mobile navigation menu"
-      >
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 -left-32 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+  const follow = () => { followed.current = true; closeMenu(); };
+
+  const onSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    follow();
+    navigate(`/products?q=${encodeURIComponent(q)}`);
+  };
+
+  const onSignOut = async () => {
+    await signOut();
+    closeMenu();
+  };
+
+  return createPortal(
+    <div ref={panelRef} id="mobile-menu" className="mmenu" role="dialog" aria-modal="true" aria-label="Menu">
+      <div className="mmenu__top">
+        <button type="button" className="mmenu__close" onClick={closeMenu}>
+          Close menu
+          <svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 3 6 6M9 3 3 9" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
+        </button>
+      </div>
+      <nav aria-label="Primary" className="mmenu__primary">
+        <ul>
+          {[{ label: 'Home', href: '/' }, ...nav].map((item) => (
+            <li key={item.href} data-menu-item>
+              <Link
+                href={item.href}
+                onClick={follow}
+                className="mmenu__big"
+                aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <section className="mmenu__section" aria-labelledby="mmenu-depts">
+        <h2 id="mmenu-depts" className="mmenu__label" data-menu-item>Shop by department</h2>
+        <div className="mmenu__depts">
+          {groups.map((g) => (
+            <details key={g.slug} className="mmenu__dept" data-menu-item open={pathname.startsWith(g.href) || g.leaves.some((l) => pathname === l.href)}>
+              <summary className="mmenu__summary">
+                <span>{g.name}</span>
+                <svg className="mmenu__chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
+              </summary>
+              <ul className="mmenu__leaves">
+                {g.leaves.map((l) => (
+                  <li key={l.slug}>
+                    <Link href={l.href} onClick={follow} className="mmenu__leaf" aria-current={pathname === l.href ? 'page' : undefined}>
+                      {l.name}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link href={g.href} onClick={follow} className="mmenu__leaf mmenu__leaf--all" aria-current={pathname === g.href ? 'page' : undefined}>
+                    All {g.name.toLowerCase()}
+                  </Link>
+                </li>
+              </ul>
+            </details>
+          ))}
         </div>
+      </section>
 
-        {/* Menu Content */}
-        <div className="relative h-full flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <Link href="/" onClick={handleClose} className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl p-1.5 shadow-lg">
-                <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
-                  <Image
-                    src="/nextgens-logo-blue.png"
-                    alt="Logo"
-                    width={36}
-                    height={36}
-                    className="object-contain p-1"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const parent = e.currentTarget.parentElement;
-                      if (parent) {
-                        parent.innerHTML = '<div class="text-blue-600 font-bold text-sm">QG</div>';
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="font-brand text-white font-bold text-lg">Quantum</div>
-                <div className="font-brand text-white/70 text-xs">Gameware</div>
-              </div>
-            </Link>
-            
-            <AnimatedMenuButton isOpen={true} onClick={handleClose} />
-          </div>
+      <form className="mmenu__search" role="search" onSubmit={onSearch} data-menu-item>
+        <label htmlFor="mmenu-q" className="mmenu__label">Search the catalog</label>
+        <div className="mmenu__search-row">
+          <input id="mmenu-q" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Mouse, headset, Razer" className="mmenu__input" />
+          <button type="submit" className="btn btn--solid">
+            <span className="btn__fill" aria-hidden="true" />
+            <span className="btn__label">Search</span>
+          </button>
+        </div>
+      </form>
 
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
-            <div className="p-6 space-y-6">
-              {/* Search Bar */}
-              <form onSubmit={handleSearch} className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="w-full px-12 py-4 bg-white/10 border border-white/20 rounded-2xl 
-                           text-white placeholder-white/50 focus:ring-2 focus:ring-white/30 
-                           focus:border-transparent backdrop-blur-sm transition-all duration-200"
-                />
-                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" 
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} 
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-white/50 hover:text-white transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </form>
-
-              {/* User Section */}
-              {isAuthenticated && user ? (
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        <span className="text-white font-bold text-lg">
-                          {user.name?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-white font-medium">{user.name}</div>
-                      <div className="text-white/70 text-sm">{user.email}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href="/account"
-                      onClick={handleClose}
-                      className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm 
-                               font-medium text-center transition-all duration-200"
-                    >
-                      Account
-                    </Link>
-                    <button
-                      onClick={handleSignOut}
-                      className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-red-200 
-                               text-sm font-medium transition-all duration-200"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <Link
-                    href="/auth/signin"
-                    onClick={handleClose}
-                    className="px-4 py-3 bg-white/20 hover:bg-white/30 rounded-xl text-white 
-                             font-medium text-center transition-all duration-200 backdrop-blur-sm"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/auth/signup"
-                    onClick={handleClose}
-                    className="px-4 py-3 bg-blue-500
-                             hover:bg-blue-600 rounded-xl text-white 
-                             font-medium text-center transition-all duration-200"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-
-              {/* Main Navigation */}
-              <nav className="space-y-2">
-                <MenuLink href="/" onClick={handleClose}>
-                  Home
-                </MenuLink>
-                <MenuLink href="/products" onClick={handleClose}>
-                  All Products
-                </MenuLink>
-                
-                {/* Categories Accordion - NO ICONS */}
-                <div>
-                  <button
-                    onClick={() => toggleSubmenu('categories')}
-                    className="w-full flex items-center justify-between px-6 py-4 text-white hover:bg-white/10 
-                             active:bg-white/20 transition-all duration-200 rounded-2xl group"
-                  >
-                    <span className="text-lg">Categories</span>
-                    <svg 
-                      className={`w-5 h-5 text-white/30 transition-transform duration-300 
-                                ${activeSubmenu === 'categories' ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {/* Category List - Clean, No Icons, No Prices */}
-                  <div className={`
-                    space-y-1 px-4 mt-2 overflow-hidden transition-all duration-300
-                    ${activeSubmenu === 'categories' ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}
-                  `}>
-                    {/* Individual Categories */}
-                    {categories.slice(0, 8).map((cat) => (
-                      <Link
-                        key={cat.slug}
-                        href={`/categories/${cat.slug}`}
-                        onClick={handleClose}
-                        className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 
-                                 rounded-xl transition-all duration-200 group"
-                      >
-                        <span className="text-white/90 text-sm font-medium">
-                          {cat.name}
-                        </span>
-                        <svg className="w-4 h-4 text-white/30 group-hover:text-white/50 transition-all group-hover:translate-x-1" 
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    ))}
-                    
-                    {/* View All Categories Button - At the bottom like desktop */}
-                    <Link
-                      href="/categories"
-                      onClick={handleClose}
-                      className="flex items-center justify-center p-3 mt-2 bg-blue-500
-                               hover:bg-blue-600 rounded-xl transition-all duration-200 group"
-                    >
-                      <span className="text-white text-sm font-medium">
-                        View All Categories
-                      </span>
-                      <svg className="ml-2 w-4 h-4 text-white transition-transform group-hover:translate-x-1" 
-                           fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-
-                <MenuLink href="/about" onClick={handleClose}>
-                  About
-                </MenuLink>
-                <MenuLink href="/contact" onClick={handleClose}>
-                  Contact
-                </MenuLink>
-              </nav>
-
-              {/* Quick Actions - Cart & Wishlist */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={handleCartClick}
-                  className="relative flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 
-                           active:bg-white/30 rounded-2xl transition-all duration-200 group"
-                >
-                  <div className="text-white/90 text-sm font-medium">Cart</div>
-                  {cartCount > 0 && (
-                    <span className="absolute top-2 right-2 bg-red-500 text-white text-xs 
-                                   font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartCount > 9 ? '9+' : cartCount}
-                    </span>
-                  )}
-                </button>
-                
-                <Link
-                  href="/wishlist"
-                  onClick={handleClose}
-                  className="flex flex-col items-center p-4 bg-white/10 hover:bg-white/20 
-                           active:bg-white/30 rounded-2xl transition-all duration-200"
-                >
-                  <div className="text-white/90 text-sm font-medium">Wishlist</div>
-                </Link>
-              </div>
+      <section className="mmenu__section" aria-labelledby="mmenu-you">
+        <h2 id="mmenu-you" className="mmenu__label" data-menu-item>Your account</h2>
+        {isAuthenticated && user ? (
+          <div className="mmenu__account" data-menu-item>
+            <p className="mmenu__user">
+              <span>{user.name}</span>
+              <span className="mmenu__muted">{user.email}</span>
+            </p>
+            <div className="mmenu__pair">
+              <Link href="/account" onClick={follow} className="btn btn--line">
+                <span className="btn__fill" aria-hidden="true" />
+                <span className="btn__label">Account</span>
+              </Link>
+              <button type="button" onClick={onSignOut} className="btn btn--line">
+                <span className="btn__fill" aria-hidden="true" />
+                <span className="btn__label">Sign out</span>
+              </button>
             </div>
           </div>
-
-          {/* Footer */}
-          <div className="p-6 border-t border-white/10 text-center">
-            <p className="text-white/60 text-sm">
-              © 2025 Quantum Gameware
-            </p>
+        ) : (
+          <div className="mmenu__pair" data-menu-item>
+            <Link href="/auth/signin" onClick={follow} className="btn btn--solid">
+              <span className="btn__fill" aria-hidden="true" />
+              <span className="btn__label">Sign in</span>
+            </Link>
+            <Link href="/auth/signup" onClick={follow} className="btn btn--line">
+              <span className="btn__fill" aria-hidden="true" />
+              <span className="btn__label">Create account</span>
+            </Link>
           </div>
+        )}
+        <div className="mmenu__utility" data-menu-item>
+          <button type="button" className="mmenu__util" onClick={() => { toggleCart(); follow(); }}>
+            Cart <span className="mono">{cartCount}</span>
+          </button>
+          <Link href="/wishlist" onClick={follow} className="mmenu__util">Wishlist</Link>
+          <Link href="/orders" onClick={follow} className="mmenu__util">Orders</Link>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <p className="mmenu__contact" data-menu-item>
+        <a href={site.phone.href} className="text-link">{site.phone.label}</a>
+        <span className="mmenu__muted"> · {site.shippingLine}</span>
+      </p>
+    </div>,
+    document.body,
   );
-
-  return createPortal(menuContent, document.body);
 }
-
-export { AnimatedMenuButton };

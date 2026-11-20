@@ -1,6 +1,7 @@
 // src/sanity/lib/queries.ts
 import { client } from './client';
 import { Product } from '@/types';
+import { normalizeProduct, normalizeProducts, isHiddenProduct, leafSlug } from '@/data/taxonomy';
 
 // Common product fields to avoid duplication
 const productFields = `
@@ -52,8 +53,11 @@ export async function getProducts(): Promise<Product[]> {
       } | order(_createdAt desc)
     `;
     
-    const products = await client.fetch<Product[]>(query);
-    
+    // Cached for 60s and tagged, so the layout, pages and /api/search share one result and
+    // revalidateTag('products') (api/revalidate) refreshes them. A failed fetch throws before
+    // anything is cached.
+    const products = await client.fetch<Product[]>(query, {}, { next: { revalidate: 60, tags: ['products'] } });
+
     if (process.env.NODE_ENV === 'development') {
       console.log('✅ Fetched products:', {
         count: products?.length || 0,
@@ -62,7 +66,7 @@ export async function getProducts(): Promise<Product[]> {
       });
     }
     
-    return products || [];
+    return normalizeProducts(products || []);
   } catch (error) {
     console.error('❌ Error fetching products:', error);
     
@@ -111,7 +115,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
       });
     }
     
-    return products || [];
+    return normalizeProducts(products || []);
   } catch (error) {
     console.error('❌ Error fetching featured products:', error);
     return [];
@@ -146,7 +150,8 @@ export async function getProduct(slug: string): Promise<Product | null> {
       });
     }
     
-    return product;
+    if (!product || isHiddenProduct(product.slug)) return null;
+    return normalizeProduct(product);
   } catch (error) {
     console.error('❌ Error fetching product:', error);
     return null;
@@ -183,25 +188,14 @@ export async function testSanityConnection(): Promise<boolean> {
 
 // Additional useful queries
 
+/** Products in a leaf category, by slug ("mice") or display name ("Mice"). */
 export async function getProductsByCategory(category: string): Promise<Product[]> {
-  try {
-    if (!category) {
-      console.error('Category parameter is required');
-      return [];
-    }
-    
-    const query = `
-      *[_type == "product" && category->name == $category]{
-        ${productFields}
-      } | order(_createdAt desc)
-    `;
-    
-    const products = await client.fetch<Product[]>(query, { category });
-    return products || [];
-  } catch (error) {
-    console.error('Error fetching products by category:', error);
+  if (!category) {
+    console.error('Category parameter is required');
     return [];
   }
+  const products = await getProducts();
+  return products.filter((p) => p.categorySlug === category || p.category === category);
 }
 
 export async function getNewProducts(limit: number = 8): Promise<Product[]> {
@@ -213,44 +207,27 @@ export async function getNewProducts(limit: number = 8): Promise<Product[]> {
     `;
     
     const products = await client.fetch<Product[]>(query, { limit });
-    return products || [];
+    return normalizeProducts(products || []);
   } catch (error) {
     console.error('Error fetching new products:', error);
     return [];
   }
 }
 
+/** Other products in the same leaf category. `category` may be the leaf slug or display name. */
 export async function getRelatedProducts(
-  currentProductId: string, 
-  category: string, 
+  currentProductId: string,
+  category: string,
   limit: number = 4
 ): Promise<Product[]> {
-  try {
-    if (!currentProductId || !category) {
-      console.error('currentProductId and category are required');
-      return [];
-    }
-    
-    const query = `
-      *[_type == "product" 
-        && _id != $currentProductId 
-        && category->name == $category
-      ][0...$limit]{
-        ${productFields}
-      } | order(_createdAt desc)
-    `;
-    
-    const products = await client.fetch<Product[]>(query, { 
-      currentProductId, 
-      category, 
-      limit 
-    });
-    
-    return products || [];
-  } catch (error) {
-    console.error('Error fetching related products:', error);
+  if (!currentProductId || !category) {
+    console.error('currentProductId and category are required');
     return [];
   }
+  const products = await getProducts();
+  return products
+    .filter((p) => p._id !== currentProductId && (leafSlug(p) === category || p.category === category))
+    .slice(0, limit);
 }
 
 // Fetch all brands with logos

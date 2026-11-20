@@ -1,335 +1,268 @@
-'use client';
-
-import React from 'react';
+// src/app/about/page.tsx: about (DESIGN.md, "About page"). Every number is computed from Sanity at
+// build time; the only owner claims are the owner's own words from the old page.
+import type { Metadata } from 'next';
 import Image from 'next/image';
-import qgMascot from '../../../public/qg-axolotl.jpg';
+import Link from 'next/link';
+import { getProducts } from '@/sanity/lib/queries';
+import type { Product } from '@/types';
+import { formatPrice, hasPhoto } from '@/lib/catalog';
+import { site } from '@/data/site';
+import BrandIndex, { type BrandRow } from '@/components/about/BrandIndex';
+import Spectrum, { type SpectrumItem } from '@/components/about/Spectrum';
+import mascot from '../../../public/qg-axolotl-rbg.png';
 
-export default function AboutPage() {
+export const revalidate = 60;
+
+const description =
+  'Who we are and how we price: one fair price per product, free shipping on every order, no countdown timers. Every number on this page comes from the live catalog.';
+
+export const metadata: Metadata = {
+  title: 'About',
+  description,
+  alternates: { canonical: '/about' },
+  openGraph: { title: `About ${site.name}`, description, url: '/about' },
+};
+
+// Common retail habits (left) and what this store does instead (right). The left column is a
+// generic illustration, not a quote from any real store.
+const LEDGER = [
+  {
+    elsewhere: 'Was $249.99. Now $119.99.',
+    here: 'No inflated list prices to make a discount look bigger. We set a fair price on day one.',
+  },
+  {
+    elsewhere: 'Sale ends in 04:59:12',
+    here: 'No countdown timers. When something is on sale, both prices stay on the page and you decide when you are ready.',
+  },
+  {
+    elsewhere: 'Shipping: $14.99, added at checkout',
+    here: 'Shipping is free on every order, and the product page says so before you reach the cart.',
+  },
+  {
+    elsewhere: 'Hurry, only 2 left!',
+    here: 'Stock reads in stock or out of stock. We never count down units to rush you.',
+  },
+];
+
+const QUOTE = 'We price our products fairly from day one.';
+
+function facts(products: Product[]) {
+  const prices = products.map((p) => p.price).sort((a, b) => a - b);
+  const onSale = products.filter((p) => p.originalPrice && p.originalPrice > p.price).length;
+  return [
+    { value: formatPrice(prices[0]), label: 'the lowest price in the store' },
+    { value: formatPrice(prices[Math.floor(prices.length / 2)]), label: 'the middle of the range' },
+    { value: String(onSale), label: 'on sale right now, each one showing its price before' },
+    { value: String(prices.filter((p) => p < 50).length), label: 'products under $50' },
+  ];
+}
+
+function brandRows(products: Product[]): BrandRow[] {
+  const map = new Map<string, BrandRow>();
+  products.forEach((p) => {
+    if (!p.brand) return;
+    const row = map.get(p.brand) ?? { name: p.brand, count: 0 };
+    row.count += 1;
+    if (!row.preview && hasPhoto(p)) row.preview = p.image;
+    map.set(p.brand, row);
+  });
+  return [...map.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+export default async function AboutPage() {
+  let products: Product[] = [];
+  try {
+    products = await getProducts();
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+
+  const brands = brandRows(products);
+  const spectrum: SpectrumItem[] = products.map((p) => ({
+    name: p.name,
+    slug: p.slug,
+    price: p.price,
+    was: p.originalPrice && p.originalPrice > p.price ? p.originalPrice : undefined,
+  }));
+  const sorted = [...products].sort((a, b) => a.price - b.price);
+  const cheapest = sorted[0];
+  const dearest = sorted[sorted.length - 1];
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: `About ${site.name}`,
+    url: `${site.url}/about`,
+    description,
+    mainEntity: { '@type': 'OnlineStore', name: site.name, url: site.url, telephone: site.phone.label },
+  };
+
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 bg-blue-950">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}></div>
-        </div>
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
-
-      <div className="relative z-10 pt-24 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-white/80 mb-8">
-            <a href="/" className="hover:text-white transition-colors">Home</a>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            <span className="text-white font-medium">About</span>
+    <>
+      {/* 1. Hero: the interference field (src/motion/fringes.ts). Server-rendered observed. */}
+      <section className="ahero is-observed" data-fringes aria-labelledby="about-title">
+        <div className="ahero__stage">
+          <div className="ahero__field" data-fringe-field aria-hidden="true" />
+          <nav aria-label="Breadcrumb" className="ahero__crumbs">
+            <ol className="page-head__crumbs">
+              <li><Link href="/">Home</Link><span aria-hidden="true"> / </span></li>
+              <li><span aria-current="page">About</span></li>
+            </ol>
           </nav>
-
-          {/* Hero Section */}
-          <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl overflow-hidden mb-16">
-            <div className="absolute inset-0 bg-blue-500/20"></div>
-            <div className="relative z-10 px-8 py-16 lg:px-16 lg:py-24 text-center text-white">
-              <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-                About Quantum Gameware
-              </h1>
-              <p className="text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-                Quality gaming and streaming gear that doesn't break the bank. Level up your setup without emptying your wallet.
+          <div className="ahero__copy">
+            <h1 id="about-title" className="ahero__title" data-split="lines" data-intro>
+              One price, observed.
+            </h1>
+            <span className="ahero__line" data-fringe-line aria-hidden="true" />
+            <div className="ahero__below">
+              <p className="ahero__lede" data-reveal="fade" data-intro data-delay="0.35">
+                {site.name} is a small online store for gaming and streaming gear. Plenty of shops show a price
+                that won&rsquo;t sit still: a list price, a discount, a timer, shipping at the end. We show one.
               </p>
+              <dl className="ahero__readout mono" data-reveal="fade" data-intro data-delay="0.5">
+                <div><dt>Waves</dt><dd>2</dd></div>
+                <div><dt>Fringes</dt><dd data-fringe-count>1</dd></div>
+                <div className="ahero__state">
+                  <dt className="sr-only">State</dt>
+                  <dd><span className="readout__dot" aria-hidden="true" /><span data-observe-state>Observed</span></dd>
+                </div>
+              </dl>
             </div>
           </div>
+          <p className="ahero__hint" aria-hidden="true">Scroll to observe</p>
+        </div>
+      </section>
 
-          {/* Mission Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-20">
-            <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-                Our Mission
-              </h2>
-              <p className="text-lg text-white/80 mb-6 leading-relaxed">
-                At Quantum Gameware, we believe everyone should have access to quality gaming and streaming equipment—not just pros with big budgets. Whether you're grinding ranked matches, building your streaming channel, or just starting your content creation journey, you deserve gear that performs.
-              </p>
-              <p className="text-lg text-white/80 mb-8 leading-relaxed">
-                We cut out the markup, not the quality. By working directly with manufacturers and keeping our overhead low, we bring you reliable gaming mice, keyboards, headsets, webcams, and streaming accessories at prices that actually make sense.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <div className="bg-blue-500/20 border border-blue-400/30 text-blue-300 px-4 py-2 rounded-full font-medium backdrop-blur-sm">
-                  Great Value
-                </div>
-                <div className="bg-purple-500/20 border border-purple-400/30 text-purple-300 px-4 py-2 rounded-full font-medium backdrop-blur-sm">
-                  Budget-Friendly
-                </div>
-                <div className="bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 px-4 py-2 rounded-full font-medium backdrop-blur-sm">
-                  Streamer-Ready
-                </div>
-              </div>
-            </div>
-            <div className="relative group">
-              {/* Enhanced mascot display with multiple visual layers */}
-              <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 h-96 flex items-center justify-center overflow-hidden hover:border-white/30 transition-all duration-500">
-                {/* Animated background elements */}
-                <div className="absolute inset-0 bg-blue-500/10"></div>
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-purple-400/20 rounded-full blur-xl animate-pulse animation-delay-1000"></div>
-                
-                {/* Mascot placeholder */}
-                <div className="relative z-10 w-full h-full flex items-center justify-center">
-                  <div className="relative group-hover:scale-105 transition-transform duration-500 ease-out">
-                    {/* Glow effect */}
-                    <div className="absolute inset-0 bg-blue-500/30 rounded-full blur-3xl scale-110 opacity-60 animate-pulse"></div>
-                    
-                    {/* Main mascot image */}
-                    <div className="relative bg-white/20 backdrop-blur-sm rounded-3xl p-6 border border-white/30">
-                      <Image
-                        src={qgMascot}
-                        alt="Quantum Gameware Mascot - Your Gaming Companion"
-                        width={240}
-                        height={240}
-                        className="w-60 h-60 object-contain drop-shadow-2xl"
-                        priority
-                        placeholder="blur"
-                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLli2Lm4dCBvvaTVPPqwu2EhJYd6VeCN5CRlc1vMkqy2hMz3Jj3uOfUNLKBANdGJNGbadqD/q6WZ4HWjnhVCCk9C"
-                      />
-                      
-                      {/* Decorative elements */}
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-80 animate-ping"></div>
-                      <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-blue-300 rounded-full opacity-60 animate-pulse animation-delay-2000"></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating particles effect */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-1/4 left-1/3 w-2 h-2 bg-blue-300/60 rounded-full animate-float"></div>
-                  <div className="absolute top-3/4 right-1/3 w-1 h-1 bg-purple-300/60 rounded-full animate-float animation-delay-3000"></div>
-                  <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-indigo-300/60 rounded-full animate-float animation-delay-1500"></div>
-                </div>
-              </div>
-              
-              {/* Additional glow effect outside the container */}
-              <div className="absolute inset-0 bg-blue-500/20 rounded-3xl blur-xl scale-105 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
-            </div>
-          </div>
-
-          {/* Values Section */}
-          <div className="mb-20">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-                Our Values
-              </h2>
-              <p className="text-xl text-white/80 max-w-3xl mx-auto">
-                Everything we do is guided by our commitment to making quality gaming and streaming accessible to everyone.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-blue-500/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Performance on a Budget</h3>
-                <p className="text-white/80 leading-relaxed">
-                  You don't need to spend $200 on a mouse to get great performance. Our products deliver smooth, responsive gameplay and crisp streaming quality at a fraction of the cost.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-purple-500/20 border border-purple-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Honest Pricing</h3>
-                <p className="text-white/80 leading-relaxed">
-                  No inflated MSRPs or fake discounts. We price our products fairly from day one, so you always know you're getting a genuine deal.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-indigo-500/20 border border-indigo-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Built for Creators</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Streamers and content creators need reliable gear on a budget. From affordable webcams to quality microphones, we've got your setup covered.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-blue-500/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Quality You Can Trust</h3>
-                <p className="text-white/80 leading-relaxed">
-                  Affordable doesn't mean cheaply made. Every product is tested to ensure it holds up to long gaming sessions and streaming marathons.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-purple-500/20 border border-purple-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Beginner Friendly</h3>
-                <p className="text-white/80 leading-relaxed">
-                  New to gaming or streaming? Our gear is easy to set up and use, with straightforward features that don't require a manual to understand.
-                </p>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                <div className="w-16 h-16 bg-blue-500/20 border border-blue-400/30 rounded-2xl flex items-center justify-center mb-6">
-                  <svg className="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-4">Community First</h3>
-                <p className="text-white/80 leading-relaxed">
-                  We're gamers and streamers too. We build the products we'd want to use and price them so everyone can join the fun.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl text-white p-8 lg:p-16 mb-20">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-4xl lg:text-5xl font-bold mb-2">15K+</div>
-                <div className="text-white/70">Happy Customers</div>
-              </div>
-              <div>
-                <div className="text-4xl lg:text-5xl font-bold mb-2">75+</div>
-                <div className="text-white/70">Affordable Products</div>
-              </div>
-              <div>
-                <div className="text-4xl lg:text-5xl font-bold mb-2">4.8★</div>
-                <div className="text-white/70">Average Rating</div>
-              </div>
-              <div>
-                <div className="text-4xl lg:text-5xl font-bold mb-2">$50+</div>
-                <div className="text-white/70">Free Shipping</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Team Section */}
-          <div className="mb-20">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-                Meet Our Team
-              </h2>
-              <p className="text-xl text-white/80 max-w-3xl mx-auto">
-                Our team of gamers, streamers, and deal-hunters work together to bring you the best value in gaming gear.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  name: "Alex Chen",
-                  role: "Founder & CEO",
-                  bio: "Former broke college gamer who built a business on fair pricing",
-                  avatar: "AC"
-                },
-                {
-                  name: "Sarah Johnson",
-                  role: "Product Sourcing",
-                  bio: "Finds quality manufacturers to keep prices low without sacrificing performance",
-                  avatar: "SJ"
-                },
-                {
-                  name: "Marcus Rodriguez",
-                  role: "Community Manager",
-                  bio: "Full-time streamer who tests every product before we sell it",
-                  avatar: "MR"
-                }
-              ].map((member, index) => (
-                <div key={index} className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center hover:border-white/30 hover:bg-white/15 transition-all duration-300">
-                  <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-                    {member.avatar}
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{member.name}</h3>
-                  <div className="text-blue-300 font-medium mb-4">{member.role}</div>
-                  <p className="text-white/80 leading-relaxed">{member.bio}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <div className="bg-blue-500 rounded-3xl p-8 lg:p-16 text-center text-white">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Ready to Upgrade Without Going Broke?
-            </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of gamers and streamers who've upgraded their setup without the premium price tag. Quality gear, honest prices, and free shipping on orders over $50.
+      {/* 2. The owner's words */}
+      <section className="aquote" aria-labelledby="quote-title">
+        <h2 id="quote-title" className="sr-only">Our pricing rule</h2>
+        <figure className="aquote__figure">
+          <blockquote className="aquote__mark" data-collapse>
+            <p className="aquote__text">{QUOTE}</p>
+            <p className="aquote__ghost aquote__ghost--q" aria-hidden="true">{QUOTE}</p>
+            <p className="aquote__ghost aquote__ghost--g" aria-hidden="true">{QUOTE}</p>
+          </blockquote>
+          <figcaption className="aquote__cite mono">{site.name}, on pricing</figcaption>
+        </figure>
+        <div className="aquote__story">
+          <p data-reveal="up">
+            We are gamers and streamers ourselves. {site.name} is the store we wanted while building our own
+            desks: one place for the mouse, the mic and the chair, priced without games.
+          </p>
+          {cheapest && dearest && (
+            <p data-reveal="up" data-delay="0.1">
+              Today that means {products.length} products from {brands.length} brands, from {formatPrice(cheapest.price)} for
+              the {cheapest.name} to {formatPrice(dearest.price)} for the {dearest.name}. All of it follows the same rule.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href="/products"
-                className="inline-flex items-center bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                Shop Affordable Gear
-              </a>
-              <a
-                href="/products"
-                className="inline-flex items-center border-2 border-white/30 text-white hover:bg-white/10 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105"
-              >
-                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                See Best Sellers
-              </a>
-            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 3. Elsewhere / here */}
+      <section className="ledger" aria-labelledby="ledger-title">
+        <div className="ledger__head">
+          <h2 id="ledger-title" className="section-head__title" data-split="lines">What you won&rsquo;t see here</h2>
+          <p className="section-head__text">Four habits that are common in online retail, and what we do instead.</p>
+        </div>
+        <ol className="ledger__rows">
+          {LEDGER.map((row) => (
+            <li key={row.elsewhere} className="ledger__row" data-collapse>
+              <div className="ledger__else">
+                <span className="ledger__k mono">Elsewhere</span>
+                <span className="ledger__claim">
+                  <s className="ledger__claim-text">{row.elsewhere}</s>
+                  <span className="ledger__ghost ledger__ghost--q" aria-hidden="true">{row.elsewhere}</span>
+                  <span className="ledger__ghost ledger__ghost--g" aria-hidden="true">{row.elsewhere}</span>
+                </span>
+              </div>
+              <div className="ledger__here">
+                <span className="ledger__k mono">Here</span>
+                <p className="ledger__fact">{row.here}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* 4. Every price on one line */}
+      {spectrum.length > 1 && (
+        <section className="section aprices" aria-labelledby="prices-title">
+          <div className="section-head section-head--row">
+            <h2 id="prices-title" className="section-head__title" data-split="lines">Every price, on one line</h2>
+            <p className="section-head__text">The whole catalog, cheapest on the left. Point at the line, or drag along it, to read a product.</p>
+          </div>
+          <Spectrum items={spectrum} />
+          <dl className="facts aprices__facts">
+            {facts(products).map((f) => (
+              <div key={f.label} className="facts__item" data-reveal="up">
+                <dt className="facts__label">{f.label}</dt>
+                <dd className="facts__value mono" data-measure>{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {/* 5. The mascot */}
+      <section className="amascot" aria-labelledby="mascot-title">
+        <div className="amascot__plate" data-collapse>
+          <Image
+            src={mascot}
+            alt="The Quantum Gameware mascot: a cobalt axolotl with pink gills, curled into a C"
+            className="amascot__img"
+            sizes="(min-width: 900px) 40vw, 90vw"
+          />
+          <Image src={mascot} alt="" aria-hidden="true" className="amascot__ghost amascot__ghost--q" sizes="(min-width: 900px) 40vw, 90vw" />
+          <Image src={mascot} alt="" aria-hidden="true" className="amascot__ghost amascot__ghost--g" sizes="(min-width: 900px) 40vw, 90vw" />
+        </div>
+        <div className="amascot__copy">
+          <h2 id="mascot-title" className="section-head__title" data-split="lines">Why an axolotl</h2>
+          <p data-reveal="up">An axolotl can regrow a lost limb, and keeps doing it all its life.</p>
+          <p data-reveal="up">
+            A setup grows the same way: a mouse first, a mic when you start streaming, a better chair when the old
+            one gives out. Whatever the next piece is, we want it to be on our shelf.
+          </p>
+          <p data-reveal="up">
+            Its colours are ours too. The cobalt body and the pink gills are the two colours you see settling into
+            place all over this site.
+          </p>
+        </div>
+      </section>
+
+      {/* 6. Brands */}
+      {brands.length > 0 && (
+        <section className="section section--tight" aria-labelledby="brands-title">
+          <div className="section-head section-head--row">
+            <h2 id="brands-title" className="section-head__title" data-split="lines">On the shelf</h2>
+            <p className="section-head__text">{brands.length} brands. Pick one to see everything we carry from it.</p>
+          </div>
+          <BrandIndex brands={brands} />
+        </section>
+      )}
+
+      {/* 7. Finale */}
+      <section className="afinale" aria-labelledby="finale-title">
+        <h2 id="finale-title" className="afinale__title" data-split="lines">Start with one piece.</h2>
+        <div className="afinale__row">
+          <p className="afinale__text">
+            Questions before you buy? Call us on{' '}
+            <a href={site.phone.href} className="text-link">{site.phone.label}</a> or{' '}
+            <Link href="/contact" className="text-link">send us a message</Link>.
+          </p>
+          <div className="hero__ctas afinale__ctas">
+            <Link href="/products" className="btn btn--solid" data-fill>
+              <span className="btn__fill" aria-hidden="true" />
+              <span className="btn__label">Shop all gear</span>
+            </Link>
+            <Link href="/contact" className="btn btn--line">
+              <span className="btn__fill" aria-hidden="true" />
+              <span className="btn__label">Contact us</span>
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
 
-      <style jsx>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        .animation-delay-1500 {
-          animation-delay: 1.5s;
-        }
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-      `}</style>
-    </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+    </>
   );
 }

@@ -32,7 +32,7 @@ export interface SampleProduct {
 
 export const categories: CategoryData[] = [
   {
-    name: "Gaming Keyboards",
+    name: "Keyboards",
     slug: "keyboards",
     description: "Mechanical and membrane keyboards designed for competitive gaming with RGB lighting, macro keys, and ultra-fast response times.",
     icon: "⌨️",
@@ -106,7 +106,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Mice",
+    name: "Mice",
     slug: "mice",
     description: "High-precision gaming mice with customizable DPI, ergonomic designs, and programmable buttons for FPS, MOBA, and MMO gaming.",
     icon: "🖱️",
@@ -180,7 +180,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Headsets",
+    name: "Headsets",
     slug: "headsets",
     description: "Immersive gaming headsets with surround sound, noise cancellation, and crystal-clear microphones for team communication.",
     icon: "🎧",
@@ -254,7 +254,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Monitors",
+    name: "Monitors",
     slug: "monitors",
     description: "High-refresh rate gaming monitors with low input lag, adaptive sync technology, and stunning visual quality for competitive gaming.",
     icon: "🖥️",
@@ -329,7 +329,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Controllers",
+    name: "Controllers",
     slug: "controllers",
     description: "Professional gaming controllers with customizable buttons, adjustable triggers, and enhanced grip for console and PC gaming.",
     icon: "🎮",
@@ -402,7 +402,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Chairs",
+    name: "Chairs",
     slug: "chairs",
     description: "Ergonomic gaming chairs designed for long gaming sessions with lumbar support, adjustable armrests, and premium materials.",
     icon: "💺",
@@ -476,7 +476,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Mouse Pads",
+    name: "Mouse pads & desk mats",
     slug: "mousepads",
     description: "Premium gaming mouse pads with optimized surfaces for different gaming styles, RGB lighting, and extended sizes.",
     icon: "🔲",
@@ -549,7 +549,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Microphones",
+    name: "Microphones",
     slug: "microphones",
     description: "Professional streaming and gaming microphones with studio-quality audio, noise cancellation, and easy setup.",
     icon: "🎙️",
@@ -622,7 +622,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Speakers",
+    name: "Speakers",
     slug: "speakers",
     description: "High-quality gaming speakers with immersive sound, RGB lighting, and powerful bass for an enhanced gaming experience.",
     icon: "🔊",
@@ -696,7 +696,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Accessories",
+    name: "Accessories",
     slug: "accessories",
     description: "Essential gaming accessories including cable management, lighting, cooling solutions, and desk organizers.",
     icon: "🔧",
@@ -784,7 +784,25 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "Gaming Webcams",
+    name: "Stream gear",
+    slug: "stream",
+    description: "Control decks, capture and the small tools that run a stream without alt-tabbing.",
+    icon: "🎛️",
+    image: "/images/categories/accessories.jpg",
+    features: [
+      "Programmable LCD keys",
+      "One-touch scene and audio control",
+      "Plugin ecosystems for OBS and Twitch",
+      "USB-C, driver-free setup"
+    ],
+    popularBrands: ["Elgato", "Razer", "Logitech", "AVerMedia"],
+    priceRange: { min: 49, max: 399 },
+    compatibility: ["PC", "Mac"],
+    subcategories: ["Control Decks", "Capture Cards", "Lighting", "Mounts"],
+    techSpecs: ["Keys", "Connectivity", "Software", "Dimensions"]
+  },
+  {
+    name: "Webcams",
     slug: "webcams",
     description: "High-definition streaming webcams with auto-focus, low-light correction, and professional features for content creation.",
     icon: "📹",
@@ -858,7 +876,7 @@ export const categories: CategoryData[] = [
     ]
   },
   {
-    name: "VR Headsets",
+    name: "VR headsets",
     slug: "vr-headsets",
     description: "Immersive virtual reality headsets for gaming, featuring high-resolution displays, precise tracking, and comfortable ergonomics.",
     icon: "🥽",

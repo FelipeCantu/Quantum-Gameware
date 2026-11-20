@@ -1,135 +1,154 @@
-// components/ui/Header/SearchDropdown.tsx
-import { useState } from 'react';
+// components/ui/SearchDropdown.tsx: header search (DESIGN.md). A combobox with live product
+// suggestions from /api/search; Enter without a highlighted option opens the full catalog
+// filtered by the query. Empty, it offers the four departments.
+'use client';
+
+import { useEffect, useId, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { categories } from '@/data/categories';
+import { navigate } from '@/engine/next';
+import { navGroups } from '@/data/taxonomy';
+import { formatPrice } from '@/lib/catalog';
 
 interface SearchDropdownProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function SearchDropdown({ isOpen, onClose }: SearchDropdownProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+type Hit = { name: string; slug: string; price: number; image: string | null; category: string };
 
-  const handleSearch = (e: React.FormEvent) => {
+const groups = navGroups();
+
+export default function SearchDropdown({ isOpen, onClose }: SearchDropdownProps) {
+  const id = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState('');
+  const [hits, setHits] = useState<Hit[]>([]);
+  const [active, setActive] = useState(-1);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+    else { setQuery(''); setHits([]); setActive(-1); }
+  }, [isOpen]);
+
+  // Debounced live suggestions; stale responses are dropped.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setHits([]); setActive(-1); setLoading(false); return; }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
+        if (!res.ok) throw new Error(`search ${res.status}`);
+        const data = (await res.json()) as { results?: Hit[] };
+        setHits(data.results ?? []);
+        setActive(-1);
+      } catch {
+        // aborted or offline: keep the last suggestions
+      } finally {
+        if (!ctrl.signal.aborted) setLoading(false);
+      }
+    }, 160);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [query]);
+
+  // Keep the highlighted option visible inside the scrolling list.
+  useEffect(() => {
+    if (active >= 0) document.getElementById(`${id}-opt-${active}`)?.scrollIntoView({ block: 'nearest' });
+  }, [active, id]);
+
+  const go = (href: string) => { onClose(); navigate(href); };
+
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-      onClose();
-    }
+    if (active >= 0 && hits[active]) return go(`/products/${hits[active].slug}`);
+    const q = query.trim();
+    if (q) go(`/products?q=${encodeURIComponent(q)}`);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!hits.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive((i) => (i + 1) % hits.length); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setActive((i) => (i <= 0 ? hits.length - 1 : i - 1)); }
   };
 
   if (!isOpen) return null;
 
-  return (
-    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-fade-in">
-      <form onSubmit={handleSearch} className="p-4">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search for gaming gear..."
-            className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-            autoFocus
-          />
-          <svg 
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          
-          {/* Search button */}
-          <button
-            type="submit"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
-          >
-            Search
-          </button>
-        </div>
-        
-        <div className="mt-3 text-xs text-gray-500">
-          Press Enter to search or browse categories below
-        </div>
-      </form>
-      
-      {/* Quick Categories */}
-      <div className="border-t border-gray-100 p-2">
-        <div className="text-xs font-medium text-gray-500 px-2 py-1 mb-2">Quick Categories</div>
-        <div className="space-y-1">
-          {categories.slice(0, 4).map((category) => (
-            <Link
-              key={category.slug}
-              href={`/categories/${category.slug}`}
-              onClick={onClose}
-              className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
-            >
-              <span className="text-lg mr-3 group-hover:scale-110 transition-transform">
-                {category.icon}
-              </span>
-              <div className="flex-1">
-                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600">
-                  {category.name}
-                </span>
-                <div className="text-xs text-gray-500">
-                  Starting at ${category.priceRange.min}
-                </div>
-              </div>
-              <svg 
-                className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          ))}
-        </div>
-        
-        {/* View All Categories */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <Link
-            href="/categories"
-            onClick={onClose}
-            className="flex items-center justify-center w-full px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors font-medium group"
-          >
-            View All Categories
-            <svg 
-              className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
-        </div>
-      </div>
+  const listId = `${id}-list`;
+  const showHits = query.trim().length >= 2;
+  const listOpen = showHits && hits.length > 0;
+  const status = showHits && !loading ? `${hits.length} suggestion${hits.length === 1 ? '' : 's'}` : '';
 
-      {/* Popular Searches - Optional */}
-      <div className="border-t border-gray-100 p-4 bg-gray-50">
-        <div className="text-xs font-medium text-gray-500 mb-2">Popular Searches</div>
-        <div className="flex flex-wrap gap-2">
-          {['Gaming Mouse', 'Mechanical Keyboard', 'Gaming Headset', 'RGB Lighting'].map((term) => (
-            <button
-              key={term}
-              onClick={() => {
-                setSearchQuery(term);
-                // Auto-submit the search
-                window.location.href = `/products?search=${encodeURIComponent(term)}`;
-                onClose();
-              }}
-              className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-colors"
-            >
-              {term}
-            </button>
-          ))}
+  return (
+    <div className="search-panel" id="search-panel">
+      <form onSubmit={onSubmit} role="search" className="search-panel__form">
+        <label htmlFor={`${id}-input`} className="sr-only">Search products</label>
+        <input
+          ref={inputRef}
+          id={`${id}-input`}
+          type="search"
+          className="search-panel__input"
+          placeholder="Search mice, headsets, brands"
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={listOpen}
+          aria-controls={listOpen ? listId : undefined}
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          aria-activedescendant={active >= 0 ? `${id}-opt-${active}` : undefined}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKeyDown}
+        />
+        <button type="submit" className="btn btn--solid btn--sm">
+          <span className="btn__fill" aria-hidden="true" />
+          <span className="btn__label">Search</span>
+        </button>
+      </form>
+
+      {showHits ? (
+        <div className="search-panel__results">
+          {listOpen && (
+          <ul id={listId} role="listbox" aria-label="Suggestions" className="search-panel__list">
+            {hits.map((h, i) => (
+              <li key={h.slug} role="none">
+                <Link
+                  href={`/products/${h.slug}`}
+                  id={`${id}-opt-${i}`}
+                  role="option"
+                  aria-selected={i === active}
+                  className={`search-hit ${i === active ? 'is-active' : ''}`}
+                  onClick={onClose}
+                  onPointerEnter={() => setActive(i)}
+                  tabIndex={-1}
+                >
+                  <span className="search-hit__plate" aria-hidden="true">
+                    {h.image && <Image src={h.image} alt="" fill sizes="44px" />}
+                  </span>
+                  <span className="search-hit__text">
+                    <span className="search-hit__name">{h.name}</span>
+                    <span className="search-hit__meta">{h.category}</span>
+                  </span>
+                  <span className="search-hit__price mono">{formatPrice(h.price)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          )}
+          <p className="search-panel__note">
+            {loading && !hits.length ? 'Looking…' : hits.length ? `${hits.length} close match${hits.length === 1 ? '' : 'es'}. Enter shows every result.` : 'No close matches. Enter searches the whole catalog.'}
+          </p>
         </div>
-      </div>
+      ) : (
+        <nav aria-label="Departments" className="search-panel__depts">
+          {groups.map((g) => (
+            <Link key={g.slug} href={g.href} onClick={onClose} className="search-panel__dept draw">{g.name}</Link>
+          ))}
+        </nav>
+      )}
+      <p className="sr-only" role="status">{status}</p>
     </div>
   );
 }

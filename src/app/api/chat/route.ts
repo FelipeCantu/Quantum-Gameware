@@ -376,7 +376,7 @@ Remember: You're a gaming expert helping gamers find their perfect gear. Be know
 
     if (lastMessage.includes('mouse') || lastMessage.includes('mice')) {
       const mice = products.filter(p =>
-        p.category?.toLowerCase().includes('mouse') ||
+        p.categorySlug === 'mice' ||
         p.name?.toLowerCase().includes('mouse')
       ).slice(0, 3);
 

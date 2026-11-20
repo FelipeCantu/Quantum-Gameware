@@ -1,47 +1,35 @@
 // src/app/products/[slug]/Breadcrumb.tsx
+// Home / Department / Leaf / product, from the taxonomy (data/taxonomy.ts).
 import Link from 'next/link';
 import { Product } from '@/types';
-import { categories } from '@/data/categories';
+import { getCategoryBySlug } from '@/data/categories';
+import { departmentOfCategory } from '@/data/taxonomy';
 
 interface BreadcrumbProps {
   product: Product;
 }
 
 export default function Breadcrumb({ product }: BreadcrumbProps) {
-  // Find the category data to get the proper slug
-  const categoryData = categories.find(c =>
-    c.name.toLowerCase() === product.category.toLowerCase() ||
-    c.name.toLowerCase().includes(product.category.toLowerCase()) ||
-    product.category.toLowerCase().includes(c.name.toLowerCase())
-  );
+  const leaf = product.categorySlug ? getCategoryBySlug(product.categorySlug) : undefined;
+  const dept = product.categorySlug ? departmentOfCategory(product.categorySlug) : undefined;
 
-  // Use the proper slug or fallback to lowercased category name
-  const categorySlug = categoryData?.slug || product.category.toLowerCase().replace(/\s+/g, '-');
+  const crumbs: { label: string; href?: string }[] = [
+    { label: 'Home', href: '/' },
+    dept ? { label: dept.name, href: `/categories/${dept.slug}` } : { label: 'All gear', href: '/products' },
+    ...(leaf ? [{ label: leaf.name, href: `/categories/${leaf.slug}` }] : []),
+    { label: product.name },
+  ];
 
   return (
-    <nav className="flex items-center space-x-1 md:space-x-2 text-white/80 bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl px-4 py-3 md:px-6 md:py-4 border border-white/20 text-sm md:text-base">
-      <Link href="/" className="hover:text-white transition-colors font-medium truncate">
-        Home
-      </Link>
-      <svg className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-      <Link href="/products" className="hover:text-white transition-colors font-medium truncate">
-        Products
-      </Link>
-      <svg className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-      <Link
-        href={`/categories/${categorySlug}`}
-        className="hover:text-white transition-colors font-medium truncate"
-      >
-        {product.category}
-      </Link>
-      <svg className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-      <span className="text-white font-medium truncate">{product.name}</span>
+    <nav aria-label="Breadcrumb" className="pdp__crumbs">
+      <ol>
+        {crumbs.map((c, i) => (
+          <li key={`${c.label}-${i}`}>
+            {c.href ? <Link href={c.href}>{c.label}</Link> : <span aria-current="page">{c.label}</span>}
+            {i < crumbs.length - 1 && <span aria-hidden="true"> / </span>}
+          </li>
+        ))}
+      </ol>
     </nav>
   );
 }
