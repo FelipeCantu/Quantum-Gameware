@@ -12,7 +12,8 @@ export function setupMotion() {
   let destination = '';
   document.addEventListener('click', (e) => {
     const a = (e.target as Element).closest('a');
-    if (a) destination = new URL(a.href, location.href).pathname;
+    // The curtain names where you are going: "/" reads as "/home", other paths as they are.
+    if (a) destination = new URL(a.href, location.href).pathname.replace(/^\/$/, '/home');
   }, true);
 
   setTransition({

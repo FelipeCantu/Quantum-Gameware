@@ -11,6 +11,10 @@ export type SpectrumItem = { name: string; slug: string; price: number; was?: nu
 
 const GRID = [25, 50, 100, 250, 500, 1000];
 
+const Arrow = () => (
+  <svg className="spectrum__end-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13m-5-6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="1.6" /></svg>
+);
+
 export default function Spectrum({ items }: { items: SpectrumItem[] }) {
   const axisRef = useRef<HTMLDivElement>(null);
   const sorted = useMemo(() => [...items].sort((a, b) => a.price - b.price), [items]);
@@ -62,7 +66,7 @@ export default function Spectrum({ items }: { items: SpectrumItem[] }) {
       <div className="spectrum__ends">
         <p>
           <span className="spectrum__end-price mono">{formatPrice(cheapest.price)}</span>
-          <Link href={`/products/${cheapest.slug}`} className="spectrum__end-name">{cheapest.name}</Link>
+          <Link href={`/products/${cheapest.slug}`} className="spectrum__end-name">{cheapest.name}<Arrow /></Link>
         </p>
         <p className="spectrum__reading" aria-hidden="true">
           {shown ? (
@@ -76,7 +80,7 @@ export default function Spectrum({ items }: { items: SpectrumItem[] }) {
         </p>
         <p className="spectrum__end--hi">
           <span className="spectrum__end-price mono">{formatPrice(dearest.price)}</span>
-          <Link href={`/products/${dearest.slug}`} className="spectrum__end-name">{dearest.name}</Link>
+          <Link href={`/products/${dearest.slug}`} className="spectrum__end-name">{dearest.name}<Arrow /></Link>
         </p>
       </div>
 

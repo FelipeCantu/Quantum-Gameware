@@ -110,16 +110,15 @@ export default async function AboutPage() {
             </ol>
           </nav>
           <div className="ahero__copy">
-            <h1 id="about-title" className="ahero__title" data-split="lines" data-intro>
-              One price, observed.
-            </h1>
+            {/* Painted with the HTML (no intro reveal): it is the LCP, and the field is the entrance. */}
+            <h1 id="about-title" className="ahero__title">One price, observed.</h1>
             <span className="ahero__line" data-fringe-line aria-hidden="true" />
             <div className="ahero__below">
-              <p className="ahero__lede" data-reveal="fade" data-intro data-delay="0.35">
+              <p className="ahero__lede">
                 {site.name} is a small online store for gaming and streaming gear. Plenty of shops show a price
                 that won&rsquo;t sit still: a list price, a discount, a timer, shipping at the end. We show one.
               </p>
-              <dl className="ahero__readout mono" data-reveal="fade" data-intro data-delay="0.5">
+              <dl className="ahero__readout mono">
                 <div><dt>Waves</dt><dd>2</dd></div>
                 <div><dt>Fringes</dt><dd data-fringe-count>1</dd></div>
                 <div className="ahero__state">
@@ -137,10 +136,9 @@ export default async function AboutPage() {
       <section className="aquote" aria-labelledby="quote-title">
         <h2 id="quote-title" className="sr-only">Our pricing rule</h2>
         <figure className="aquote__figure">
-          <blockquote className="aquote__mark" data-collapse>
+          {/* The cobalt and gill ghosts are ::before/::after copies of data-text (about.css). */}
+          <blockquote className="aquote__mark" data-collapse data-text={QUOTE}>
             <p className="aquote__text">{QUOTE}</p>
-            <p className="aquote__ghost aquote__ghost--q" aria-hidden="true">{QUOTE}</p>
-            <p className="aquote__ghost aquote__ghost--g" aria-hidden="true">{QUOTE}</p>
           </blockquote>
           <figcaption className="aquote__cite mono">{site.name}, on pricing</figcaption>
         </figure>
@@ -169,10 +167,8 @@ export default async function AboutPage() {
             <li key={row.elsewhere} className="ledger__row" data-collapse>
               <div className="ledger__else">
                 <span className="ledger__k mono">Elsewhere</span>
-                <span className="ledger__claim">
+                <span className="ledger__claim" data-text={row.elsewhere}>
                   <s className="ledger__claim-text">{row.elsewhere}</s>
-                  <span className="ledger__ghost ledger__ghost--q" aria-hidden="true">{row.elsewhere}</span>
-                  <span className="ledger__ghost ledger__ghost--g" aria-hidden="true">{row.elsewhere}</span>
                 </span>
               </div>
               <div className="ledger__here">

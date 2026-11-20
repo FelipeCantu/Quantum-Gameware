@@ -98,7 +98,7 @@ export default function ProductCard({
       ref={ref}
       className={`qcard qcard--${imageAspectRatio} ${observed ? 'is-observed' : ''} ${product.inStock ? '' : 'is-out'} ${className}`}
     >
-      <Link href={href} className="qcard__plate" tabIndex={-1} aria-hidden="true">
+      <Link href={href} className="qcard__plate" tabIndex={-1} aria-hidden="true" aria-label={product.name}>
         {photo ? (
           <>
             <Image src={product.image} alt="" fill sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw" className="qcard__ghost qcard__ghost--q" priority={priority} />

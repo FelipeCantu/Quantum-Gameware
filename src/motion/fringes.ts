@@ -39,9 +39,11 @@ void main() {
   // Interference order: 0 on the line where both waves agree.
   float m = (k * (r1 - r2) + uPhi) / TAU;
   float keep = mix(1.0, exp(-m * m * 3.5), uP);
-  // Strong near the sources, faint under the copy on the left.
+  // Strong near the sources, faint under the copy on the left, and quiet below the line where the
+  // lede and readout sit, so body text never reads through dense rings.
   float x = pos.x / uRes.x;
-  float amp = mix(0.16, 0.62, smoothstep(0.05, 1.0, x)) * keep;
+  float below = smoothstep(uLineY + 8.0, uLineY + 48.0, pos.y);
+  float amp = mix(0.16, 0.62, smoothstep(0.05, 1.0, x)) * mix(1.0, 0.18, below) * keep;
   float a1 = c1 * amp;
   float a2 = c2 * amp;
   // Premultiplied: cobalt and gill alone, ink where the two crests cross.
@@ -110,8 +112,11 @@ export function startFringes() {
     gl.uniform3fv(U.g, rgb(styles.getPropertyValue('--c-gill').trim()));
     gl.uniform3fv(U.ink, rgb(styles.getPropertyValue('--c-fg').trim()));
 
-    // Geometry in CSS pixels, measured from the field box. Phones get a lower resolution.
-    const dpr = Math.min(devicePixelRatio || 1, isMobile() ? 1.25 : 1.5);
+    // Geometry in CSS pixels, measured from the field box. Phones get a lower resolution and draw
+    // every other frame (the rings drift slowly, so 30 fps reads the same and frees the main thread).
+    const phone = isMobile();
+    const dpr = Math.min(devicePixelRatio || 1, phone ? 1 : 1.25);
+    let frame = 0;
     const geo = { w: 1, h: 1, lineY: 0, sep: 120, lambda: 24, fringes: 1 };
     const measure = () => {
       const f = field.getBoundingClientRect();
@@ -167,21 +172,24 @@ export function startFringes() {
       const eased = p * p * (3 - 2 * p);
       const u = 1 - eased;
 
-      gl.uniform1f(U.time, time);
-      gl.uniform1f(U.p, eased);
-      gl.uniform1f(U.lineY, geo.lineY);
-      gl.uniform1f(U.srcX, geo.w * 1.08);
-      gl.uniform1f(U.sep, geo.sep * (1 + lag.y * 0.35 * u));
-      gl.uniform1f(U.phi, lag.x * 5 * u);
-      gl.uniform1f(U.lambda, geo.lambda);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (!phone || (frame++ & 1) === 0) {
+        gl.uniform1f(U.time, time);
+        gl.uniform1f(U.p, eased);
+        gl.uniform1f(U.lineY, geo.lineY);
+        gl.uniform1f(U.srcX, geo.w * 1.08);
+        gl.uniform1f(U.sep, geo.sep * (1 + lag.y * 0.35 * u));
+        gl.uniform1f(U.phi, lag.x * 5 * u);
+        gl.uniform1f(U.lambda, geo.lambda);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
 
       gsap.set(line, { scaleX: Math.max(0.0001, clamp((eased - 0.35) / 0.6)) });
-      const n = Math.max(1, Math.round(geo.fringes * Math.pow(u, 1.5)) | 1);
-      if (count && n !== shown) { shown = n; count.textContent = String(n); }
+      // The readout reaches 1 only when the state reads Observed, so the two never disagree.
       const nowObserved = p > 0.965;
+      const n = nowObserved ? 1 : Math.max(3, Math.round(geo.fringes * Math.pow(u, 1.5)) | 1);
+      if (count && n !== shown) { shown = n; count.textContent = String(n); }
       if (nowObserved !== observed) {
         observed = nowObserved;
         root.classList.toggle('is-observed', observed);
