@@ -214,3 +214,46 @@ Screenshot:  the hero halfway: the moire thinning toward one bright band, the ru
 The field's rings travel outward continuously (the wave itself is the idle state), on the GSAP ticker,
 paused off screen and in hidden tabs. Reduced motion or no WebGL: no canvas, the observed state at
 once (the rule drawn, "Fringes 1"), and every ghost collapsed.
+
+## Menu (pass 4, 2026-11-20)
+
+Below 1024px the header's menu trigger and panel carry the collapse verb.
+- **Trigger** (`.menu-btn`, site.css): two ink bars, each with a cobalt and a gill ghost a hair off
+  it at rest. Hover or focus splits the ghosts further and evens the short bar; press merges them;
+  open crosses the bars into an X and the ghosts collapse into it. The label rolls Menu to Close.
+- **Panel** (`MobileMenu.tsx`, atlas.css): a cobalt band, a gill band, then the panel sweep in from
+  the trigger's edge 70 ms apart (clip-path, expo.inOut): the page transition at menu scale.
+  Primary links sit at display size with their destination path in mono; their cobalt and gill
+  ghosts collapse in on open and split again under the finger or pointer, and the other rows dim.
+  A readout at the top names the current path. Closing plays the sweep in reverse.
+- **Geometry:** full screen under the header on phones; from 640px a 32rem right sidebar over a
+  scrim that closes on tap.
+- **Reduced motion:** no sweep, no ghosts; the panel appears and leaves at once.
+
+## Forms, account and info pages (pass 5, 2026-11-20)
+
+Every page that still used the old dark glass cards moves onto the system, batch by batch.
+- **Shared form primitives** (`styles/forms.css`): `.field`, `.field__input` (focus shows the cobalt and
+  gill ghosts as offset outlines: the collapse verb on every input), `.check`, `.alert`, `.meter`
+  (password strength in five cells), `PasswordField` (Show/Hide toggle, aria wired).
+- **Auth frame** (`components/auth/AuthFrame.tsx`): an ink slate with the title in superposition and a
+  live Status readout (Waiting for you / Checking / Needs a fix / Confirmed); the ghosts are keyed on
+  the state, so an error makes the title flicker and settle again. Phones: the slate is a band.
+- **Info blocks** (`styles/pages.css`): `DocPage` + `DocToc` (contents rail that marks the section
+  being read; a folded disclosure on phones), `.readout`, `.steps`, `.pair`, `.qa`, `.rows`, `.table`,
+  `.tiers` (membership ladder, each tier a step higher), `Closer` (ink end band with real contacts).
+- **Account** (`AccountNav`): one tab rail for every account page, gill underline on the current tab.
+- **Header** (`UserMenu`): "Sign in" link + "Create account" line button; signed in, an initials badge.
+
+### Content fixed while restyling (owner to confirm)
+- Removed invented or broken content: the placeholder phone (123) 456-7890 and "123 Gaming Street"
+  address on contact and help, social links to "#", live chat buttons that did nothing, 24/7 and
+  30-second response claims, six help "articles" that did not exist, links to /support and
+  /warranty/claim (no such pages), a contact newsletter checkbox that was never sent.
+- FAQ, help and contact answers now match the policy pages (shipping 5 to 15 US / 10 to 25
+  international business days, 30-day returns, reset by 6-digit code). Affirm/Klarna and Shop Pay
+  were removed: `src/config/payment.ts` enables cards, PayPal, Apple Pay and Google Pay only.
+- Still contradictory, left for the owner: shipping says processing is 1-3 days in one place and
+  1-2 in another, and Express (7 to 12 days) is slower than Standard's lower bound; membership's
+  Silver tier lists free standard shipping, which every order already gets; terms still show the
+  "123 Gaming Street" legal address.

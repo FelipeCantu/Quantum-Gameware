@@ -119,12 +119,53 @@
     display: grid; place-items: center; border-radius: 1rem;
     background: var(--c-gill); color: #0a0c14; font: 600 0.65rem/1 var(--f-mono);
   }
+  /* Menu trigger: two bars in superposition. Cobalt and gill ghosts sit a hair off each bar at rest,
+     split further on hover, merge on press, and collapse into the X when the menu opens. */
   .menu-btn {
-    min-height: 2.5rem; padding: 0 0.85rem; margin-left: 0.25rem;
+    display: inline-flex; align-items: center; gap: 0.65rem;
+    min-height: 2.5rem; padding: 0 0.75rem 0 0.85rem; margin-left: 0.25rem;
     border: 1px solid var(--c-fg); border-radius: var(--radius);
     font-size: var(--t-s); font-weight: 600; color: var(--c-fg);
+    transition: background-color 0.3s, color 0.3s;
   }
   .menu-btn[aria-expanded='true'] { background: var(--c-fg); color: var(--c-bg); }
+  .menu-btn__label { display: grid; height: 1.2em; line-height: 1.2; overflow: clip; }
+  .menu-btn__label > span { grid-area: 1 / 1; transition: translate 0.55s var(--ease-out); }
+  .menu-btn__label > span:last-child { translate: 0 115%; }
+  .menu-btn[aria-expanded='true'] .menu-btn__label > span:first-child { translate: 0 -115%; }
+  .menu-btn[aria-expanded='true'] .menu-btn__label > span:last-child { translate: 0 0; }
+  .menu-btn__icon { position: relative; width: 18px; height: 12px; flex: none; }
+  .menu-btn__bar {
+    position: absolute; left: 0; width: 100%; height: 2px; isolation: isolate;
+    background: currentColor; transform-origin: left center;
+    transition: translate 0.55s var(--ease-out), rotate 0.55s var(--ease-out), scale 0.55s var(--ease-out);
+  }
+  .menu-btn__bar:first-child { top: 0; }
+  .menu-btn__bar:last-child { bottom: 0; scale: 0.62 1; }
+  .menu-btn__bar::before, .menu-btn__bar::after {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    transition: translate 0.35s var(--ease-soft), opacity 0.35s;
+  }
+  .menu-btn__bar::before { background: var(--c-accent); translate: -2px -1px; }
+  .menu-btn__bar::after { background: var(--c-gill); translate: 2px 1px; }
+  .menu-btn:active .menu-btn__bar::before, .menu-btn:active .menu-btn__bar::after { translate: 0 0; }
+  .menu-btn:focus-visible .menu-btn__bar:last-child { scale: 1 1; }
+  .menu-btn:focus-visible .menu-btn__bar::before { translate: -4px -2px; }
+  .menu-btn:focus-visible .menu-btn__bar::after { translate: 4px 2px; }
+  @media (hover: hover) {
+    .menu-btn:hover .menu-btn__bar:last-child { scale: 1 1; }
+    .menu-btn:hover .menu-btn__bar::before { translate: -4px -2px; }
+    .menu-btn:hover .menu-btn__bar::after { translate: 4px 2px; }
+  }
+  /* Open: observed. The ghosts merge and the bars cross. */
+  .menu-btn[aria-expanded='true'] .menu-btn__bar { transform-origin: center; }
+  .menu-btn[aria-expanded='true'] .menu-btn__bar:first-child { translate: 0 5px; rotate: 45deg; }
+  .menu-btn[aria-expanded='true'] .menu-btn__bar:last-child { translate: 0 -5px; rotate: -45deg; scale: 1 1; }
+  .menu-btn[aria-expanded='true'] .menu-btn__bar::before,
+  .menu-btn[aria-expanded='true'] .menu-btn__bar::after { translate: 0 0; opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-btn__bar::before, .menu-btn__bar::after { display: none; }
+  }
   @media (min-width: 1024px) {
     .site-nav { display: block; }
     .site-actions { margin-left: 1.5rem; }

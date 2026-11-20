@@ -196,7 +196,16 @@ export default function Header({ stocked }: { stocked?: string[] }) {
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setIsMenuOpen((o) => !o)}
           >
-            Menu
+            {/* Two bars in superposition: cobalt and gill ghosts split on hover and collapse into
+                the X when the menu opens. The label rolls from Menu to Close. */}
+            <span className="menu-btn__label" aria-hidden="true">
+              <span>Menu</span>
+              <span>Close</span>
+            </span>
+            <span className="menu-btn__icon" aria-hidden="true">
+              <span className="menu-btn__bar" />
+              <span className="menu-btn__bar" />
+            </span>
           </button>
         </div>
       </div>

@@ -1,4 +1,7 @@
-// src/app/account/page.tsx - Enhanced User Account Dashboard with Beautiful Styling
+// src/app/account/page.tsx: the user dashboard (DESIGN.md, "Forms and account"). Data loading and
+// every handler are unchanged; the markup moved to the system: a greeting head with an identity
+// readout, the shared account rail, section tabs (ARIA tablist), stats as a readout, and forms built
+// from styles/forms.css. The page no longer renders its own footer (the layout already does).
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -6,7 +9,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
-import Footer from '@/components/ui/Footer';
+import AccountNav from '@/components/ui/AccountNav';
+import PasswordField from '@/components/auth/PasswordField';
 
 interface UserStats {
   totalOrders: number;
@@ -219,11 +223,11 @@ function AccountPageContent() {
 
   const getStatusColor = (status: RecentOrder['status']) => {
     switch (status) {
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'shipped': return 'bg-blue-100 text-blue-800';
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'delivered': return 'status--delivered';
+      case 'shipped': return 'status--shipped';
+      case 'processing': return 'status--processing';
+      case 'cancelled': return 'status--cancelled';
+      default: return '';
     }
   };
 
@@ -680,1153 +684,553 @@ function AccountPageContent() {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'security', label: 'Security', icon: '🔒' },
-    { id: 'preferences', label: 'Preferences', icon: '⚙️' }
+    { id: 'overview', label: 'Overview' },
+    { id: 'profile', label: 'Profile' },
+    { id: 'security', label: 'Security' },
+    { id: 'preferences', label: 'Preferences' }
   ];
 
   if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-blue-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
-      </div>
-    );
+    return <div className="auth-wait" aria-busy="true">Loading your account</div>;
   }
 
+  const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const firstName = user.firstName || user.name?.split(' ')[0] || 'there';
+  const initials = (user.name || 'You').split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
+  const avatarSrc = imagePreview || editData.avatar || user.avatar;
+  const isGood = (m: string) => /success|sent/i.test(m);
+
+  const editActions = (
+    <div className="dash-sec__actions">
+      {!isEditing ? (
+        <button type="button" onClick={handleEdit} className="btn btn--line btn--sm">
+          <span className="btn__fill" aria-hidden="true" />
+          <span className="btn__label">Edit</span>
+        </button>
+      ) : (
+        <>
+          <button type="button" onClick={handleCancel} className="btn btn--line btn--sm">
+            <span className="btn__fill" aria-hidden="true" />
+            <span className="btn__label">Cancel</span>
+          </button>
+          <button type="button" onClick={handleSave} disabled={isSaving} aria-busy={isSaving} className="btn btn--solid btn--sm">
+            <span className="btn__fill" aria-hidden="true" />
+            <span className="btn__label">{isSaving ? 'Saving…' : 'Save changes'}</span>
+          </button>
+        </>
+      )}
+    </div>
+  );
+
+  // One labelled value: a read-only readout, or an input while editing.
+  const kv = (id: string, label: string, value: string | undefined, input: React.ReactNode) => (
+    <div className="field">
+      <label htmlFor={isEditing ? id : undefined} className="field__label">{label}</label>
+      {isEditing ? input : <p className="kv__v">{value || <span className="kv__none">Not provided</span>}</p>}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-blue-950">
-      
-      <main className="pt-24 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Page Header */}
-          <div className="mb-4">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
-              Welcome back, {user.name}!
-            </h1>
-            <p className="text-white/80 text-sm sm:text-base lg:text-lg">
-              Manage your account, orders, and preferences all in one place.
-            </p>
-          </div>
-
-          {/* Mobile Profile Header */}
-          <div className="lg:hidden mb-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-4">
-            <div className="flex items-center space-x-3">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-lg">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white truncate">{user.name}</div>
-                <div className="text-sm text-white/70 truncate">{user.email}</div>
-              </div>
-              {user.role === 'admin' && (
-                <div className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded-full">
-                  Admin
-                </div>
-              )}
+    <>
+      <header className="dash-head">
+        <div className="dash-head__in">
+          <nav aria-label="Breadcrumb">
+            <ol className="page-head__crumbs">
+              <li><Link href="/">Home</Link><span aria-hidden="true"> / </span></li>
+              <li><span aria-current="page">Account</span></li>
+            </ol>
+          </nav>
+          <div className="dash-head__row">
+            <div className="dash-id" aria-hidden="true">
+              {user.avatar
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={user.avatar} alt="" />
+                : <span>{initials}</span>}
             </div>
-          </div>
-
-          {/* Mobile Horizontal Scrolling Navigation */}
-          <div className="lg:hidden mb-3 -mx-4 sticky top-[72px] z-[70] bg-blue-950 py-3">
-            <div className="px-4">
-              {/* Scrollable container with custom scrollbar */}
-              <div
-                className="overflow-x-auto overflow-y-hidden scroll-smooth"
-                style={{
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent',
-                  WebkitOverflowScrolling: 'touch'
-                }}
-              >
-                <nav className="flex gap-2 min-w-max pb-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 whitespace-nowrap font-medium text-sm ${
-                        activeTab === tab.id
-                          ? 'bg-white text-blue-600 shadow-lg scale-105'
-                          : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
-                      }`}
-                    >
-                      <span className="text-base">{tab.icon}</span>
-                      <span>{tab.label}</span>
-                    </button>
-                  ))}
-                  <Link
-                    href="/orders"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
-                  >
-                    <span className="text-base">📦</span>
-                    <span>Orders</span>
-                  </Link>
-                  <Link
-                    href="/returns-status"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
-                  >
-                    <span className="text-base">🔄</span>
-                    <span>Returns</span>
-                  </Link>
-                  <Link
-                    href="/wishlist"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
-                  >
-                    <span className="text-base">❤️</span>
-                    <span>Wishlist</span>
-                  </Link>
-                  <Link
-                    href="/settings"
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 border border-white/20 transition-all duration-300 whitespace-nowrap font-medium text-sm"
-                  >
-                    <span className="text-base">⚙️</span>
-                    <span>Settings</span>
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 text-red-200 hover:bg-red-500/30 border border-red-500/30 transition-all duration-300 whitespace-nowrap font-medium text-sm"
-                  >
-                    <span className="text-base">🚪</span>
-                    <span>Sign Out</span>
-                  </button>
-                </nav>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Desktop Sidebar Navigation */}
-            <div className="hidden lg:block lg:col-span-1">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden sticky top-24">
-                <div className="p-6 border-b border-white/20">
-                  <div className="flex items-center space-x-3">
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-lg">
-                        {user.name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-semibold text-white">{user.name}</div>
-                      <div className="text-sm text-white/70">{user.email}</div>
-                      {user.role === 'admin' && (
-                        <div className="text-xs bg-purple-500/20 text-purple-200 px-2 py-1 rounded-full inline-block mt-1">
-                          Admin
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <nav className="p-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 text-left ${
-                        activeTab === tab.id
-                          ? 'bg-white/20 text-white border border-white/30'
-                          : 'text-white/80 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      <span className="text-lg">{tab.icon}</span>
-                      <span className="font-medium">{tab.label}</span>
-                    </button>
-                  ))}
-                </nav>
-
-                {/* Quick Actions */}
-                <div className="p-4 border-t border-white/20">
-                  <div className="space-y-2">
-                    <Link
-                      href="/orders"
-                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
-                    >
-                      <span className="text-lg">📦</span>
-                      <span className="font-medium">My Orders</span>
-                    </Link>
-                    <Link
-                      href="/returns-status"
-                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
-                    >
-                      <span className="text-lg">🔄</span>
-                      <span className="font-medium">My Returns</span>
-                    </Link>
-                    <Link
-                      href="/wishlist"
-                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
-                    >
-                      <span className="text-lg">❤️</span>
-                      <span className="font-medium">Wishlist</span>
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300"
-                    >
-                      <span className="text-lg">⚙️</span>
-                      <span className="font-medium">Settings</span>
-                    </Link>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all duration-300 text-left"
-                    >
-                      <span className="text-lg">🚪</span>
-                      <span className="font-medium">Sign Out</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              {activeTab === 'overview' && (
-                <div className="space-y-6 sm:space-y-8">
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 overflow-visible relative z-50">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
-                      <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500/20 rounded-lg sm:rounded-xl flex items-center justify-center">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="text-xl sm:text-2xl font-bold text-white mb-1">{userStats.totalOrders}</div>
-                      <div className="text-white/70 text-xs sm:text-sm">Total Orders</div>
-                    </div>
-
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
-                      <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/20 rounded-lg sm:rounded-xl flex items-center justify-center">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="text-xl sm:text-2xl font-bold text-white mb-1">${userStats.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                      <div className="text-white/70 text-xs sm:text-sm">Total Spent</div>
-                    </div>
-
-                    <div
-                      ref={rewardsDropdownRef}
-                      className={`bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20 relative group cursor-pointer overflow-visible hover:bg-white/15 transition-all duration-300 ${
-                        showRewardsInfo ? 'z-[100]' : 'z-auto'
-                      }`}
-                      onClick={() => setShowRewardsInfo(!showRewardsInfo)}
-                    >
-                      <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/20 rounded-lg sm:rounded-xl flex items-center justify-center">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                          </svg>
-                        </div>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/20 flex items-center justify-center text-white/70 text-[10px] sm:text-xs font-bold">
-                          ?
-                        </div>
-                      </div>
-                      <div className="text-xl sm:text-2xl font-bold text-white mb-1">{userStats.rewardPoints.toLocaleString()}</div>
-                      <div className="text-white/70 text-xs sm:text-sm">Reward Points</div>
-
-                      {/* Mobile Backdrop */}
-                      {showRewardsInfo && (
-                        <div className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[99998]" onClick={() => setShowRewardsInfo(false)} />
-                      )}
-
-                      {/* Tooltip */}
-                      <div
-                        className={`md:absolute fixed md:bottom-full top-1/2 left-1/2 transform -translate-x-1/2 md:-translate-y-0 -translate-y-1/2 md:mb-2 mt-0 w-72 max-w-[90vw] p-4 bg-gray-900 rounded-xl shadow-2xl border border-white/20 transition-all duration-300 z-[99999] ${
-                          showRewardsInfo ? 'opacity-100 visible' : 'opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible'
-                        }`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {/* Arrow - Desktop only */}
-                        <div className="hidden md:block absolute top-full left-1/2 transform -translate-x-1/2 mt-[-1px]">
-                          <div className="border-8 border-transparent border-t-gray-900"></div>
-                        </div>
-
-                        {/* Close button - Mobile only */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowRewardsInfo(false);
-                          }}
-                          className="md:hidden absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                          aria-label="Close"
-                        >
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-
-                        <div className="text-white font-semibold mb-2 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                          </svg>
-                          How Rewards Work
-                        </div>
-                        <div className="text-white/80 text-sm space-y-2">
-                          <p className="flex items-start gap-2">
-                            <span className="text-green-400 font-bold">•</span>
-                            <span>Earn 1 point for every $1 spent</span>
-                          </p>
-                          <p className="flex items-start gap-2">
-                            <span className="text-green-400 font-bold">•</span>
-                            <span>100 points = $5 discount on your next order</span>
-                          </p>
-                          <p className="flex items-start gap-2">
-                            <span className="text-green-400 font-bold">•</span>
-                            <span>Points never expire</span>
-                          </p>
-                          <p className="flex items-start gap-2">
-                            <span className="text-green-400 font-bold">•</span>
-                            <span>Bonus points on special promotions</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link href="/membership" className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 hover:border-white/30 transition-all duration-300 group cursor-pointer block">
-                      <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500/20 rounded-lg sm:rounded-xl flex items-center justify-center">
-                          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 8a2 2 0 100-4 2 2 0 000 4z" />
-                          </svg>
-                        </div>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/20 flex items-center justify-center text-white/70 group-hover:bg-white/30 transition-colors">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </div>
-                      </div>
-                      <div className="text-base sm:text-lg font-bold text-white mb-1 capitalize">
-                        {isLoadingStats ? '...' : loyaltyTier}
-                      </div>
-                      <div className="text-white/70 text-xs sm:text-sm">Member Status</div>
-                      <div className="text-white/50 text-[10px] sm:text-xs mt-2 group-hover:text-white/70 transition-colors">
-                        Learn more →
-                      </div>
-                    </Link>
-                  </div>
-
-                  {/* Recent Orders */}
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 overflow-hidden">
-                    <div className="p-4 sm:p-6 border-b border-white/20">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-lg sm:text-xl font-bold text-white">Recent Orders</h2>
-                        <Link
-                          href="/orders"
-                          className="text-blue-400 hover:text-blue-300 font-medium transition-colors text-sm sm:text-base"
-                        >
-                          View All
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="divide-y divide-white/10">
-                      {recentOrders.map((order) => (
-                        <div key={order.id} className="p-4 sm:p-6 hover:bg-white/5 transition-colors">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
-                            <div className="flex items-center flex-wrap gap-2">
-                              <div className="font-semibold text-white text-sm sm:text-base">{order.id}</div>
-                              <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium ${getStatusColor(order.status)}`}>
-                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                              </span>
-                            </div>
-                            <div className="text-white font-semibold text-base sm:text-lg">${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                          </div>
-                          <div className="text-xs sm:text-sm text-white/70">
-                            {new Date(order.date).toLocaleDateString()} • {order.items} items
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'profile' && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">Profile Information</h2>
-                    {!isEditing ? (
-                      <button
-                        onClick={handleEdit}
-                        className="px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium text-sm sm:text-base w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
-                      >
-                        Edit Profile
-                      </button>
-                    ) : (
-                      <div className="flex gap-2 sm:gap-3">
-                        <button
-                          onClick={handleCancel}
-                          className="flex-1 sm:flex-none px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleSave}
-                          disabled={isSaving}
-                          className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium disabled:opacity-50 text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
-                        >
-                          {isSaving ? 'Saving...' : 'Save Changes'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {saveMessage && (
-                    <div className={`mb-6 p-4 rounded-xl ${
-                      saveMessage.includes('success')
-                        ? 'bg-green-500/20 text-green-200 border border-green-500/30'
-                        : 'bg-red-500/20 text-red-200 border border-red-500/30'
-                    }`}>
-                      {saveMessage}
-                    </div>
-                  )}
-
-                  {/* Avatar Section */}
-                  <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white/5 rounded-xl">
-                    <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Profile Picture</h3>
-                    <div className="flex flex-col sm:flex-row items-center gap-6">
-                      {/* Avatar Preview */}
-                      <div className="flex-shrink-0">
-                        {(imagePreview || editData.avatar || user.avatar) ? (
-                          <img
-                            src={imagePreview || editData.avatar || user.avatar}
-                            alt="Profile"
-                            className="w-32 h-32 rounded-full object-cover border-4 border-white/20"
-                          />
-                        ) : (
-                          <div className="w-32 h-32 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center">
-                            <span className="text-white text-4xl font-bold">
-                              {user.name?.charAt(0).toUpperCase() || 'U'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Upload Controls */}
-                      {isEditing && (
-                        <div className="flex-1 space-y-3">
-                          <div>
-                            <label className="block text-white text-sm font-medium mb-2">
-                              Upload New Picture
-                            </label>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              disabled={isUploadingImage}
-                              className="block w-full text-sm text-white/70
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-lg file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-600 file:text-white
-                                hover:file:bg-blue-700
-                                file:cursor-pointer file:transition-colors
-                                disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <p className="text-xs text-white/50 mt-1">
-                              JPG, PNG, or GIF (max 5MB)
-                            </p>
-                          </div>
-
-                          <div>
-                            <label className="block text-white text-sm font-medium mb-2">
-                              Or Paste Image URL
-                            </label>
-                            <input
-                              type="url"
-                              value={editData.avatar}
-                              onChange={(e) => {
-                                handleInputChange('avatar', e.target.value);
-                                setImagePreview(e.target.value);
-                              }}
-                              className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                              placeholder="https://example.com/avatar.jpg"
-                            />
-                          </div>
-
-                          {isUploadingImage && (
-                            <p className="text-blue-400 text-sm">Uploading image...</p>
-                          )}
-                        </div>
-                      )}
-
-                      {!isEditing && (
-                        <div className="text-white/70 text-sm">
-                          Click "Edit Profile" to change your picture
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-white font-medium mb-2">First Name</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      ) : (
-                        <div className="text-white p-3">{user.firstName || 'Not provided'}</div>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <label className="block text-white font-medium mb-2">Last Name</label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editData.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      ) : (
-                        <div className="text-white p-3">{user.lastName || 'Not provided'}</div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-white font-medium mb-2">Email</label>
-                      <div className="text-white p-3 bg-white/5 rounded-xl">{user.email}</div>
-                      <p className="text-xs text-white/50 mt-1">Email cannot be changed here</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-white font-medium mb-2">Phone Number</label>
-                      {isEditing ? (
-                        <input
-                          type="tel"
-                          value={editData.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      ) : (
-                        <div className="text-white p-3">{user.phone || 'Not provided'}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Address Section */}
-                  <div className="mt-8 pt-8 border-t border-white/20">
-                    <h3 className="text-xl font-semibold text-white mb-6">Address Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2">
-                        <label className="block text-white font-medium mb-2">Street Address</label>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.street}
-                            onChange={(e) => handleInputChange('address.street', e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="123 Main Street"
-                          />
-                        ) : (
-                          <div className="text-white p-3">{user.address?.street || 'Not provided'}</div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-white font-medium mb-2">City</label>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.city}
-                            onChange={(e) => handleInputChange('address.city', e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="New York"
-                          />
-                        ) : (
-                          <div className="text-white p-3">{user.address?.city || 'Not provided'}</div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-white font-medium mb-2">State/Province</label>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.state}
-                            onChange={(e) => handleInputChange('address.state', e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="NY"
-                          />
-                        ) : (
-                          <div className="text-white p-3">{user.address?.state || 'Not provided'}</div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-white font-medium mb-2">ZIP/Postal Code</label>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editData.address.zipCode}
-                            onChange={(e) => handleInputChange('address.zipCode', e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="10001"
-                          />
-                        ) : (
-                          <div className="text-white p-3">{user.address?.zipCode || 'Not provided'}</div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-white font-medium mb-2">Country</label>
-                        {isEditing ? (
-                          <select
-                            value={editData.address.country}
-                            onChange={(e) => handleInputChange('address.country', e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          >
-                            <option value="US" className="bg-gray-800">United States</option>
-                            <option value="CA" className="bg-gray-800">Canada</option>
-                            <option value="GB" className="bg-gray-800">United Kingdom</option>
-                            <option value="AU" className="bg-gray-800">Australia</option>
-                            <option value="DE" className="bg-gray-800">Germany</option>
-                            <option value="FR" className="bg-gray-800">France</option>
-                            <option value="ES" className="bg-gray-800">Spain</option>
-                            <option value="IT" className="bg-gray-800">Italy</option>
-                            <option value="JP" className="bg-gray-800">Japan</option>
-                            <option value="CN" className="bg-gray-800">China</option>
-                          </select>
-                        ) : (
-                          <div className="text-white p-3">{user.address?.country || 'Not provided'}</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'security' && (
-                <div className="space-y-4 sm:space-y-6">
-                  {/* Change Password */}
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Security Settings</h2>
-
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
-
-                        {passwordMessage && (
-                          <div className={`mb-4 p-4 rounded-xl ${
-                            passwordMessage.includes('success')
-                              ? 'bg-green-500/20 text-green-200 border border-green-500/30'
-                              : 'bg-red-500/20 text-red-200 border border-red-500/30'
-                          }`}>
-                            {passwordMessage}
-                          </div>
-                        )}
-
-                        <form onSubmit={handlePasswordChange} className="space-y-4">
-                          <div>
-                            <label className="block text-white font-medium mb-2">Current Password</label>
-                            <input
-                              type="password"
-                              value={passwordData.currentPassword}
-                              onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter your current password"
-                              required
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-white font-medium mb-2">New Password</label>
-                            <input
-                              type="password"
-                              value={passwordData.newPassword}
-                              onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter new password (min 8 characters)"
-                              required
-                              minLength={8}
-                            />
-                            <p className="text-xs text-white/50 mt-1">
-                              Must be at least 8 characters with uppercase, lowercase, and numbers
-                            </p>
-                          </div>
-
-                          <div>
-                            <label className="block text-white font-medium mb-2">Confirm New Password</label>
-                            <input
-                              type="password"
-                              value={passwordData.confirmPassword}
-                              onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Confirm your new password"
-                              required
-                            />
-                          </div>
-
-                          <button
-                            type="submit"
-                            disabled={isChangingPassword}
-                            className="px-6 py-3 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
-                          >
-                            {isChangingPassword ? 'Updating...' : 'Update Password'}
-                          </button>
-                        </form>
-                      </div>
-
-                      {/* Change Email */}
-                      <div className="border-t border-white/20 pt-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold text-white">Email Address</h3>
-                          {!showEmailChange && !showVerificationInput && (
-                            <button
-                              onClick={() => setShowEmailChange(true)}
-                              className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors text-sm font-medium"
-                            >
-                              Change Email
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="mb-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-white font-medium">{user.email}</div>
-                              <div className="text-white/70 text-sm flex items-center gap-2">
-                                {user.emailVerified ? (
-                                  <>
-                                    <span className="text-green-400">✓</span>
-                                    Verified
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="text-yellow-400">!</span>
-                                    Not verified
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {emailMessage && (
-                          <div className={`mb-4 p-4 rounded-xl ${
-                            emailMessage.includes('success') || emailMessage.includes('sent')
-                              ? 'bg-green-500/20 text-green-200 border border-green-500/30'
-                              : 'bg-red-500/20 text-red-200 border border-red-500/30'
-                          }`}>
-                            {emailMessage}
-                          </div>
-                        )}
-
-                        {/* Step 1: Request Email Change */}
-                        {showEmailChange && !showVerificationInput && (
-                          <div className="mt-4">
-                            <div className="mb-4 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30">
-                              <p className="text-blue-200 text-sm">
-                                <strong>Step 1 of 2:</strong> Enter your new email and confirm your password. A 6-digit verification code will be sent to your new email address.
-                              </p>
-                            </div>
-
-                            <form onSubmit={handleEmailChangeRequest} className="space-y-4">
-                              <div>
-                                <label className="block text-white font-medium mb-2">New Email Address</label>
-                                <input
-                                  type="email"
-                                  value={emailData.newEmail}
-                                  onChange={(e) => setEmailData(prev => ({ ...prev, newEmail: e.target.value }))}
-                                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Enter new email address"
-                                  required
-                                  disabled={isChangingEmail}
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-white font-medium mb-2">Confirm Password</label>
-                                <input
-                                  type="password"
-                                  value={emailData.password}
-                                  onChange={(e) => setEmailData(prev => ({ ...prev, password: e.target.value }))}
-                                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Confirm your password"
-                                  required
-                                  disabled={isChangingEmail}
-                                />
-                              </div>
-
-                              <div className="flex gap-3">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setShowEmailChange(false);
-                                    setEmailData({ newEmail: '', password: '', verificationCode: '' });
-                                    setEmailMessage('');
-                                  }}
-                                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                                  disabled={isChangingEmail}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  type="submit"
-                                  disabled={isChangingEmail}
-                                  className="px-6 py-3 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
-                                >
-                                  {isChangingEmail ? 'Sending Code...' : 'Send Verification Code'}
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        )}
-
-                        {/* Step 2: Verify with Code */}
-                        {showVerificationInput && (
-                          <div className="mt-4">
-                            <div className="mb-4 p-4 bg-green-500/10 rounded-xl border border-green-500/30">
-                              <p className="text-green-200 text-sm">
-                                <strong>Step 2 of 2:</strong> A 6-digit verification code has been sent to <strong>{pendingEmail}</strong>. Enter the code below to complete the email change.
-                              </p>
-                              <p className="text-green-200/70 text-xs mt-2">
-                                Code expires in 30 minutes. Check your spam folder if you don't see it.
-                              </p>
-                            </div>
-
-                            <form onSubmit={handleEmailVerification} className="space-y-4">
-                              <div>
-                                <label className="block text-white font-medium mb-2">Verification Code</label>
-                                <input
-                                  type="text"
-                                  value={emailData.verificationCode}
-                                  onChange={(e) => setEmailData(prev => ({ ...prev, verificationCode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-2xl tracking-widest font-mono"
-                                  placeholder="000000"
-                                  required
-                                  maxLength={6}
-                                  pattern="[0-9]{6}"
-                                  disabled={isChangingEmail}
-                                />
-                                <p className="text-xs text-white/50 mt-1 text-center">
-                                  Enter the 6-digit code from your email
-                                </p>
-                              </div>
-
-                              <div className="flex gap-3">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setShowVerificationInput(false);
-                                    setShowEmailChange(false);
-                                    setPendingEmail('');
-                                    setEmailData({ newEmail: '', password: '', verificationCode: '' });
-                                    setEmailMessage('');
-                                  }}
-                                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                                  disabled={isChangingEmail}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  type="submit"
-                                  disabled={isChangingEmail || emailData.verificationCode.length !== 6}
-                                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl hover:from-green-700 hover:to-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {isChangingEmail ? 'Verifying...' : 'Verify & Update Email'}
-                                </button>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setShowVerificationInput(false);
-                                  setShowEmailChange(true);
-                                  setEmailMessage('');
-                                }}
-                                className="w-full text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                                disabled={isChangingEmail}
-                              >
-                                Didn't receive the code? Try again
-                              </button>
-                            </form>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Account Actions */}
-                      <div className="border-t border-white/20 pt-6">
-                        <h3 className="text-lg font-semibold text-white mb-4">Account Actions</h3>
-                        <div className="space-y-3">
-                          {/* Active Sessions */}
-                          <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                            <div className="flex items-center justify-between mb-3">
-                              <div>
-                                <div className="text-white font-medium">Active Sessions</div>
-                                <div className="text-white/70 text-sm">Manage your active login sessions</div>
-                              </div>
-                              <button
-                                onClick={handleViewSessions}
-                                className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors font-medium"
-                              >
-                                {showSessions ? 'Refresh' : 'View'}
-                              </button>
-                            </div>
-
-                            {showSessions && (
-                              <div className="mt-4 space-y-2">
-                                {isLoadingSessions ? (
-                                  <div className="text-center text-white/60 py-4">Loading sessions...</div>
-                                ) : sessions.length === 0 ? (
-                                  <div className="text-center text-white/60 py-4">No active sessions found</div>
-                                ) : (
-                                  sessions.map((session, index) => (
-                                    <div key={index} className="p-3 bg-white/10 rounded-lg border border-white/20">
-                                      <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                          <div className="text-white font-medium">{session.device}</div>
-                                          <div className="text-white/70 text-sm">{session.browser}</div>
-                                          <div className="text-white/50 text-xs mt-1">
-                                            IP: {session.ipAddress} • Last active: {new Date(session.lastActive).toLocaleString()}
-                                          </div>
-                                        </div>
-                                        <button
-                                          onClick={() => handleRemoveSession(session.token)}
-                                          className="ml-3 px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
-                                        >
-                                          Remove
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Delete Account */}
-                          <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
-                            <div className="flex items-center justify-between mb-3">
-                              <div>
-                                <div className="text-red-200 font-medium">Delete Account</div>
-                                <div className="text-red-300/70 text-sm">Permanently delete your account and all data</div>
-                              </div>
-                              <button
-                                onClick={() => setShowDeleteAccount(!showDeleteAccount)}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
-                              >
-                                {showDeleteAccount ? 'Cancel' : 'Delete'}
-                              </button>
-                            </div>
-
-                            {showDeleteAccount && (
-                              <div className="mt-4">
-                                <div className="mb-4 p-3 bg-red-600/20 rounded-lg border border-red-500/30">
-                                  <p className="text-red-200 text-sm font-medium mb-2">⚠️ Warning: This action cannot be undone!</p>
-                                  <p className="text-red-300/80 text-xs">
-                                    All your account data, orders, and preferences will be permanently deleted.
-                                    Order history will be anonymized for business records.
-                                  </p>
-                                </div>
-
-                                {deleteMessage && (
-                                  <div className={`mb-4 p-3 rounded-lg ${
-                                    deleteMessage.includes('success')
-                                      ? 'bg-green-500/20 text-green-200 border border-green-500/30'
-                                      : 'bg-red-500/20 text-red-200 border border-red-500/30'
-                                  }`}>
-                                    {deleteMessage}
-                                  </div>
-                                )}
-
-                                <form onSubmit={handleDeleteAccount} className="space-y-3">
-                                  <div>
-                                    <label className="block text-red-200 font-medium mb-2 text-sm">
-                                      Type DELETE to confirm
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={deleteConfirmation}
-                                      onChange={(e) => setDeleteConfirmation(e.target.value)}
-                                      className="w-full px-4 py-2 bg-white/10 border border-red-500/30 rounded-lg text-white placeholder-white/60 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                      placeholder="Type DELETE"
-                                      required
-                                      disabled={isDeletingAccount}
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-red-200 font-medium mb-2 text-sm">
-                                      Confirm your password
-                                    </label>
-                                    <input
-                                      type="password"
-                                      value={deletePassword}
-                                      onChange={(e) => setDeletePassword(e.target.value)}
-                                      className="w-full px-4 py-2 bg-white/10 border border-red-500/30 rounded-lg text-white placeholder-white/60 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                      placeholder="Enter your password"
-                                      required
-                                      disabled={isDeletingAccount}
-                                    />
-                                  </div>
-
-                                  <button
-                                    type="submit"
-                                    disabled={isDeletingAccount || deleteConfirmation !== 'DELETE'}
-                                    className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    {isDeletingAccount ? 'Deleting Account...' : 'Delete My Account Permanently'}
-                                  </button>
-                                </form>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'preferences' && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">Preferences</h2>
-                    {!isEditing ? (
-                      <button
-                        onClick={handleEdit}
-                        className="px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium text-sm sm:text-base w-full sm:w-auto bg-blue-500 hover:bg-blue-600"
-                      >
-                        Edit Preferences
-                      </button>
-                    ) : (
-                      <div className="flex gap-2 sm:gap-3">
-                        <button
-                          onClick={handleCancel}
-                          className="flex-1 sm:flex-none px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm sm:text-base"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleSave}
-                          disabled={isSaving}
-                          className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg sm:rounded-xl transition-colors font-medium disabled:opacity-50 text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
-                        >
-                          {isSaving ? 'Saving...' : 'Save Changes'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-4">Notifications</h3>
-                      <div className="space-y-4">
-                        {[
-                          { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive order updates and news via email' },
-                          { key: 'smsNotifications', label: 'SMS Notifications', description: 'Receive order updates via SMS' },
-                          { key: 'marketingEmails', label: 'Marketing Emails', description: 'Receive promotional offers and deals' }
-                        ].map((item) => (
-                          <div key={item.key} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
-                            <div>
-                              <div className="text-white font-medium">{item.label}</div>
-                              <div className="text-white/70 text-sm">{item.description}</div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={Boolean(isEditing ? editData.preferences[item.key as keyof typeof editData.preferences] : user.preferences?.[item.key as keyof typeof user.preferences])}
-                                onChange={(e) => isEditing && handleInputChange(`preferences.${item.key}`, e.target.checked)}
-                                disabled={!isEditing}
-                                className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-4">Display</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-white font-medium mb-2">Currency</label>
-                          {isEditing ? (
-                            <select 
-                              value={editData.preferences.currency}
-                              onChange={(e) => handleInputChange('preferences.currency', e.target.value)}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value="USD" className="bg-gray-800">USD ($)</option>
-                              <option value="EUR" className="bg-gray-800">EUR (€)</option>
-                              <option value="GBP" className="bg-gray-800">GBP (£)</option>
-                              <option value="CAD" className="bg-gray-800">CAD ($)</option>
-                            </select>
-                          ) : (
-                            <div className="text-white p-3">{user.preferences?.currency || 'USD'}</div>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <label className="block text-white font-medium mb-2">Language</label>
-                          {isEditing ? (
-                            <select 
-                              value={editData.preferences.language}
-                              onChange={(e) => handleInputChange('preferences.language', e.target.value)}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value="en" className="bg-gray-800">English</option>
-                              <option value="es" className="bg-gray-800">Español</option>
-                              <option value="fr" className="bg-gray-800">Français</option>
-                              <option value="de" className="bg-gray-800">Deutsch</option>
-                            </select>
-                          ) : (
-                            <div className="text-white p-3">{user.preferences?.language || 'English'}</div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-white font-medium mb-2">Theme</label>
-                          {isEditing ? (
-                            <select 
-                              value={editData.preferences.theme}
-                              onChange={(e) => handleInputChange('preferences.theme', e.target.value)}
-                              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value="light" className="bg-gray-800">Light</option>
-                              <option value="dark" className="bg-gray-800">Dark</option>
-                              <option value="system" className="bg-gray-800">System</option>
-                            </select>
-                          ) : (
-                            <div className="text-white p-3 capitalize">{user.preferences?.theme || 'System'}</div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div>
+              <h1 className="dash-head__title">Hello, {firstName}.</h1>
+              <p className="dash-head__meta mono">
+                <span>{user.email}</span>
+                <span>{user.emailVerified ? 'Verified' : 'Not verified'}</span>
+                {userStats.memberSince && <span>Member since {new Date(userStats.memberSince).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>}
+                {user.role === 'admin' && <span>Admin</span>}
+              </p>
             </div>
           </div>
         </div>
-      </main>
+      </header>
+      <AccountNav />
 
-      <Footer />
-    </div>
+      <div className="dash">
+        <div className="seg" role="tablist" aria-label="Account sections">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              id={`tab-${tab.id}`}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`panel-${tab.id}`}
+              tabIndex={activeTab === tab.id ? 0 : -1}
+              className="seg__tab"
+              onClick={() => setActiveTab(tab.id)}
+              onKeyDown={(e) => {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                const i = tabs.findIndex((t) => t.id === activeTab);
+                const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+                setActiveTab(next.id);
+                document.getElementById(`tab-${next.id}`)?.focus();
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'overview' && (
+          <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" className="dash-panel">
+            <div className="stats dash-stats" aria-busy={isLoadingStats}>
+              <div className="stats__cell">
+                <span className="stats__k">Orders</span>
+                <span className="stats__v mono">{isLoadingStats ? '··' : userStats.totalOrders}</span>
+                <Link href="/orders" className="stats__note text-link">See all orders</Link>
+              </div>
+              <div className="stats__cell">
+                <span className="stats__k">Spent with us</span>
+                <span className="stats__v mono">{isLoadingStats ? '··' : money(userStats.totalSpent)}</span>
+                <span className="stats__note">Across every order</span>
+              </div>
+              <div className="stats__cell" ref={rewardsDropdownRef}>
+                <span className="stats__k">Reward points</span>
+                <span className="stats__v mono">{isLoadingStats ? '··' : userStats.rewardPoints.toLocaleString()}</span>
+                <button type="button" className="stats__note text-link" style={{ justifySelf: 'start' }} aria-expanded={showRewardsInfo} aria-controls="rewards-how" onClick={() => setShowRewardsInfo(!showRewardsInfo)}>
+                  How points work
+                </button>
+                <ul id="rewards-how" className="ticks dash-how" hidden={!showRewardsInfo}>
+                  <li>Earn 1 point for every $1 spent</li>
+                  <li>100 points take $5 off your next order</li>
+                  <li>Points never expire</li>
+                  <li>Bonus points on special promotions</li>
+                </ul>
+              </div>
+              <Link href="/membership" className="stats__cell stats__cell--accent dash-tier">
+                <span className="stats__k">Member tier</span>
+                <span className="stats__v" style={{ textTransform: 'capitalize' }}>{isLoadingStats ? '··' : loyaltyTier}</span>
+                <span className="stats__note">What each tier gets <span aria-hidden="true">→</span></span>
+              </Link>
+            </div>
+
+            <div className="dash-sec">
+              <div className="dash-sec__head">
+                <h2 className="dash-sec__title">Recent orders</h2>
+                <Link href="/orders" className="text-link" style={{ fontSize: 'var(--t-s)' }}>View all</Link>
+              </div>
+              {recentOrders.length === 0 ? (
+                <div className="dash-empty">
+                  <p>{isLoadingStats ? 'Loading your orders…' : 'No orders yet. Your first one will show up here with its status and tracking.'}</p>
+                  {!isLoadingStats && (
+                    <Link href="/products" className="btn btn--solid btn--sm">
+                      <span className="btn__fill" aria-hidden="true" />
+                      <span className="btn__label">Browse the gear</span>
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <ul className="orders-list">
+                  {recentOrders.map((order) => (
+                    <li key={order.id} className="orders-list__row">
+                      <span className="orders-list__id mono">{order.id}</span>
+                      <span className="orders-list__meta">{new Date(order.date).toLocaleDateString()} · {order.items} item{order.items === 1 ? '' : 's'}</span>
+                      <span className={`status ${getStatusColor(order.status)}`}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                      <span className="orders-list__total mono">{money(order.total)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="dash-sec">
+              <div className="dash-sec__head"><h2 className="dash-sec__title">Shortcuts</h2></div>
+              <ul className="rows">
+                {[
+                  { t: 'Start or check a return', href: '/returns-status' },
+                  { t: 'Your wishlist', href: '/wishlist' },
+                  { t: 'Notification and display settings', href: '/settings' },
+                  { t: 'Get help', href: '/help' },
+                ].map((r) => (
+                  <li key={r.href}>
+                    <Link href={r.href}>
+                      <span className="rows__t" style={{ fontSize: 'var(--t-body)' }}>{r.t}</span>
+                      <span className="rows__go" aria-hidden="true">{r.href}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'profile' && (
+          <section id="panel-profile" role="tabpanel" aria-labelledby="tab-profile" className="dash-panel">
+            <div className="dash-sec">
+              <div className="dash-sec__head">
+                <h2 className="dash-sec__title">Profile</h2>
+                {editActions}
+              </div>
+              {saveMessage && (
+                <div className={`alert ${isGood(saveMessage) ? 'alert--ok' : 'alert--error'}`} role={isGood(saveMessage) ? 'status' : 'alert'}>
+                  <p className="alert__text" style={{ color: 'var(--c-fg)' }}>{saveMessage}</p>
+                </div>
+              )}
+
+              <div className="dash-avatar">
+                <div className="dash-id dash-id--lg">
+                  {avatarSrc
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={avatarSrc} alt="Your profile picture" />
+                    : <span aria-hidden="true">{initials}</span>}
+                </div>
+                {isEditing ? (
+                  <div className="form" style={{ flex: 1, minWidth: 0 }}>
+                    <div className="field">
+                      <label htmlFor="avatar-file" className="field__label">Upload a picture</label>
+                      <input id="avatar-file" type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploadingImage} className="file-input" aria-describedby="avatar-hint" />
+                      <p id="avatar-hint" className="field__hint">JPG, PNG or GIF, up to 5 MB{isUploadingImage ? '. Uploading…' : ''}</p>
+                    </div>
+                    <div className="field">
+                      <label htmlFor="avatar-url" className="field__label">Or paste an image URL</label>
+                      <input
+                        id="avatar-url"
+                        type="url"
+                        className="field__input"
+                        value={editData.avatar}
+                        onChange={(e) => {
+                          handleInputChange('avatar', e.target.value);
+                          setImagePreview(e.target.value);
+                        }}
+                        placeholder="https://example.com/avatar.jpg"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="field__hint">Choose Edit to change your picture.</p>
+                )}
+              </div>
+
+              <div className="form__row form__row--2">
+                {kv('firstName', 'First name', user.firstName,
+                  <input id="firstName" type="text" autoComplete="given-name" className="field__input" value={editData.firstName} onChange={(e) => handleInputChange('firstName', e.target.value)} />)}
+                {kv('lastName', 'Last name', user.lastName,
+                  <input id="lastName" type="text" autoComplete="family-name" className="field__input" value={editData.lastName} onChange={(e) => handleInputChange('lastName', e.target.value)} />)}
+                <div className="field">
+                  <span className="field__label">Email</span>
+                  <p className="kv__v">{user.email}</p>
+                  <p className="field__hint">Change it under Security.</p>
+                </div>
+                {kv('phone', 'Phone', user.phone,
+                  <input id="phone" type="tel" autoComplete="tel" className="field__input" value={editData.phone} onChange={(e) => handleInputChange('phone', e.target.value)} placeholder="+1 555 123 4567" />)}
+              </div>
+            </div>
+
+            <div className="dash-sec">
+              <div className="dash-sec__head"><h2 className="dash-sec__title">Shipping address</h2></div>
+              <div className="form">
+                {kv('street', 'Street address', user.address?.street,
+                  <input id="street" type="text" autoComplete="street-address" className="field__input" value={editData.address.street} onChange={(e) => handleInputChange('address.street', e.target.value)} />)}
+                <div className="form__row form__row--2">
+                  {kv('city', 'City', user.address?.city,
+                    <input id="city" type="text" autoComplete="address-level2" className="field__input" value={editData.address.city} onChange={(e) => handleInputChange('address.city', e.target.value)} />)}
+                  {kv('state', 'State or province', user.address?.state,
+                    <input id="state" type="text" autoComplete="address-level1" className="field__input" value={editData.address.state} onChange={(e) => handleInputChange('address.state', e.target.value)} />)}
+                  {kv('zipCode', 'ZIP or postal code', user.address?.zipCode,
+                    <input id="zipCode" type="text" autoComplete="postal-code" className="field__input" value={editData.address.zipCode} onChange={(e) => handleInputChange('address.zipCode', e.target.value)} />)}
+                  {kv('country', 'Country', user.address?.country,
+                    <select id="country" autoComplete="country" className="field__input" value={editData.address.country} onChange={(e) => handleInputChange('address.country', e.target.value)}>
+                      <option value="US">United States</option>
+                      <option value="CA">Canada</option>
+                      <option value="GB">United Kingdom</option>
+                      <option value="AU">Australia</option>
+                      <option value="DE">Germany</option>
+                      <option value="FR">France</option>
+                      <option value="ES">Spain</option>
+                      <option value="IT">Italy</option>
+                      <option value="JP">Japan</option>
+                      <option value="CN">China</option>
+                    </select>)}
+                </div>
+              </div>
+              {isEditing && <div style={{ marginTop: '1.5rem' }}>{editActions}</div>}
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'security' && (
+          <section id="panel-security" role="tabpanel" aria-labelledby="tab-security" className="dash-panel">
+            <div className="dash-sec">
+              <div className="dash-sec__head"><h2 className="dash-sec__title">Password</h2></div>
+              {passwordMessage && (
+                <div className={`alert ${isGood(passwordMessage) ? 'alert--ok' : 'alert--error'}`} role={isGood(passwordMessage) ? 'status' : 'alert'}>
+                  <p className="alert__text" style={{ color: 'var(--c-fg)' }}>{passwordMessage}</p>
+                </div>
+              )}
+              <form onSubmit={handlePasswordChange} className="form dash-narrow">
+                <PasswordField id="currentPassword" label="Current password" autoComplete="current-password" value={passwordData.currentPassword} onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))} />
+                <PasswordField id="newPassword" label="New password" autoComplete="new-password" minLength={8} value={passwordData.newPassword} onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))} hint="At least 8 characters, with uppercase, lowercase and numbers." />
+                <PasswordField id="confirmNewPassword" label="Confirm new password" autoComplete="new-password" value={passwordData.confirmPassword} onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))} />
+                <div>
+                  <button type="submit" disabled={isChangingPassword} aria-busy={isChangingPassword} className="btn btn--solid">
+                    <span className="btn__fill" aria-hidden="true" />
+                    <span className="btn__label">{isChangingPassword ? 'Updating…' : 'Update password'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="dash-sec">
+              <div className="dash-sec__head">
+                <h2 className="dash-sec__title">Email</h2>
+                {!showEmailChange && !showVerificationInput && (
+                  <button type="button" onClick={() => setShowEmailChange(true)} className="btn btn--line btn--sm">
+                    <span className="btn__fill" aria-hidden="true" />
+                    <span className="btn__label">Change email</span>
+                  </button>
+                )}
+              </div>
+              <p className="kv__v">
+                {user.email} <span className={`status ${user.emailVerified ? 'status--delivered' : 'status--processing'}`}>{user.emailVerified ? 'Verified' : 'Not verified'}</span>
+              </p>
+              {emailMessage && (
+                <div className={`alert ${isGood(emailMessage) ? 'alert--ok' : 'alert--error'}`} role={isGood(emailMessage) ? 'status' : 'alert'} style={{ marginTop: '1rem' }}>
+                  <p className="alert__text" style={{ color: 'var(--c-fg)' }}>{emailMessage}</p>
+                </div>
+              )}
+
+              {showEmailChange && !showVerificationInput && (
+                <form onSubmit={handleEmailChangeRequest} className="form dash-narrow" style={{ marginTop: '1.25rem' }}>
+                  <p className="field__hint mono">Step 1 of 2</p>
+                  <p>Enter the new address and your password. We send a 6-digit code to the new address.</p>
+                  <div className="field">
+                    <label htmlFor="newEmail" className="field__label">New email</label>
+                    <input id="newEmail" type="email" autoComplete="email" className="field__input" value={emailData.newEmail} onChange={(e) => setEmailData(prev => ({ ...prev, newEmail: e.target.value }))} required disabled={isChangingEmail} />
+                  </div>
+                  <PasswordField id="emailPassword" label="Your password" autoComplete="current-password" value={emailData.password} onChange={(e) => setEmailData(prev => ({ ...prev, password: e.target.value }))} disabled={isChangingEmail} />
+                  <div className="dash-sec__actions">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEmailChange(false);
+                        setEmailData({ newEmail: '', password: '', verificationCode: '' });
+                        setEmailMessage('');
+                      }}
+                      disabled={isChangingEmail}
+                      className="btn btn--line"
+                    >
+                      <span className="btn__fill" aria-hidden="true" />
+                      <span className="btn__label">Cancel</span>
+                    </button>
+                    <button type="submit" disabled={isChangingEmail} aria-busy={isChangingEmail} className="btn btn--solid">
+                      <span className="btn__fill" aria-hidden="true" />
+                      <span className="btn__label">{isChangingEmail ? 'Sending the code…' : 'Send the code'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {showVerificationInput && (
+                <form onSubmit={handleEmailVerification} className="form dash-narrow" style={{ marginTop: '1.25rem' }}>
+                  <p className="field__hint mono">Step 2 of 2</p>
+                  <p>We sent a 6-digit code to <strong>{pendingEmail}</strong>. It expires in 30 minutes; check spam if it is not there.</p>
+                  <div className="field">
+                    <label htmlFor="emailCode" className="field__label">6-digit code</label>
+                    <input
+                      id="emailCode"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      className="field__input field__input--code"
+                      value={emailData.verificationCode}
+                      onChange={(e) => setEmailData(prev => ({ ...prev, verificationCode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                      placeholder="______"
+                      required
+                      maxLength={6}
+                      pattern="[0-9]{6}"
+                      disabled={isChangingEmail}
+                    />
+                  </div>
+                  <div className="dash-sec__actions">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowVerificationInput(false);
+                        setShowEmailChange(false);
+                        setPendingEmail('');
+                        setEmailData({ newEmail: '', password: '', verificationCode: '' });
+                        setEmailMessage('');
+                      }}
+                      disabled={isChangingEmail}
+                      className="btn btn--line"
+                    >
+                      <span className="btn__fill" aria-hidden="true" />
+                      <span className="btn__label">Cancel</span>
+                    </button>
+                    <button type="submit" disabled={isChangingEmail || emailData.verificationCode.length !== 6} aria-busy={isChangingEmail} className="btn btn--solid">
+                      <span className="btn__fill" aria-hidden="true" />
+                      <span className="btn__label">{isChangingEmail ? 'Verifying…' : 'Verify and update'}</span>
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-link"
+                    style={{ justifySelf: 'start', fontSize: 'var(--t-s)' }}
+                    onClick={() => {
+                      setShowVerificationInput(false);
+                      setShowEmailChange(true);
+                      setEmailMessage('');
+                    }}
+                    disabled={isChangingEmail}
+                  >
+                    No code? Send it again
+                  </button>
+                </form>
+              )}
+            </div>
+
+            <div className="dash-sec">
+              <div className="dash-sec__head">
+                <h2 className="dash-sec__title">Signed-in devices</h2>
+                <button type="button" onClick={handleViewSessions} className="btn btn--line btn--sm">
+                  <span className="btn__fill" aria-hidden="true" />
+                  <span className="btn__label">{showSessions ? 'Refresh' : 'Show devices'}</span>
+                </button>
+              </div>
+              {showSessions && (
+                isLoadingSessions ? (
+                  <p className="field__hint" aria-busy="true">Loading sessions…</p>
+                ) : sessions.length === 0 ? (
+                  <p className="field__hint">No active sessions found.</p>
+                ) : (
+                  <ul className="orders-list">
+                    {sessions.map((session, index) => (
+                      <li key={index} className="orders-list__row">
+                        <span className="orders-list__id">{session.device}</span>
+                        <span className="orders-list__meta">{session.browser} · IP {session.ipAddress} · Last active {new Date(session.lastActive).toLocaleString()}</span>
+                        <span />
+                        <button type="button" className="text-link" style={{ fontSize: 'var(--t-s)' }} onClick={() => handleRemoveSession(session.token)}>Sign out device</button>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              )}
+            </div>
+
+            <div className="dash-sec danger">
+              <div className="dash-sec__head">
+                <div>
+                  <h2 className="dash-sec__title">Delete account</h2>
+                  <p className="field__hint">Permanently removes your account and data. Order history is anonymized for business records.</p>
+                </div>
+                <button type="button" onClick={() => setShowDeleteAccount(!showDeleteAccount)} aria-expanded={showDeleteAccount} aria-controls="delete-form" className="btn btn--line btn--sm danger__btn">
+                  <span className="btn__fill" aria-hidden="true" />
+                  <span className="btn__label">{showDeleteAccount ? 'Keep my account' : 'Delete account'}</span>
+                </button>
+              </div>
+              {showDeleteAccount && (
+                <form id="delete-form" onSubmit={handleDeleteAccount} className="form dash-narrow">
+                  <div className="alert alert--error">
+                    <p className="alert__title">This cannot be undone</p>
+                    <p className="alert__text">All your account data, orders and preferences are deleted.</p>
+                  </div>
+                  {deleteMessage && (
+                    <div className={`alert ${isGood(deleteMessage) ? 'alert--ok' : 'alert--error'}`} role={isGood(deleteMessage) ? 'status' : 'alert'}>
+                      <p className="alert__text" style={{ color: 'var(--c-fg)' }}>{deleteMessage}</p>
+                    </div>
+                  )}
+                  <div className="field">
+                    <label htmlFor="deleteConfirm" className="field__label">Type DELETE to confirm</label>
+                    <input id="deleteConfirm" type="text" className="field__input mono" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} required disabled={isDeletingAccount} autoComplete="off" />
+                  </div>
+                  <PasswordField id="deletePassword" label="Your password" autoComplete="current-password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} disabled={isDeletingAccount} />
+                  <div>
+                    <button type="submit" disabled={isDeletingAccount || deleteConfirmation !== 'DELETE'} aria-busy={isDeletingAccount} className="btn btn--solid danger__submit">
+                      <span className="btn__fill" aria-hidden="true" />
+                      <span className="btn__label">{isDeletingAccount ? 'Deleting…' : 'Delete my account permanently'}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'preferences' && (
+          <section id="panel-preferences" role="tabpanel" aria-labelledby="tab-preferences" className="dash-panel">
+            <div className="dash-sec">
+              <div className="dash-sec__head">
+                <h2 className="dash-sec__title">Notifications</h2>
+                {editActions}
+              </div>
+              {saveMessage && (
+                <div className={`alert ${isGood(saveMessage) ? 'alert--ok' : 'alert--error'}`} role={isGood(saveMessage) ? 'status' : 'alert'}>
+                  <p className="alert__text" style={{ color: 'var(--c-fg)' }}>{saveMessage}</p>
+                </div>
+              )}
+              <ul className="prefs">
+                {[
+                  { key: 'emailNotifications', label: 'Email notifications', description: 'Order updates and news by email' },
+                  { key: 'smsNotifications', label: 'Text messages', description: 'Order updates by SMS' },
+                  { key: 'marketingEmails', label: 'Offers and sales', description: 'Promotional emails' }
+                ].map((item) => (
+                  <li key={item.key} className="prefs__row">
+                    <label className="switch">
+                      <span className="switch__text">
+                        <span className="switch__label">{item.label}</span>
+                        <span className="field__hint">{item.description}</span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        checked={Boolean(isEditing ? editData.preferences[item.key as keyof typeof editData.preferences] : user.preferences?.[item.key as keyof typeof user.preferences])}
+                        onChange={(e) => isEditing && handleInputChange(`preferences.${item.key}`, e.target.checked)}
+                        disabled={!isEditing}
+                      />
+                      <span className="switch__track" aria-hidden="true" />
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              {!isEditing && <p className="field__hint" style={{ marginTop: '0.75rem' }}>Choose Edit to change these.</p>}
+            </div>
+
+            <div className="dash-sec">
+              <div className="dash-sec__head"><h2 className="dash-sec__title">Display</h2></div>
+              <div className="form__row form__row--3">
+                {kv('pref-currency', 'Currency', user.preferences?.currency || 'USD',
+                  <select id="pref-currency" className="field__input" value={editData.preferences.currency} onChange={(e) => handleInputChange('preferences.currency', e.target.value)}>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="CAD">CAD ($)</option>
+                  </select>)}
+                {kv('pref-language', 'Language', ({ en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch' } as Record<string, string>)[user.preferences?.language || 'en'] || user.preferences?.language,
+                  <select id="pref-language" className="field__input" value={editData.preferences.language} onChange={(e) => handleInputChange('preferences.language', e.target.value)}>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                  </select>)}
+                {kv('pref-theme', 'Theme', ({ light: 'Light', dark: 'Dark', system: 'System' } as Record<string, string>)[user.preferences?.theme || 'system'],
+                  <select id="pref-theme" className="field__input" value={editData.preferences.theme} onChange={(e) => handleInputChange('preferences.theme', e.target.value)}>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="system">System</option>
+                  </select>)}
+              </div>
+              {isEditing && <div style={{ marginTop: '1.5rem' }}>{editActions}</div>}
+            </div>
+          </section>
+        )}
+      </div>
+    </>
   );
 }
 

@@ -1,4 +1,9 @@
-// src/components/ui/UserMenu.tsx
+// src/components/ui/UserMenu.tsx: the account control in the header (DESIGN.md, "Forms and account").
+// Signed out: "Sign in" as a nav link with the drawn underline, and a small line button to create an
+// account (hidden on phones, where the menu carries both). Signed in: an initials badge that opens a
+// panel set like the categories panel. Escape and outside clicks close it; focus returns to the badge.
+'use client';
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -8,306 +13,104 @@ interface UserMenuProps {
   effectiveTheme: 'light' | 'dark';
 }
 
-export default function UserMenu({ isScrolled, effectiveTheme }: UserMenuProps) {
+const links = [
+  { label: 'Account', href: '/account' },
+  { label: 'Orders', href: '/orders' },
+  { label: 'Wishlist', href: '/wishlist' },
+  { label: 'Membership', href: '/membership' },
+  { label: 'Settings', href: '/settings' },
+];
+
+// The props are kept for the existing callers (Header, ActionButtons); the system styles both states.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function UserMenu(_props: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, signOut, loading } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Optimized click outside handler
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-      setIsOpen(false);
-    }
-  }, []);
-
-  // Debounced mouse events to prevent rapid open/close
-  const handleMouseEnter = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 300); // 300ms delay before closing
-  }, []);
-
-  // Optimized event listeners
   useEffect(() => {
-    if (isOpen) {
-      // Add event listener
-      document.addEventListener('mousedown', handleClickOutside);
-
-      // Prevent body scroll when menu is open (mobile)
-      if (window.innerWidth < 768) {
-        document.body.style.overflow = 'hidden';
-      }
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = '';
-
-      // Clean up timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
+    if (!isOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false);
     };
-  }, [isOpen, handleClickOutside]);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isOpen]);
 
-  // Memoized sign out handler
   const handleSignOut = useCallback(async () => {
     try {
       setIsOpen(false);
       await signOut();
-      // Optional: show success message
     } catch (error) {
       console.error('Sign out error:', error);
     }
   }, [signOut]);
 
-  // Memoized close handler
-  const handleCloseMenu = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  const buttonClasses = `p-2 sm:p-2.5 group rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 active:scale-95 flex-shrink-0 ${
-    isScrolled
-      ? effectiveTheme === 'light'
-        ? 'hover:bg-blue-50'
-        : 'hover:bg-white/10'
-      : 'hover:bg-white/10'
-  }`;
-
-  // Show loading state
   if (loading) {
+    return <span className="umenu__badge umenu__badge--wait" aria-hidden="true" />;
+  }
+
+  if (!isAuthenticated || !user) {
     return (
-      <div className={buttonClasses}>
-        <div className="w-6 h-6 animate-pulse bg-white/20 rounded-full"></div>
+      <div className="umenu__out">
+        <Link href="/auth/signin" className="draw site-nav__link">Sign in</Link>
+        <Link href="/auth/signup" className="btn btn--line btn--sm umenu__join">
+          <span className="btn__fill" aria-hidden="true" />
+          <span className="btn__label">Create account</span>
+        </Link>
       </div>
     );
   }
 
-  // Show sign in button when not authenticated
-  if (!isAuthenticated || !user) {
-    return (
-      <>
-        <Link
-          href="/auth/signin"
-          className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${ isScrolled ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm border border-white/30' }`}
-        >
-          Sign In
-        </Link>
+  const initials = (user.name || 'You').split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 
-        <Link
-          href="/auth/signup"
-          className={`hidden sm:block px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 ${
-            isScrolled
-              ? effectiveTheme === 'light'
-                ? 'text-blue-500 hover:bg-blue-50 border border-blue-300'
-                : 'text-gray-200 hover:bg-white/10 border border-gray-600'
-              : 'text-white hover:bg-white/10 border border-white/30'
-          }`}
-        >
-          Sign Up
-        </Link>
-      </>
-    );
-  }
-
-  // Show user menu when authenticated
   return (
-    <div 
-      className="relative" 
-      ref={menuRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="umenu" ref={menuRef} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setIsOpen(false); }}>
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          setIsOpen(!isOpen);
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        className={`${buttonClasses} flex items-center space-x-2`}
-        aria-label="User menu"
+        ref={buttonRef}
+        type="button"
+        className="umenu__badge"
+        onClick={() => setIsOpen((o) => !o)}
+        aria-label={`Account menu for ${user.name}`}
         aria-expanded={isOpen}
-        aria-haspopup="true"
+        aria-controls="umenu-panel"
       >
         {user.avatar ? (
-          <img 
-            src={user.avatar} 
-            alt={user.name}
-            className="w-6 h-6 rounded-full object-cover"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.avatar} alt="" className="umenu__avatar" />
         ) : (
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-            isScrolled ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'
-          }`}>
-            {user.name?.charAt(0).toUpperCase() || 'U'}
-          </div>
+          <span aria-hidden="true">{initials}</span>
         )}
-        
-        <svg 
-          className={`hidden sm:block h-4 w-4 transition-all duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          } ${
-            isScrolled ? 'text-blue-500' : 'text-white'
-          }`} 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
       </button>
 
-      {/* Dropdown Menu with better positioning and performance */}
-      {isOpen && (
-        <div
-          className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-slideIn"
-          style={{
-            transformOrigin: 'top right',
-            willChange: 'transform, opacity'
-          }}
-          role="menu"
-          aria-labelledby="user-menu-button"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          {/* User Info Header */}
-          <div className="p-4 bg-blue-50 border-b border-gray-100">
-            <div className="flex items-center space-x-3">
-              {user.avatar ? (
-                <img 
-                  src={user.avatar} 
-                  alt={user.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-                  {user.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-gray-900 truncate">{user.name}</div>
-                <div className="text-sm text-gray-600 truncate">{user.email}</div>
-                {user.role === 'admin' && (
-                  <div className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full inline-block mt-1">
-                    Admin
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Menu Items */}
-          <div className="py-2">
-            <Link
-              href="/account"
-              onClick={handleCloseMenu}
-              className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-              role="menuitem"
-            >
-              <svg className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              My Account
-            </Link>
-            
-            <Link
-              href="/orders"
-              onClick={handleCloseMenu}
-              className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-              role="menuitem"
-            >
-              <svg className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              My Orders
-            </Link>
-            
-            <Link
-              href="/wishlist"
-              onClick={handleCloseMenu}
-              className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-              role="menuitem"
-            >
-              <svg className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              Wishlist
-            </Link>
-            
-            <Link
-              href="/settings"
-              onClick={handleCloseMenu}
-              className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors group"
-              role="menuitem"
-            >
-              <svg className="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Settings
-            </Link>
-
-            {user.role === 'admin' && (
-              <Link
-                href="/admin"
-                onClick={handleCloseMenu}
-                className="flex items-center px-4 py-3 text-sm text-purple-700 hover:bg-purple-50 transition-colors group"
-                role="menuitem"
-              >
-                <svg className="w-4 h-4 mr-3 text-purple-400 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Admin Dashboard
-              </Link>
-            )}
-
-            <div className="border-t border-gray-100 my-2"></div>
-
-            <button
-              onClick={handleSignOut}
-              className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors group"
-              role="menuitem"
-            >
-              <svg className="w-4 h-4 mr-3 text-red-400 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign Out
-            </button>
-          </div>
-        </div>
-      )}
-      
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95) translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        
-        .animate-slideIn {
-          animation: slideIn 0.15s ease-out forwards;
-        }
-      `}</style>
+      <div id="umenu-panel" className="umenu__panel" hidden={!isOpen}>
+        <p className="umenu__who">
+          <span className="umenu__name">{user.name}</span>
+          <span className="umenu__mail">{user.email}</span>
+          {user.role === 'admin' && <span className="chip chip--ink" style={{ justifySelf: 'start', marginTop: '0.35rem' }}>Admin</span>}
+        </p>
+        <ul className="umenu__list">
+          {links.map((l) => (
+            <li key={l.href}>
+              <Link href={l.href} className="umenu__link draw" onClick={() => setIsOpen(false)}>{l.label}</Link>
+            </li>
+          ))}
+          {user.role === 'admin' && (
+            <li><Link href="/admin" className="umenu__link draw" onClick={() => setIsOpen(false)}>Admin dashboard</Link></li>
+          )}
+        </ul>
+        <button type="button" className="umenu__signout" onClick={handleSignOut}>Sign out</button>
+      </div>
     </div>
   );
 }

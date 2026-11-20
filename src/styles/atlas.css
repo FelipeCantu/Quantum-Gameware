@@ -117,35 +117,74 @@
   }
   .cats-panel__foot { display: flex; gap: 1.5rem; margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--c-line); }
   .cats-panel__foot .cats-panel__all { margin-top: 0; }
-  /* ---------- Mobile menu ---------- */
+  /* ---------- Mobile menu (DESIGN.md, "Menu") ---------- */
+  /* Root holds the scrim, two colour bands and the panel. Phones: everything full width under the
+     header. From 640px: a right sidebar over a scrim. The bands and panel share one geometry so the
+     GSAP clip-path sweep reads as one surface arriving in three offset passes. */
+  .mmenu-root { position: fixed; inset: var(--header-h) 0 0; z-index: calc(var(--z-header) - 1); }
+  @media (min-width: 1024px) { .mmenu-root { display: none; } }
+  html:has(.mmenu-root) .site-header { translate: none; }
+  /* The AI assistant launcher (AIAssistant.tsx) floats at z 9999 and would cover the panel. */
+  html:has(.mmenu-root) button[aria-label$='AI Assistant'] { visibility: hidden; }
+  .mmenu__scrim { position: absolute; inset: 0; display: none; background: rgb(10 12 20 / 0.5); cursor: pointer; }
+  .mmenu, .mmenu__band { position: absolute; inset: 0; }
+  .mmenu__band--a { background: var(--c-accent); }
+  .mmenu__band--b { background: var(--c-gill); }
   .mmenu {
-    position: fixed; inset: var(--header-h) 0 0; z-index: calc(var(--z-header) - 1);
     overflow-y: auto; overscroll-behavior: contain;
-    display: grid; align-content: start; gap: calc(var(--u) * 3);
-    padding: calc(var(--u) * 2.5) var(--gutter) calc(var(--u) * 4 + env(safe-area-inset-bottom));
     background: var(--c-bg); color: var(--c-fg); border-top: 1px solid var(--c-line);
   }
-  @media (min-width: 1024px) { .mmenu { display: none; } }
-  .mmenu__top { display: flex; justify-content: flex-end; margin-bottom: calc(var(--u) * -2); }
-  .mmenu__close {
-    display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 0.9rem;
-    border: 1px solid var(--c-fg); border-radius: var(--radius);
-    font-size: var(--t-s); font-weight: 600; color: var(--c-fg); transition: background-color 0.25s, color 0.25s;
+  @media (min-width: 640px) {
+    .mmenu__scrim { display: block; }
+    .mmenu, .mmenu__band { left: auto; width: min(32rem, 100%); }
+    .mmenu { border-left: 1px solid var(--c-line); }
   }
-  .mmenu__close svg { width: 0.75rem; height: 0.75rem; transition: rotate 0.35s var(--ease-soft); }
-  .mmenu__close:focus-visible, .mmenu__close:active { background: var(--c-fg); color: var(--c-bg); }
-  .mmenu__close:focus-visible svg { rotate: 90deg; }
-  @media (hover: hover) { .mmenu__close:hover { background: var(--c-fg); color: var(--c-bg); } .mmenu__close:hover svg { rotate: 90deg; } }
-  .mmenu__primary ul { display: grid; }
-  .mmenu__big {
-    display: flex; align-items: center; min-height: 3.25rem; padding: 0.2rem 0;
-    font-family: var(--f-display); font-size: var(--t-l); font-weight: 800; letter-spacing: -0.035em; line-height: 1;
-    background: linear-gradient(currentColor 0 0) left 88% / 0% 2px no-repeat;
-    transition: background-size 0.45s var(--ease-soft), translate 0.45s var(--ease-out), color 0.3s;
+  .mmenu__inner {
+    display: grid; align-content: start; gap: calc(var(--u) * 3);
+    padding: calc(var(--u) * 2) var(--gutter) calc(var(--u) * 4 + env(safe-area-inset-bottom));
   }
-  .mmenu__big[aria-current='page'] { background-size: 2.5rem 2px; color: var(--c-accent); }
-  .mmenu__big:active, .mmenu__big:focus-visible { translate: 0.25em 0; }
-  @media (hover: hover) { .mmenu__big:hover { translate: 0.25em 0; color: var(--c-accent); } }
+
+  /* The header trigger is the close control (it becomes the X); the top row is a readout. The
+     dialog itself takes focus on open, so no link wakes its ghosts before the visitor moves. */
+  .mmenu:focus { outline: none; }
+  .mmenu__top { margin-bottom: calc(var(--u) * -1.5); }
+  .mmenu__where { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; min-width: 0; font-size: var(--t-xs); }
+  .mmenu__where .mono { overflow-wrap: anywhere; }
+
+  /* Primary links at display size. Each row stacks the link over two aria-hidden ghosts of its word
+     (cobalt, gill); they collapse in on open and split again under the finger or pointer. */
+  .mmenu__primary ul { display: grid; border-top: 1px solid var(--c-line); }
+  .mmenu__row { position: relative; display: grid; border-bottom: 1px solid var(--c-line); }
+  .mmenu__row > * { grid-area: 1 / 1; }
+  .mmenu__big, .mmenu__ghost {
+    display: flex; align-items: center; min-height: 4rem; padding: 0.35rem 0;
+    font-family: var(--f-display); font-size: clamp(2.25rem, 1.4rem + 4.5vw, 3.25rem);
+    font-weight: 800; letter-spacing: -0.045em; line-height: 1;
+  }
+  .mmenu__ghost { pointer-events: none; opacity: 0; margin-left: -0.04em; transition: translate 0.35s var(--ease-soft), opacity 0.35s; }
+  .mmenu__ghost--a { color: var(--c-accent); }
+  .mmenu__ghost--b { color: var(--c-gill); }
+  .mmenu__big { position: relative; justify-content: space-between; gap: 1rem; color: var(--c-fg); transition: color 0.3s, opacity 0.3s; }
+  .mmenu__word { margin-left: -0.04em; }
+  .mmenu__path {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-size: var(--t-xs); font-weight: 500; color: var(--c-muted);
+    transition: translate 0.45s var(--ease-out), color 0.3s;
+  }
+  .mmenu__big[aria-current='page'] { color: var(--c-accent); }
+  .mmenu__big[aria-current='page'] .mmenu__path::before { content: ''; width: 0.45rem; height: 0.45rem; background: var(--c-gill); }
+  .mmenu__row:focus-within .mmenu__ghost, .mmenu__row:active .mmenu__ghost { opacity: 0.85; }
+  .mmenu__row:focus-within .mmenu__ghost--a, .mmenu__row:active .mmenu__ghost--a { translate: -0.07em 0; }
+  .mmenu__row:focus-within .mmenu__ghost--b, .mmenu__row:active .mmenu__ghost--b { translate: 0.07em 0; }
+  .mmenu__row:focus-within .mmenu__path, .mmenu__row:active .mmenu__path { translate: -0.35rem 0; color: var(--c-fg); }
+  @media (hover: hover) {
+    .mmenu__row:hover .mmenu__ghost { opacity: 0.85; }
+    .mmenu__row:hover .mmenu__ghost--a { translate: -0.07em 0; }
+    .mmenu__row:hover .mmenu__ghost--b { translate: 0.07em 0; }
+    .mmenu__row:hover .mmenu__path { translate: -0.35rem 0; color: var(--c-fg); }
+    .mmenu__primary ul:hover .mmenu__row:not(:hover) .mmenu__big { opacity: 0.4; }
+  }
+  @media (prefers-reduced-motion: reduce) { .mmenu__ghost { display: none; } }
 
   .mmenu__label { display: block; margin-bottom: 0.6rem; font-size: var(--t-xs); font-weight: 500; color: var(--c-muted); }
   .mmenu__muted { color: var(--c-muted); }
@@ -156,6 +195,7 @@
     font-size: var(--t-m); font-weight: 600; letter-spacing: -0.015em; list-style: none;
   }
   .mmenu__summary::-webkit-details-marker { display: none; }
+  .mmenu__summary-end { display: inline-flex; align-items: center; gap: 0.75rem; font-size: var(--t-xs); }
   .mmenu__chev { width: 0.9rem; height: 0.9rem; transition: rotate 0.3s var(--ease-soft); }
   .mmenu__dept[open] .mmenu__chev { rotate: 180deg; }
   .mmenu__leaves { display: grid; padding: 0 0 0.75rem; }
