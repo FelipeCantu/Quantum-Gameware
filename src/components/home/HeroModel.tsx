@@ -11,12 +11,16 @@ import { Environment, Lightformer, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { observation } from '@/motion/observe';
 
-// x is a fraction of the visible half-width, so the model runs off the right edge of the screen
-// at any window width (the canvas spans the full window, not the centred content column).
-type Layout = { scale: number; x: number; y: number; z: number; fov: number };
+// Desktop: x is a fraction of the visible half-width, so the model runs off the right edge of the
+// screen at any window width (the canvas spans the full window, not the centred content column).
+// Phones and tablets use `fit` instead: the model is sized from the screen every frame, centred,
+// and set in the open space between the header and the headline. w and h cap its width and height
+// as fractions of the window; cy is its centre as a fraction of the window height.
+type Fit = { w: number; h: number; cy: number };
+type Layout = { scale: number; x: number; y: number; z: number; fov: number; fit?: Fit };
 const layoutFor = (w: number): Layout =>
-  w < 768 ? { scale: 1.4, x: 0, y: 1.8, z: 6.5, fov: 60 }
-  : w < 1024 ? { scale: 2.6, x: 0.35, y: 1.4, z: 5.5, fov: 50 }
+  w < 768 ? { scale: 1.4, x: 0, y: 1.8, z: 6.5, fov: 60, fit: { w: 1.2, h: 0.52, cy: 0.35 } }
+  : w < 1024 ? { scale: 2.6, x: 0, y: 1.4, z: 5.5, fov: 50, fit: { w: 1, h: 0.5, cy: 0.37 } }
   : { scale: 3.1, x: 0.66, y: 0.7, z: 5, fov: 45 };
 
 // The canvas is taller than the screen (site.css: .hero__model bottom: -45svh). EXT widens the
@@ -61,24 +65,60 @@ function Headphones({ layout, still }: { layout: Layout; still: boolean }) {
 
   useEffect(() => () => ghosts.forEach((g) => g.material.dispose()), [ghosts]);
 
+  // The model's own bounds (visible meshes only, in its local space), measured once. Fit layouts use
+  // them to size the model from the screen and to turn it around its visual centre: the file's origin
+  // is off-centre, which made the small-screen model sit and swing to one side.
+  const bounds = useMemo(() => {
+    scene.updateWorldMatrix(true, true);
+    const toLocal = new THREE.Matrix4().copy(scene.matrixWorld).invert();
+    const box = new THREE.Box3();
+    scene.traverse((child) => {
+      if (!(child instanceof THREE.Mesh) || !child.visible || !child.geometry) return;
+      child.geometry.computeBoundingBox();
+      const b = child.geometry.boundingBox!.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(toLocal, child.matrixWorld));
+      box.union(b);
+    });
+    const size = box.getSize(new THREE.Vector3());
+    return { width: Math.max(size.x, size.z), height: size.y, center: box.getCenter(new THREE.Vector3()) };
+    // `ghosts` is a deliberate dependency: its memo hides the backdrop planes, which must happen first.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, ghosts]);
+  const fit = layout.fit;
+  const pivot: [number, number, number] = fit ? [-bounds.center.x, -bounds.center.y, -bounds.center.z] : [0, 0, 0];
+
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     const u = still ? 0 : observation.u;
     const spin = still ? 0.6 : Math.sin(t * 0.3) * 0.15 + t * 0.1; // the original hero's turn
-    const bob = (still ? 0 : Math.sin(t * 0.5) * 0.1) + liftFor(layout);
-    const x = (state.viewport.width / 2) * layout.x;
+
+    let scale = layout.scale;
+    let x = (state.viewport.width / 2) * layout.x;
+    let y = layout.y + liftFor(layout);
+    if (fit) {
+      // World units per CSS pixel at the model's depth; the canvas is wider/taller than the window.
+      const perPx = state.viewport.width / state.size.width;
+      scale = Math.min((fit.w * innerWidth * perPx) / bounds.width, (fit.h * innerHeight * perPx) / bounds.height);
+      x = 0;
+      y = (state.size.height / 2 - fit.cy * innerHeight) * perPx; // canvas top is the page top
+    }
+    const k = scale / layout.scale; // ghost spread and bob follow the model's size
+    const bob = still ? 0 : Math.sin(t * 0.5) * 0.1 * (fit ? k : 1);
+
     if (main.current) {
+      main.current.scale.setScalar(scale);
       main.current.rotation.y = spin;
-      main.current.position.set(x, layout.y + bob, 0);
+      main.current.position.set(x, y + bob, 0);
     }
     GHOSTS.forEach((g, i) => {
       const ref = ghostRefs.current[i];
       if (!ref) return;
       const s = i % 2 ? -1 : 1;
+      const spread = fit ? Math.min(1, k * 0.7) : 1;
       const drift = still ? 0 : 0.04 * u + 0.008;
+      ref.scale.setScalar(scale);
       ref.position.set(
-        x + g.dx * u + Math.sin(t * 0.7 + g.phase) * drift + observation.lagX * 0.6 * u * s,
-        layout.y + bob + g.dy * u + Math.cos(t * 0.55 + g.phase) * drift - observation.lagY * 0.35 * u * s,
+        x + (g.dx * u + Math.sin(t * 0.7 + g.phase) * drift + observation.lagX * 0.6 * u * s) * spread,
+        y + bob + (g.dy * u + Math.cos(t * 0.55 + g.phase) * drift - observation.lagY * 0.35 * u * s) * spread,
         -0.25,
       );
       ref.rotation.set(0, spin, g.rz * u);
@@ -90,11 +130,11 @@ function Headphones({ layout, still }: { layout: Layout; still: boolean }) {
     <>
       {ghosts.map((g, i) => (
         <group key={i} ref={(el) => { ghostRefs.current[i] = el; }} scale={layout.scale} renderOrder={-1}>
-          <primitive object={g.copy} />
+          <group position={pivot}><primitive object={g.copy} /></group>
         </group>
       ))}
       <group ref={main} scale={layout.scale}>
-        <primitive object={scene} />
+        <group position={pivot}><primitive object={scene} /></group>
       </group>
     </>
   );
