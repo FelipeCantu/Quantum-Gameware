@@ -9,11 +9,15 @@ export default function PageHead({
   text,
   meta,
   crumbs = [],
+  still = false,
 }: {
   title: string;
   text?: string;
   meta?: string;
   crumbs?: Crumb[];
+  /** Skip the intro line reveal. Pages that render after an auth check mount too late for the page
+      intro, and the split title would stay hidden. */
+  still?: boolean;
 }) {
   return (
     <header className="page-head">
@@ -29,7 +33,9 @@ export default function PageHead({
           </ol>
         </nav>
       )}
-      <h1 className="page-head__title" data-split="lines" data-intro>{title}</h1>
+      {still
+        ? <h1 className="page-head__title">{title}</h1>
+        : <h1 className="page-head__title" data-split="lines" data-intro>{title}</h1>}
       {text && <p className="page-head__text">{text}</p>}
       {meta && <p className="page-head__meta mono">{meta}</p>}
     </header>

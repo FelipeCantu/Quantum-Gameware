@@ -542,7 +542,7 @@ export default function CheckoutPage() {
                 <fieldset className="choices">
                   <legend className="sr-only">Payment method</legend>
                   {methods.map((m) => (
-                    <label key={m.value} className="choice">
+                    <label key={m.value} className="choice" data-on={paymentForm.paymentMethod === m.value ? "" : undefined}>
                       <input
                         type="radio"
                         name="paymentMethod"

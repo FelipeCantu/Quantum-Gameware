@@ -279,3 +279,17 @@ Flow: cart drawer -> /cart -> /cart/checkout (shipping, payment) -> /cart/checko
 ### Owner to decide
 - Payment is simulated: card details are only format-checked and the order is recorded as paid after
   a delay; PayPal, Apple Pay and Google Pay are timers. No payment provider is called.
+
+## Orders, settings, wishlist and returns (pass 7, 2026-11-21)
+
+- **Order cards** (`/orders`, `/cart/orders`, `/returns-status`): number in mono, status marker, total,
+  item plates and only the actions that apply. Return status adds a five-stage strip and a history.
+- **Order detail:** items on plates | a sticky receipt holding cancel and return.
+- **Settings and wishlist** reuse the dashboard sections, switches and the shop's white plates.
+- **Return request** (`ReturnRequestForm`): a portalled modal dialog; items are real checkboxes and
+  reasons a radio group (they were clickable divs), Escape closes it.
+- `PageHead still`: auth-guarded pages render after the page intro, so their title skips the split
+  reveal (it would stay hidden).
+- Fixed: `/cart/orders` crashed on load (missing import), yet the confirmation email links to it;
+  dead `/tracking` and `/support` links; a second footer on order detail; the wishlist's "track price
+  changes" line (nothing tracks prices).

@@ -1,4 +1,5 @@
-// src/app/settings/page.tsx
+// src/app/settings/page.tsx: account settings (DESIGN.md, "Account"). The form state, profile update and
+// theme picker are unchanged; the markup uses the dashboard sections, switches and the shared account rail.
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -6,6 +7,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Link from 'next/link';
+import PageHead from '@/components/ui/PageHead';
+import AccountNav from '@/components/ui/AccountNav';
 
 function SettingsPageContent() {
   const { user, updateProfile, signOut } = useAuth();
@@ -73,206 +76,112 @@ function SettingsPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-950 pt-24 pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-white/80 mb-8">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <Link href="/account" className="hover:text-white transition-colors">Account</Link>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <span className="text-white font-medium">Settings</span>
-        </nav>
+    <>
+      <div className="acct-head">
+        <PageHead
+          still
+          title="Settings"
+          text="Your details, what we email you, and how the store looks."
+          crumbs={[{ label: 'Home', href: '/' }, { label: 'Account', href: '/account' }, { label: 'Settings' }]}
+        />
+      </div>
+      <AccountNav />
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">Settings</h1>
-          <p className="text-white/80 text-base sm:text-lg">Customize your account preferences and notifications</p>
-        </div>
-
-        {/* Message */}
+      <form onSubmit={handleProfileUpdate} className="dash">
         {message && (
-          <div className={`mb-6 p-4 rounded-xl border ${
-            message.type === 'success' 
-              ? 'bg-green-500/20 border-green-500/30 text-green-200'
-              : 'bg-red-500/20 border-red-500/30 text-red-200'
-          }`}>
-            {message.text}
+          <div className={`alert ${message.type === 'success' ? 'alert--ok' : 'alert--error'}`} role={message.type === 'success' ? 'status' : 'alert'}>
+            <p className="alert__text" style={{ color: 'var(--c-fg)' }}>{message.text}</p>
           </div>
         )}
 
-        {/* Main Content */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl sm:rounded-3xl border border-white/20 p-4 sm:p-6 lg:p-8">
-              <form onSubmit={handleProfileUpdate} className="space-y-6 sm:space-y-8">
-                
-                {/* Profile Settings */}
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Profile Information</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Full Name</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                        required
-                      />
-                    </div>
+        <section className="dash-sec" aria-labelledby="set-profile">
+          <div className="dash-sec__head"><h2 id="set-profile" className="dash-sec__title">Profile</h2></div>
+          <div className="form__row form__row--2">
+            <div className="field">
+              <label htmlFor="set-name" className="field__label">Full name</label>
+              <input id="set-name" type="text" name="name" autoComplete="name" className="field__input" value={formData.name} onChange={handleInputChange} required />
+            </div>
+            <div className="field">
+              <label htmlFor="set-phone" className="field__label">Phone <span className="field__opt">Optional</span></label>
+              <input id="set-phone" type="tel" name="phone" autoComplete="tel" className="field__input" value={formData.phone} onChange={handleInputChange} placeholder="+1 555 123 4567" />
+            </div>
+            <div className="field">
+              <span className="field__label">Email</span>
+              <p className="kv__v">{formData.email}</p>
+              <p className="field__hint">Change it from <Link href="/account" className="text-link">Account, Security</Link>.</p>
+            </div>
+          </div>
+        </section>
 
-                    <div>
-                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Email Address</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        disabled
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/20 rounded-xl text-white/50 cursor-not-allowed text-sm sm:text-base"
-                      />
-                      <p className="text-white/60 text-xs sm:text-sm mt-2">Email cannot be changed</p>
-                    </div>
+        <section className="dash-sec" aria-labelledby="set-notes">
+          <div className="dash-sec__head"><h2 id="set-notes" className="dash-sec__title">Notifications</h2></div>
+          <ul className="prefs">
+            {[
+              { key: 'emailNotifications', label: 'Email notifications', description: 'Order updates and account notices by email' },
+              { key: 'smsNotifications', label: 'Text messages', description: 'Shipping and delivery updates by SMS' },
+              { key: 'marketingEmails', label: 'Offers and sales', description: 'Promotional emails and recommendations' }
+            ].map((item) => (
+              <li key={item.key} className="prefs__row">
+                <label className="switch">
+                  <span className="switch__text">
+                    <span className="switch__label">{item.label}</span>
+                    <span className="field__hint">{item.description}</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    name={item.key}
+                    checked={formData[item.key as keyof typeof formData] as boolean}
+                    onChange={handleInputChange}
+                  />
+                  <span className="switch__track" aria-hidden="true" />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-                    <div>
-                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Phone Number</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="+1 (555) 123-4567"
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                      />
-                    </div>
-                  </div>
-                </div>
+        <section className="dash-sec" aria-labelledby="set-display">
+          <div className="dash-sec__head"><h2 id="set-display" className="dash-sec__title">Display</h2></div>
+          <div className="form__row form__row--3">
+            <div className="field">
+              <label htmlFor="set-currency" className="field__label">Currency</label>
+              <select id="set-currency" name="currency" className="field__input" value={formData.currency} onChange={handleInputChange}>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="CAD">CAD (C$)</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="set-language" className="field__label">Language</label>
+              <select id="set-language" name="language" className="field__input" value={formData.language} onChange={handleInputChange}>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="set-theme" className="field__label">Theme</label>
+              <select id="set-theme" className="field__input" value={theme} onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')} aria-describedby="set-theme-hint">
+                <option value="system">Match my device</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+              <p id="set-theme-hint" className="field__hint">{theme === 'system' ? 'Follows your device setting.' : `Always ${theme}.`} Applies right away.</p>
+            </div>
+          </div>
+        </section>
 
-                {/* Notification Settings */}
-                <div className="border-t border-white/20 pt-6 sm:pt-8">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Notifications</h2>
-                  <div className="space-y-3 sm:space-y-4">
-                    {[
-                      { 
-                        key: 'emailNotifications', 
-                        label: 'Email Notifications', 
-                        description: 'Receive order updates and account notifications via email' 
-                      },
-                      { 
-                        key: 'smsNotifications', 
-                        label: 'SMS Notifications', 
-                        description: 'Get shipping updates and delivery notifications via text' 
-                      },
-                      { 
-                        key: 'marketingEmails', 
-                        label: 'Marketing Emails', 
-                        description: 'Receive promotional offers and product recommendations' 
-                      }
-                    ].map((item) => (
-                      <div key={item.key} className="flex items-start sm:items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 rounded-xl border border-white/10">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-white font-medium text-sm sm:text-base">{item.label}</div>
-                          <div className="text-white/70 text-xs sm:text-sm">{item.description}</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                          <input
-                            type="checkbox"
-                            name={item.key}
-                            checked={formData[item.key as keyof typeof formData] as boolean}
-                            onChange={handleInputChange}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Display Settings */}
-                <div className="border-t border-white/20 pt-6 sm:pt-8">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Display Preferences</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <div>
-                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Currency</label>
-                      <select
-                        name="currency"
-                        value={formData.currency}
-                        onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                      >
-                        <option value="USD" className="bg-gray-800">USD ($)</option>
-                        <option value="EUR" className="bg-gray-800">EUR (€)</option>
-                        <option value="GBP" className="bg-gray-800">GBP (£)</option>
-                        <option value="CAD" className="bg-gray-800">CAD (C$)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-white font-medium mb-2 text-sm sm:text-base">Language</label>
-                      <select
-                        name="language"
-                        value={formData.language}
-                        onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                      >
-                        <option value="en" className="bg-gray-800">English</option>
-                        <option value="es" className="bg-gray-800">Español</option>
-                        <option value="fr" className="bg-gray-800">Français</option>
-                        <option value="de" className="bg-gray-800">Deutsch</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Theme Selector */}
-                  <div className="mt-6">
-                    <label className="block text-white font-medium mb-2 text-sm sm:text-base">Theme</label>
-                    <select
-                      value={theme}
-                      onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                    >
-                      <option value="system" className="bg-gray-800">System (Auto)</option>
-                      <option value="light" className="bg-gray-800">Light</option>
-                      <option value="dark" className="bg-gray-800">Dark</option>
-                    </select>
-                    <p className="text-white/60 text-xs sm:text-sm mt-2">
-                      {theme === 'system'
-                        ? 'Theme will automatically match your system preference'
-                        : `Theme is set to ${theme} mode`}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Save Button */}
-                <div className="border-t border-white/20 pt-6 sm:pt-8">
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isUpdating}
-                      className="w-full sm:w-auto disabled:from-gray-500 disabled:to-gray-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:hover:scale-100 bg-blue-500 hover:bg-blue-600"
-                    >
-                      {isUpdating ? (
-                        <div className="flex items-center justify-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Saving...
-                        </div>
-                      ) : (
-                        'Save Changes'
-                      )}
-                    </button>
-                  </div>
-                </div>
-          </form>
+        <div className="co-actions" style={{ justifyContent: 'flex-start' }}>
+          <button type="submit" disabled={isUpdating} aria-busy={isUpdating} className="btn btn--solid" data-fill>
+            <span className="btn__fill" aria-hidden="true" />
+            <span className="btn__label">{isUpdating ? 'Saving…' : 'Save changes'}</span>
+          </button>
         </div>
-      </div>
-    </div>
+      </form>
+    </>
   );
 }
 

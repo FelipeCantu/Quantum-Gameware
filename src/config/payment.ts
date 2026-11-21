@@ -1,3 +1,4 @@
+import { SITE_URL } from './site';
 // src/config/payment.ts - Payment System Configuration
 export const PAYMENT_CONFIG = {
   // Payment Providers
@@ -347,7 +348,7 @@ export class PaymentConfigHelper {
   }
 
   static getWebhookUrl(provider: string): string {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const baseUrl = SITE_URL;
     const endpoint = PAYMENT_CONFIG.WEBHOOKS.endpoints[provider as keyof typeof PAYMENT_CONFIG.WEBHOOKS.endpoints];
     return `${baseUrl}${endpoint}`;
   }

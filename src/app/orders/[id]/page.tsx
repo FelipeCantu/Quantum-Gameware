@@ -1,4 +1,6 @@
-// src/app/orders/[id]/page.tsx
+// src/app/orders/[id]/page.tsx: one order (DESIGN.md, "Account"). Loading, cancel, return and the
+// development-only status button are unchanged. Items on plates | a sticky receipt with the actions.
+// Fixed: the page rendered a second footer; /tracking and /support links pointed at pages that do not exist.
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +8,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import AuthGuard from '@/components/auth/AuthGuard';
-import Footer from '@/components/ui/Footer';
+import { LinePlate } from '@/components/commerce/Shop';
 import ReturnRequestForm from '@/components/ReturnRequestForm';
 import { ReturnService } from '@/services/returnService';
 
@@ -101,27 +103,8 @@ function OrderDetailContent() {
     fetchOrder();
   }, [orderId, user]);
 
-  const getStatusColor = (status: Order['status']) => {
-    switch (status) {
-      case 'processing': return 'bg-yellow-500/20 text-yellow-200 border-yellow-500/30';
-      case 'confirmed': return 'bg-blue-500/20 text-blue-200 border-blue-500/30';
-      case 'shipped': return 'bg-purple-500/20 text-purple-200 border-purple-500/30';
-      case 'delivered': return 'bg-green-500/20 text-green-200 border-green-500/30';
-      case 'cancelled': return 'bg-red-500/20 text-red-200 border-red-500/30';
-      default: return 'bg-gray-500/20 text-gray-200 border-gray-500/30';
-    }
-  };
-
-  const getStatusIcon = (status: Order['status']) => {
-    switch (status) {
-      case 'processing': return '⏳';
-      case 'confirmed': return '✅';
-      case 'shipped': return '🚚';
-      case 'delivered': return '📦';
-      case 'cancelled': return '❌';
-      default: return '📋';
-    }
-  };
+  // Status marker class (styles/forms.css .status--*).
+  const getStatusColor = (status: Order['status']) => `status--${status}`;
 
   const canRequestReturn = (): boolean => {
     if (!order) return false;
@@ -192,294 +175,170 @@ function OrderDetailContent() {
     }
   };
 
+  const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   if (loading) {
-    return (
-      <div className="min-h-screen bg-blue-950">
-        <div className="flex items-center justify-center min-h-screen pt-20">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-white text-lg">Loading order details...</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <div className="auth-wait" aria-busy="true">Loading order details</div>;
   }
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-blue-950">
-        <div className="pt-24 pb-16 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-8">
-              <h1 className="text-2xl font-bold text-red-200 mb-4">Order Not Found</h1>
-              <p className="text-red-300 mb-6">
-                The order you're looking for doesn't exist or you don't have permission to view it.
-              </p>
-              <Link
-                href="/orders"
-                className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors"
-              >
-                ← Back to Orders
-              </Link>
-            </div>
-          </div>
+      <div className="void">
+        <h1 className="void__title">Order not found.</h1>
+        <p className="void__text">It does not exist, or it belongs to another account.</p>
+        <div className="void__ctas">
+          <Link href="/orders" className="btn btn--solid">
+            <span className="btn__fill" aria-hidden="true" />
+            <span className="btn__label">Back to orders</span>
+          </Link>
         </div>
-        <Footer />
       </div>
     );
   }
 
+  const placed = new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
   return (
-    <div className="min-h-screen bg-blue-950">
-      
-      <main className="pt-24 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-white/80 mb-8">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            <Link href="/orders" className="hover:text-white transition-colors">Orders</Link>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            <span className="text-white font-medium">{order.orderNumber}</span>
-          </nav>
+    <>
+      <header className="shop-head">
+        <nav aria-label="Breadcrumb">
+          <ol className="page-head__crumbs">
+            <li><Link href="/">Home</Link><span aria-hidden="true"> / </span></li>
+            <li><Link href="/orders">Orders</Link><span aria-hidden="true"> / </span></li>
+            <li><span aria-current="page" className="mono">{order.orderNumber}</span></li>
+          </ol>
+        </nav>
+        <h1 className="shop-head__title">Order <span className="mono" style={{ fontSize: '0.55em', letterSpacing: '-0.02em', fontWeight: 500 }}>{order.orderNumber}</span></h1>
+        <p className="shop-head__meta" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1.25rem', alignItems: 'center' }}>
+          <span>Placed {placed}</span>
+          <span className={`status ${getStatusColor(order.status)}`}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+        </p>
+      </header>
 
-          {/* Order Header */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8 mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Order {order.orderNumber}</h1>
-                <p className="text-white/70">
-                  Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
-                  {getStatusIcon(order.status)}
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                </span>
-
-                {/* Testing button - the API rejects non-admins in production */}
-                {process.env.NODE_ENV !== 'production' && order.status !== 'delivered' && (
-                  <button
-                    onClick={async () => {
-                      if (confirm('Mark this order as delivered? (For testing returns)')) {
-                        try {
-                          const token = localStorage.getItem('authToken');
-                          const response = await fetch(`/api/orders/${order.id}/update-status`, {
-                            method: 'PATCH',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ status: 'delivered' })
-                          });
-
-                          if (response.ok) {
-                            window.location.reload();
-                          } else {
-                            alert('Failed to update status');
-                          }
-                        } catch (error) {
-                          console.error('Error:', error);
-                          alert('Error updating status');
-                        }
-                      }
-                    }}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
-                  >
-                    🧪 Mark as Delivered (Test)
-                  </button>
-                )}
-
-                {order.status === 'shipped' && (
-                  <Link
-                    href={`/tracking/${order.id}`}
-                    className="px-6 py-2 text-white rounded-xl font-medium transition-all duration-300 text-center bg-blue-500 hover:bg-blue-600"
-                  >
-                    Track Package
-                  </Link>
-                )}
-              </div>
+      <div className="shop">
+        <div className="shop__main" style={{ display: 'grid', gap: 'calc(var(--u) * 4)' }}>
+          {showReturnSuccess && (
+            <div className="alert alert--ok" role="status">
+              <p className="alert__title">Return request sent</p>
+              <p className="alert__text">We&apos;ll process your return shortly.</p>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Order Items */}
-            <div className="lg:col-span-2">
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-8">
-                <h2 className="text-2xl font-bold text-white mb-6">Order Items</h2>
-                
-                <div className="space-y-6">
-                  {order.items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                      <div className="w-16 h-16 bg-white/10 rounded-lg flex-shrink-0 flex items-center justify-center">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
-                        ) : (
-                          <svg className="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                          </svg>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white mb-1">{item.name}</h3>
-                        <p className="text-white/70 text-sm">Quantity: {item.quantity}</p>
-                      </div>
-                      
-                      <div className="text-right">
-                        <p className="font-semibold text-white">${(item.price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                        <p className="text-white/70 text-sm">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          )}
+          {showCancelSuccess && (
+            <div className="alert alert--ok" role="status">
+              <p className="alert__title">Order cancelled</p>
+              <p className="alert__text">Your refund will be processed shortly.</p>
             </div>
+          )}
 
-            {/* Order Summary & Details */}
-            <div className="space-y-8">
-              {/* Order Summary */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6">
-                <h3 className="text-xl font-bold text-white mb-4">Order Summary</h3>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between text-white/80">
-                    <span>Subtotal</span>
-                    <span>${(order.total - order.shipping.cost).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-white/80">
-                    <span>Shipping</span>
-                    <span>{order.shipping.cost === 0 ? 'FREE' : `$${order.shipping.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-                  </div>
-                  <div className="border-t border-white/20 pt-3">
-                    <div className="flex justify-between text-white font-bold text-lg">
-                      <span>Total</span>
-                      <span>${order.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Shipping Information */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6">
-                <h3 className="text-xl font-bold text-white mb-4">Shipping Information</h3>
-                
-                <div className="space-y-3">
+          <section className="co-sec" aria-labelledby="od-items">
+            <h2 id="od-items" className="co-sec__title">Items</h2>
+            <ul className="lines">
+              {order.items.map((item) => (
+                <li key={item.id} className="line">
+                  <LinePlate image={item.image} name={item.name} />
                   <div>
-                    <p className="text-white/70 text-sm">Shipping Address</p>
-                    <p className="text-white">{order.shipping.address}</p>
+                    <p className="line__name">{item.name}</p>
+                    <p className="line__meta">Qty <span className="mono">{item.quantity}</span> · <span className="mono">{money(item.price)}</span> each</p>
                   </div>
-                  <div>
-                    <p className="text-white/70 text-sm">Shipping Method</p>
-                    <p className="text-white">{order.shipping.method}</p>
-                  </div>
-                </div>
-              </div>
+                  <p className="line__total">{money(item.price * item.quantity)}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-              {/* Payment Information */}
+          <section className="co-sec" aria-labelledby="od-ship">
+            <h2 id="od-ship" className="co-sec__title">Delivery and payment</h2>
+            <dl className="stats">
+              <div className="stats__cell">
+                <dt className="stats__k">Shipping address</dt>
+                <dd className="stats__note" style={{ color: 'var(--c-fg)', fontSize: 'var(--t-body)' }}>{order.shipping.address}</dd>
+              </div>
+              <div className="stats__cell">
+                <dt className="stats__k">Method</dt>
+                <dd className="stats__note" style={{ color: 'var(--c-fg)', fontSize: 'var(--t-body)' }}>{order.shipping.method}</dd>
+              </div>
               {order.payment && (
-                <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Payment Information</h3>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-white/70 text-sm">Payment Method</p>
-                      <p className="text-white">
-                        {order.payment.method}
-                        {order.payment.last4 && ` ending in ${order.payment.last4}`}
-                      </p>
-                    </div>
-                  </div>
+                <div className="stats__cell">
+                  <dt className="stats__k">Paid with</dt>
+                  <dd className="stats__note" style={{ color: 'var(--c-fg)', fontSize: 'var(--t-body)' }}>
+                    {({ credit_card: 'Credit card', paypal: 'PayPal', apple_pay: 'Apple Pay', google_pay: 'Google Pay' } as Record<string, string>)[order.payment.method] ?? order.payment.method}{order.payment.last4 && <> ending <span className="mono">{order.payment.last4}</span></>}
+                  </dd>
                 </div>
               )}
+            </dl>
+          </section>
 
-              {/* Actions */}
-              <div className="space-y-3">
-                {/* Cancel Order Button */}
-                {canCancelOrder() && (
-                  <div className="bg-red-500/10 border-2 border-red-400/30 rounded-xl p-4 space-y-3">
-                    <button
-                      onClick={handleCancelOrder}
-                      disabled={isCancelling}
-                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:shadow-red-500/30"
-                    >
-                      {isCancelling ? (
-                        <>
-                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Cancelling...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                          Cancel Order
-                        </>
-                      )}
-                    </button>
-                    <p className="text-xs text-red-300/80 text-center">
-                      You can cancel this order while it's still processing
-                    </p>
-                  </div>
-                )}
-
-                {canRequestReturn() && !hasExistingReturn() && (
-                  <button
-                    onClick={() => setShowReturnForm(true)}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl font-medium transition-colors shadow-lg"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
-                    </svg>
-                    Request Return
-                  </button>
-                )}
-
-                {hasExistingReturn() && (
-                  <div className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-yellow-500/20 border border-yellow-500/30 text-yellow-200 rounded-xl font-medium">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Return Pending
-                  </div>
-                )}
-
-                <Link
-                  href="/orders"
-                  className="w-full flex items-center justify-center px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl font-medium transition-colors border border-white/30"
-                >
-                  ← Back to Orders
-                </Link>
-
-                <Link
-                  href="/support"
-                  className="w-full flex items-center justify-center px-6 py-3 text-white rounded-xl font-medium transition-colors bg-blue-500 hover:bg-blue-600"
-                >
-                  Need Help?
-                </Link>
-              </div>
+          {/* Testing button - the API rejects non-admins in production */}
+          {process.env.NODE_ENV !== 'production' && order.status !== 'delivered' && (
+            <div className="note-box">
+              <button
+                type="button"
+                className="text-link"
+                onClick={async () => {
+                  if (confirm('Mark this order as delivered? (For testing returns)')) {
+                    try {
+                      const token = localStorage.getItem('authToken');
+                      const response = await fetch(`/api/orders/${order.id}/update-status`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ status: 'delivered' })
+                      });
+                      if (response.ok) {
+                        window.location.reload();
+                      } else {
+                        alert('Failed to update status');
+                      }
+                    } catch (error) {
+                      console.error('Error:', error);
+                      alert('Error updating status');
+                    }
+                  }
+                }}
+              >
+                Mark as delivered
+              </button>{' '}
+              <span>(development only, for testing returns)</span>
             </div>
-          </div>
+          )}
         </div>
-      </main>
 
-      {/* Return Request Form Modal */}
+        <aside className="shop__side" aria-labelledby="od-sum">
+          <div className="receipt">
+            <h2 id="od-sum" className="receipt__title">Summary</h2>
+            <dl className="receipt__rows">
+              <div className="receipt__row"><dt>Subtotal</dt><dd>{money(order.total - order.shipping.cost)}</dd></div>
+              <div className="receipt__row"><dt>Shipping</dt><dd className={order.shipping.cost === 0 ? 'receipt__free' : undefined}>{order.shipping.cost === 0 ? 'Free' : money(order.shipping.cost)}</dd></div>
+              <div className="receipt__total"><dt>Total</dt><dd>{money(order.total)}</dd></div>
+            </dl>
+            <div className="receipt__actions">
+              {canCancelOrder() && (
+                <>
+                  <button type="button" onClick={handleCancelOrder} disabled={isCancelling} aria-busy={isCancelling} className="btn btn--line btn--block danger__btn">
+                    <span className="btn__fill" aria-hidden="true" />
+                    <span className="btn__label">{isCancelling ? 'Cancelling…' : 'Cancel order'}</span>
+                  </button>
+                  <p className="receipt__note">You can cancel while the order is still processing.</p>
+                </>
+              )}
+              {canRequestReturn() && !hasExistingReturn() && (
+                <button type="button" onClick={() => setShowReturnForm(true)} className="btn btn--solid btn--block">
+                  <span className="btn__fill" aria-hidden="true" />
+                  <span className="btn__label">Request a return</span>
+                </button>
+              )}
+              {hasExistingReturn() && <span className="status status--processing">Return pending</span>}
+            </div>
+            <ul className="receipt__trust">
+              <li><Link href="/orders">Back to orders</Link></li>
+              <li><Link href="/contact">Need help with this order</Link></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
       {showReturnForm && order && (
         <ReturnRequestForm
           order={order}
@@ -487,38 +346,7 @@ function OrderDetailContent() {
           onCancel={() => setShowReturnForm(false)}
         />
       )}
-
-      {/* Success Messages */}
-      {showReturnSuccess && (
-        <div className="fixed top-4 right-4 z-[10000] bg-green-500/90 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-2xl border border-green-400/30 animate-slide-in">
-          <div className="flex items-center gap-3">
-            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <p className="font-semibold">Return Request Submitted!</p>
-              <p className="text-sm text-green-100">We'll process your return shortly.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showCancelSuccess && (
-        <div className="fixed top-4 right-4 z-[10000] bg-red-500/90 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-2xl border border-red-400/30 animate-slide-in">
-          <div className="flex items-center gap-3">
-            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <p className="font-semibold">Order Cancelled Successfully!</p>
-              <p className="text-sm text-red-100">Your refund will be processed shortly.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Footer />
-    </div>
+    </>
   );
 }
 

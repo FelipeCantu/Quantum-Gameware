@@ -126,7 +126,7 @@ export class ResendEmailService extends EmailService {
             <p style="color: #718096;">Your order confirmation emails will be sent successfully.</p>
           </div>
         `,
-        text: `Email Configuration Test - QuantumGameware\n\nCongratulations! Your Resend email configuration is working perfectly.\n\nTest Details:\n- Service: Resend\n- Domain: ${process.env.NEXT_PUBLIC_DOMAIN || 'quantumgameware.com'}\n- Status: Active\n- Test Date: ${new Date().toLocaleString()}\n\nYour order confirmation emails will be sent successfully.`,
+        text: `Email Configuration Test - QuantumGameware\n\nCongratulations! Your Resend email configuration is working perfectly.\n\nTest Details:\n- Service: Resend\n- Site: ${SITE_URL}\n- Status: Active\n- Test Date: ${new Date().toLocaleString()}\n\nYour order confirmation emails will be sent successfully.`,
         tags: [{ name: 'category', value: 'configuration_test' }]
       });
 
