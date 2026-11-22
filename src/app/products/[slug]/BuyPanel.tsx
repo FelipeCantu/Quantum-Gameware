@@ -127,12 +127,12 @@ export default function BuyPanel({ product }: { product: Product }) {
 
         <div className="pdp-buy__cta" ref={ctaRef}>
           {product.inStock && (
-            <div className="qty" role="group" aria-label="Quantity">
-              <button type="button" className="qty__btn" onClick={() => step(-1)} aria-disabled={qty <= 1} aria-label="One fewer">
+            <div className="pdp-qty" role="group" aria-label="Quantity">
+              <button type="button" className="pdp-qty__btn" onClick={() => step(-1)} aria-disabled={qty <= 1} aria-label="One fewer">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" stroke="currentColor" strokeWidth="1.6" /></svg>
               </button>
-              <output className="qty__value mono" aria-label={`Quantity ${qty}`}>{qty}</output>
-              <button type="button" className="qty__btn" onClick={() => step(1)} aria-disabled={qty >= MAX_QTY} aria-label="One more">
+              <output className="pdp-qty__value mono" aria-label={`Quantity ${qty}`}>{qty}</output>
+              <button type="button" className="pdp-qty__btn" onClick={() => step(1)} aria-disabled={qty >= MAX_QTY} aria-label="One more">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" stroke="currentColor" strokeWidth="1.6" /></svg>
               </button>
             </div>

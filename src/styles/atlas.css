@@ -124,8 +124,8 @@
   .mmenu-root { position: fixed; inset: var(--header-h) 0 0; z-index: calc(var(--z-header) - 1); }
   @media (min-width: 1024px) { .mmenu-root { display: none; } }
   html:has(.mmenu-root) .site-header { translate: none; }
-  /* The AI assistant launcher (AIAssistant.tsx) floats at z 9999 and would cover the panel. */
-  html:has(.mmenu-root) button[aria-label$='AI Assistant'] { visibility: hidden; }
+  /* The AI assistant launcher (AIAssistant.tsx) floats over the page and would cover the panel. */
+  html:has(.mmenu-root) .qga-launch { visibility: hidden; }
   .mmenu__scrim { position: absolute; inset: 0; display: none; background: rgb(10 12 20 / 0.5); cursor: pointer; }
   .mmenu, .mmenu__band { position: absolute; inset: 0; }
   .mmenu__band--a { background: var(--c-accent); }

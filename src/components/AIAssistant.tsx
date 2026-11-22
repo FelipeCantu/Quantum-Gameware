@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useTheme } from '@/context/ThemeContext'; // Assuming this context exists
+// The AI assistant: a square launcher and a chat panel. Styles in styles/assistant.css (tokens only,
+// so light and dark follow the site theme).
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 // --- Type Definitions ---
 interface Message {
@@ -112,9 +113,10 @@ const parseMessageContent = (content: string): MessagePart[] => {
   return parts.length > 0 ? parts : [{ type: 'text', content }];
 };
 
+const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 // --- Component ---
 export default function AIAssistant() {
-  const { effectiveTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -123,6 +125,7 @@ export default function AIAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const launcherRef = useRef<HTMLButtonElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const lastUnreadMessageIdRef = useRef<string | null>(null);
 
@@ -146,13 +149,13 @@ export default function AIAssistant() {
 
   // 3. Side Effects: Scroll, Unread Count, Textarea Resize
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, []);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, isLoading, isOpen, scrollToBottom]);
 
   // Track unread messages (only increment once per new assistant message)
   useEffect(() => {
@@ -170,12 +173,20 @@ export default function AIAssistant() {
     }
   }, [messages, isOpen]);
 
-  // Reset unread count when opening chat
+  // Reset unread count when opening chat; focus the input; Escape closes and returns focus
   useEffect(() => {
-    if (isOpen) {
-      setUnreadCount(0);
-      lastUnreadMessageIdRef.current = null;
-    }
+    if (!isOpen) return;
+    setUnreadCount(0);
+    lastUnreadMessageIdRef.current = null;
+    textareaRef.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        launcherRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [isOpen]);
 
   useEffect(() => {
@@ -268,254 +279,123 @@ export default function AIAssistant() {
     setUnreadCount(0); // Reset unread count on clear
   };
 
-  // --- Style Helpers (for cleaner JSX) ---
-  const isLight = effectiveTheme === 'light';
-  const themeClasses = {
-    chatWindow: isLight
-      ? 'bg-white/95 border border-gray-200/50'
-      : 'bg-gray-800/95 border border-gray-700/50',
-    messagesContainer: isLight
-      ? 'bg-gray-50/50'
-      : 'bg-gray-900/50',
-    messageBoxAssistant: isLight
-      ? 'bg-white text-gray-900 border border-gray-200/50'
-      : 'bg-gray-800 text-white border border-gray-700/50',
-    inputContainer: isLight
-      ? 'bg-white/80 border-gray-200/50'
-      : 'bg-gray-800/80 border-gray-700/50',
-    inputField: isLight
-      ? 'bg-gray-100 hover:bg-gray-200 text-gray-900 placeholder-gray-500 focus:bg-white'
-      : 'bg-gray-700 hover:bg-gray-600 text-white placeholder-gray-400 focus:bg-gray-600',
-    sendButtonDisabled: isLight
-      ? 'bg-gray-200 text-gray-400'
-      : 'bg-gray-700 text-gray-500',
-  };
-  const gradientPrimary = 'bg-blue-500';
-  const gradientPrimaryHover = 'hover:bg-blue-600';
-  const gradientSecondary = 'bg-blue-500';
-  const gradientSecondaryHover = 'hover:bg-blue-600';
-  const accentGradient = isLight ? gradientPrimary : gradientSecondary;
-  const accentGradientHover = isLight ? gradientPrimaryHover : gradientSecondaryHover;
-
   // Don't render until visible
   if (!isVisible) {
     return null;
   }
 
+  const canSend = input.trim().length > 0 && !isLoading;
+
   return (
     <>
-      {/* Floating Chat Button */}
+      {/* Launcher. Its aria-label must end in "AI Assistant": atlas.css hides it under the mobile menu. */}
       <button
+        ref={launcherRef}
+        type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className={`fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${accentGradient} ${accentGradientHover}`}
-        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        className="qga-launch"
+        aria-label={isOpen ? 'Close AI Assistant' : 'Open AI Assistant'}
+        aria-expanded={isOpen}
+        aria-controls="qga-panel"
       >
         {isOpen ? (
-          <svg className="w-6 h-6 text-white transition-transform duration-300 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
         ) : (
-          <>
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-bounce shadow-lg">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
+            <path d="M4 5h16v11H10l-4 3.5V16H4z" strokeLinejoin="round" />
+            <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" strokeWidth={2.2} strokeLinecap="round" />
+          </svg>
+        )}
+        {!isOpen && unreadCount > 0 && (
+          <span className="qga-launch__badge" aria-label={`${unreadCount} unread`}>{unreadCount > 9 ? '9+' : unreadCount}</span>
         )}
       </button>
 
-      {/* Chat Window */}
+      {/* Chat panel */}
       {isOpen && (
-        <div
-          className={`fixed bottom-0 right-0 z-[9999] w-full h-full 
-            md:bottom-24 md:right-6 md:w-96 md:h-[600px] md:max-h-[calc(100vh-8rem)] md:rounded-2xl
-            shadow-2xl flex flex-col overflow-hidden transition-all duration-300
-            animate-in slide-in-from-bottom-8 fade-in duration-300
-            backdrop-blur-xl ${themeClasses.chatWindow}`}
-          style={{
-            backdropFilter: 'blur(20px)',
-            // Refined shadow for better depth in both light/dark
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-          }}
-        >
-          {/* Header */}
-          <div className="relative bg-blue-500 px-4 py-4 sm:px-6 flex items-center justify-between shadow-lg">
-            {/* Animated shimmer overlay for premium look */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
-
-            <div className="flex items-center space-x-3 relative z-10">
-              <div className="w-10 h-10 flex items-center justify-center relative">
-                <div className="absolute inset-0 bg-white/30 rounded-full animate-pulse blur-sm"></div>
-                {/* Use a better placeholder or a real image for QG Assistant */}
-                <img src="/qg-axolotl-rbg.png" alt="QG Assistant" className="w-10 h-10 object-contain relative z-10 drop-shadow-md" />
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-lg drop-shadow-sm">QG Assistant</h3>
-                <div className="flex items-center space-x-1">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  <p className="text-white/90 text-sm">Online</p>
-                </div>
-              </div>
+        <section id="qga-panel" className="qga" role="dialog" aria-label="QG Assistant chat">
+          <header className="qga__head">
+            <div className="qga__avatar">
+              <img src="/qg-axolotl-rbg.png" alt="" />
             </div>
-            
-            <div className="flex items-center space-x-1 relative z-10">
+            <div className="qga__id">
+              <h2 className="qga__title">QG Assistant</h2>
+              <p className="qga__status">Online</p>
+            </div>
+            <div className="qga__tools">
               {messages.length > 1 && (
-                <button
-                  onClick={clearChat}
-                  className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-all duration-200"
-                  aria-label="Clear chat history"
-                  title="Clear chat history"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                <button type="button" onClick={clearChat} className="qga__tool" title="Clear chat history">
+                  Clear
                 </button>
               )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-2 transition-all duration-200"
-                aria-label="Close chat"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button type="button" onClick={() => setIsOpen(false)} className="qga__tool qga__tool--close" aria-label="Close chat">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.4} aria-hidden="true"><path d="M1 1l10 10M11 1L1 11" /></svg>
               </button>
             </div>
-          </div>
+          </header>
 
-          {/* Messages Container */}
-          <div
-            className={`flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar ${themeClasses.messagesContainer}`}
-            style={{
-              // Use a subtle radial pattern to give the background texture
-              backgroundImage: isLight
-                ? 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 40%)'
-                : 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 40%)',
-              backgroundAttachment: 'fixed', // Keeps the pattern fixed during scroll
-            }}
-          >
-            {messages.map((message, index) => {
+          <div className="qga__log" role="log" aria-live="polite" aria-busy={isLoading}>
+            {messages.map((message) => {
               const isUser = message.role === 'user';
               return (
-                <div
-                  key={message.id}
-                  className={`flex ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className={`relative max-w-[85%]`}>
-                    {/* Message tail/bubble pointer */}
-                    <div className={`absolute ${isUser ? '-right-1.5' : '-left-1.5'} top-3 z-0`}>
-                      <svg width="12" height="12" viewBox="0 0 12 12" className={`drop-shadow-sm ${isUser ? 'text-blue-600' : isLight ? 'text-white' : 'text-gray-800'}`}>
-                        <path d={isUser ? "M 0 0 L 12 0 L 0 12 Z" : "M 0 0 L 12 0 L 12 12 Z"} fill="currentColor" />
-                      </svg>
-                    </div>
-
-                    <div
-                      className={`relative z-10 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl
-                      ${isUser ? 'bg-blue-500 text-white px-4 py-2.5 rounded-br-none' : `${themeClasses.messageBoxAssistant} px-4 py-3 rounded-tl-none`}`}
-                    >
-                      <div className={`whitespace-pre-wrap break-words ${isUser ? 'text-[15px] leading-snug' : 'text-sm leading-relaxed'}`}>
-                        {parseMessageContent(message.content).map((part, idx) => (
-                          part.type === 'link' ? (
-                            <a
-                              key={idx}
-                              href={part.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => setIsOpen(false)} // Close chat when clicking link
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] my-1 mr-1 ${accentGradient} ${accentGradientHover} text-white shadow-md`}
-                            >
-                              {part.content}
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </a>
-                          ) : (
-                            <span key={idx}>{part.content}</span>
-                          )
-                        ))}
-                      </div>
-                      <p
-                        className={`flex items-center mt-1.5 ${isUser ? 'text-[11px] text-white/70 justify-end' : 'text-xs text-gray-500 justify-start'} ${!isUser && !isLight ? 'text-gray-400' : ''}`}
-                      >
-                        {!isUser && (
-                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        )}
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
+                <div key={message.id} className={`qga-msg ${isUser ? 'qga-msg--user' : 'qga-msg--assistant'}`}>
+                  <span className="qga-msg__who">
+                    {isUser ? 'You' : 'QG'} · <time dateTime={message.timestamp.toISOString()}>{formatTime(message.timestamp)}</time>
+                  </span>
+                  <div className="qga-msg__body">
+                    {parseMessageContent(message.content).map((part, idx) => (
+                      part.type === 'link' ? (
+                        <a
+                          key={idx}
+                          href={part.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsOpen(false)} // Close chat when clicking link
+                        >
+                          {part.content}
+                        </a>
+                      ) : (
+                        <span key={idx}>{part.content}</span>
+                      )
+                    ))}
                   </div>
                 </div>
               );
             })}
 
-            {/* Loading/Typing Indicator */}
+            {/* Typing indicator */}
             {isLoading && (
-              <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="relative">
-                  <div className={`rounded-2xl px-6 py-4 shadow-md ${themeClasses.messageBoxAssistant} rounded-tl-none`}>
-                    <div className="flex space-x-2 items-center">
-                      <div className={`w-2.5 h-2.5 rounded-full animate-bounce ${accentGradient}`} style={{ animationDelay: '0ms' }}></div>
-                      <div className={`w-2.5 h-2.5 rounded-full animate-bounce ${accentGradient}`} style={{ animationDelay: '150ms' }}></div>
-                      <div className={`w-2.5 h-2.5 rounded-full animate-bounce ${accentGradient}`} style={{ animationDelay: '300ms' }}></div>
-                    </div>
-                  </div>
-                </div>
+              <div className="qga-msg qga-msg--assistant">
+                <span className="qga-msg__who">QG · typing</span>
+                <div className="qga-typing" aria-label="QG Assistant is typing"><span /><span /><span /></div>
               </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className={`p-4 border-t backdrop-blur-xl ${themeClasses.inputContainer}`}>
-            <div className="flex items-end space-x-3">
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyPress} // Use onKeyDown for better input handling
-                  placeholder="Type your message..."
-                  rows={1}
-                  className={`w-full resize-none rounded-3xl px-4 py-3
-                    focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-transparent
-                    transition-all duration-300 shadow-inner hover:shadow-md
-                    ${themeClasses.inputField}`}
-                  style={{ maxHeight: `${MAX_TEXTAREA_HEIGHT}px`, minHeight: '48px' }}
-                  disabled={isLoading}
-                />
-              </div>
-              <button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
-                className={`p-3 rounded-full transition-all duration-200 shadow-xl
-                  hover:shadow-2xl active:scale-90 transform w-12 h-12 flex items-center justify-center
-                  ${input.trim() && !isLoading
-                    ? `${accentGradient} ${accentGradientHover} text-white scale-100`
-                    : `${themeClasses.sendButtonDisabled} cursor-not-allowed opacity-60 scale-95`
-                  }`}
-                aria-label="Send message"
-              >
-                {isLoading ? (
-                  <svg className="w-5 h-5 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9-18-9 2-9 18 9-2zm0 0v-8" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+          <form className="qga__form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+            <label htmlFor="qga-input" className="sr-only">Message QG Assistant</label>
+            <textarea
+              id="qga-input"
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress} // Use onKeyDown for better input handling
+              placeholder="Ask about gear, orders, shipping…"
+              rows={1}
+              className="qga__input"
+              disabled={isLoading}
+            />
+            <button type="submit" className="qga__send" disabled={!canSend} aria-label="Send message">
+              {isLoading ? (
+                <svg className="qga__spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9" /></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true"><path d="M5 19L19 5M9 5h10v10" /></svg>
+              )}
+            </button>
+          </form>
+        </section>
       )}
     </>
   );
