@@ -13,13 +13,23 @@ const listeners = new Set<(s: ScrollState) => void>();
 export type ScrollState = { y: number; velocity: number; progress: number };
 const state: ScrollState = { y: 0, velocity: 0, progress: 0 };
 
+// Sanity Studio (/studio) scrolls inside its own panes: Lenis must never touch it.
+const inStudio = () => location.pathname.startsWith('/studio');
+
 export function initScroll() {
-  if (lenis || prefersReducedMotion()) {
+  if (lenis || prefersReducedMotion() || inStudio()) {
     // Still publish native scroll position for the drivers.
     if (!lenis) addEventListener('scroll', nativeTick, { passive: true });
     return;
   }
-  lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, touchMultiplier: 1.2, anchors: true });
+  lenis = new Lenis({
+    lerp: 0.1,
+    wheelMultiplier: 1,
+    touchMultiplier: 1.2,
+    anchors: true,
+    // Let nested scrollers (the Studio, if reached by client-side navigation) scroll natively.
+    prevent: (node: HTMLElement) => inStudio() || !!node.closest?.('#sanity, [data-lenis-prevent]'),
+  });
   lenis.on('scroll', (l: Lenis) => {
     state.y = l.scroll;
     state.velocity = l.velocity;

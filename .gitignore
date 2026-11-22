@@ -49,3 +49,6 @@ next-env.d.ts
 # QA screenshots
 /.shots/
 /.shots-baseline/
+
+# local product photo staging
+product-images/

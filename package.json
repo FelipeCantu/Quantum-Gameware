@@ -10,6 +10,7 @@
     "migrate:categories": "tsx scripts/migrate-categories.ts",
     "migrate:brands": "tsx scripts/migrate-brands.ts",
     "migrate:products": "tsx scripts/migrate-products.ts",
+    "seed:products": "tsx scripts/seed-products-2026.ts",
     "migrate:all": "npm run migrate:categories && npm run migrate:brands",
     "setup-db": "node scripts/setup-database.js",
     "test-auth": "node scripts/test-auth.js"
